@@ -1,0 +1,111 @@
+# {{NOM_AFFICHE}} — environnement de développement backend, 100 % conteneurisé.
+# Aucun service backend n'est installé sur le poste (ni Herd, ni brew php/postgresql).
+# Toute commande passe par le conteneur : docker compose exec app <commande>.
+#
+# Les identifiants ci-dessous sont des valeurs de DEV LOCAL uniquement — jamais
+# de secret réel ici. Les vrais secrets vivent dans backend/.env, non commité.
+name: {{SLUG}}
+
+services:
+  app:
+    build: ./docker/php
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - vendor:/app/vendor        # volume nommé : les bind mounts macOS sont lents
+      # Lecture seule. Utile dès qu'un test compare le code à une spec publiée
+      # dans docs/ : sans ce montage, un tel test passerait en CI — où tout le
+      # dépôt est présent — et échouerait en local. Un test vert d'un seul côté
+      # ne prouve rien.
+      - ./docs:/docs:ro
+    ports:
+      - "8080:8000"
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: {{SLUG_SQL}}
+      DB_USERNAME: {{SLUG_SQL}}
+      DB_PASSWORD: {{SLUG_SQL}}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    # Laravel n'est PAS dans le template : il naît de la première itération
+    # /deliver-story (US-104), avec les versions du jour. Tant qu'`artisan`
+    # n'existe pas, le conteneur reste disponible pour `docker compose exec`
+    # sans planter en boucle — sinon le tout premier `up -d` échoue et donne
+    # l'impression que l'environnement est cassé.
+    command: >
+      sh -c 'if [ -f artisan ]; then php artisan serve --host=0.0.0.0 --port=8000;
+             else echo "[app] Laravel pas encore scaffoldé (US-104) — conteneur en veille";
+             sleep infinity; fi'
+
+  horizon:
+    build: ./docker/php
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - vendor:/app/vendor
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: {{SLUG_SQL}}
+      DB_USERNAME: {{SLUG_SQL}}
+      DB_PASSWORD: {{SLUG_SQL}}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      app: { condition: service_started }
+    command: >
+      sh -c 'if [ -f artisan ]; then php artisan horizon;
+             else echo "[horizon] en attente du scaffold Laravel (US-104)";
+             sleep infinity; fi'
+
+  db:
+    # Image pinnée par digest : un tag seul ne garantit pas un rebuild identique.
+    image: postgres:16@sha256:11a9d238fbb48bab14599c57e41123254452b1a2d93c6c8595bce96f346bd082
+    environment:
+      POSTGRES_DB: {{SLUG_SQL}}
+      POSTGRES_USER: {{SLUG_SQL}}
+      POSTGRES_PASSWORD: {{SLUG_SQL}}
+    ports:
+      # Ports décalés volontairement : un poste de dev héberge souvent déjà un
+      # PostgreSQL et un Redis. Deux services sur le même port, et c'est
+      # l'ancien qui répond — le pire des symptômes, parce qu'il répond.
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{SLUG_SQL}} -d {{SLUG_SQL}}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
+    ports:
+      - "6380:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.21@sha256:81370195cd4a0eab9604d17c2617a7525b0486f9365555253b6c5376c6350f1a
+    ports:
+      - "1026:1025"               # SMTP
+      - "8026:8025"               # interface web : http://localhost:8026
+
+volumes:
+  pgdata:
+  redisdata:
+  vendor:

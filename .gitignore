@@ -1,0 +1,46 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — jamais commités
+.env
+.env.*
+!.env.example
+
+# --- Backend PHP / Laravel (module stack-laravel) ---
+# Ne PAS exclure storage/framework/* ici : le .gitignore de Laravel ignore leur
+# CONTENU tout en gardant les .gitkeep. Sans ces dossiers, Laravel n'a pas de
+# chemin de cache en CI — panne vécue, et le message d'erreur ne le dit pas.
+/backend/vendor/
+/backend/node_modules/
+/backend/public/build/
+/backend/public/hot
+/backend/public/storage
+/backend/.phpunit.result.cache
+/backend/.phpunit.cache/
+
+# --- Mobile Flutter (module mobile-flutter) ---
+/mobile/build/
+/mobile/.dart_tool/
+/mobile/.flutter-plugins
+/mobile/.flutter-plugins-dependencies
+/mobile/ios/Pods/
+/mobile/ios/.symlinks/
+/mobile/android/.gradle/
+/mobile/android/local.properties
+/mobile/**/*.g.dart
+/mobile/**/*.freezed.dart
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Claude Code — état local de session, jamais partagé
+.claude/scheduled_tasks.json
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+
+# Artefacts d'outillage agent
+/.playwright-mcp/
+.firecrawl/

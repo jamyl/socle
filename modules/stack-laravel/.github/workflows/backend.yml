@@ -1,0 +1,112 @@
+name: Backend
+
+# `push` restreint à `main` : sur une branche de story, la PR déclenche déjà le
+# workflow. Sans cette restriction, chaque push sur une branche ouverte lançait
+# DEUX runs identiques (constaté sur la PR #1) — double coût, double attente,
+# et deux statuts à lire pour une seule vérité.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  secrets:
+    name: Aucun secret commité
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./.github/scan-secrets.sh
+
+
+  quality:
+    name: Statique + tests (PostgreSQL 16)
+    runs-on: ubuntu-latest
+
+    # Les tests tournent sur PostgreSQL, JAMAIS SQLite : dès qu'un invariant
+    # dépend de `SELECT FOR UPDATE`, les comportements de verrouillage diffèrent,
+    # et un test vert sur SQLite ne dit rien de la production (stack.md §3).
+    # Version alignée sur le docker-compose local.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: {{SLUG_SQL}}_test
+          POSTGRES_USER: {{SLUG_SQL}}
+          POSTGRES_PASSWORD: {{SLUG_SQL}}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U {{SLUG_SQL}} -d {{SLUG_SQL}}_test"
+          --health-interval=5s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s --health-timeout=5s --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pgsql, intl, bcmath, zip, redis, pcntl, posix
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Préparer l'environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # --- Gate 1 : analyse statique ---
+      - name: Pint (formatage)
+        run: ./vendor/bin/pint --test
+
+      - name: Larastan (niveau 8)
+        run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+
+      # --- Gate 2 : tests sur PostgreSQL ---
+      - name: Migrations
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: {{SLUG_SQL}}_test
+          DB_USERNAME: {{SLUG_SQL}}
+          DB_PASSWORD: {{SLUG_SQL}}
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+
+      - name: Pest
+        run: ./vendor/bin/pest
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: {{SLUG_SQL}}_test
+          DB_USERNAME: {{SLUG_SQL}}
+          DB_PASSWORD: {{SLUG_SQL}}
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+
+      # --- Gate 3 : dépendances ---
+      - name: Audit des dépendances
+        run: composer audit

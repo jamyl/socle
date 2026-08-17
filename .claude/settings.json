@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(gh repo view:*)",
+      "Bash(date:*)",
+      "Bash(mkdir:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "dart-flutter@dart-flutter": true
+  }
+}
