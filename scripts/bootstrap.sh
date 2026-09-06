@@ -90,13 +90,17 @@ fichiers_texte() {
 n=0
 while IFS= read -r f; do
   if grep -q '{{SLUG}}\|{{SLUG_SQL}}\|{{NOM_AFFICHE}}' "$f" 2>/dev/null; then
-    # -i '' : syntaxe BSD/macOS. Le script cible ce poste (cf. GETTING-STARTED).
+    # `-i.bak` est la seule forme de remplacement en place acceptée à la fois
+    # par le sed BSD (macOS) et le sed GNU (Linux, CI) : `-i ''` casse sur GNU,
+    # `-i` seul casse sur BSD. On édite en place plutôt que d'écrire un fichier
+    # temporaire, sinon le bit d'exécution de scan-secrets.sh est perdu.
     # {{SLUG_SQL}} d'ABORD : sinon `{{SLUG}}` matcherait son préfixe et
     # laisserait un `ma-boutique_SQL}}` derrière lui.
-    sed -i '' \
+    sed -i.bak \
       -e "s/{{SLUG_SQL}}/$SLUG_SQL/g" \
       -e "s/{{SLUG}}/$SLUG/g" \
       -e "s/{{NOM_AFFICHE}}/$NOM_AFFICHE/g" "$f"
+    rm -f "$f.bak"
     n=$((n + 1))
   fi
 done < <(fichiers_texte)

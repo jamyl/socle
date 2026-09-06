@@ -146,7 +146,11 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
 6. **`docs/backlog/README.md`** — la roadmap et la liste des epics prévus.
 7. **`docs/backlog/E01-fondations.md`** — l'epic qui rend le projet démarrable.
    Le module `stack-laravel` en livre un pré-écrit : **adapte-le** (nom du repo,
-   slug, ports) plutôt que d'en écrire un nouveau.
+   slug, ports) plutôt que d'en écrire un nouveau. Sans module, il n'existe pas :
+   écris-le, et vérifie que le lien de `docs/backlog/README.md` pointe dessus.
+8. **`docs/backlog/JOURNAL.md`** et **`CONTRIBUTING.md`** — deux fichiers courts
+   qui portent chacun un `{{PROJET}}` dans leur première ligne. Faciles à oublier
+   parce qu'on ne les rouvre jamais ; le contrôle final les attrape.
 
 **N'écris que E01.** Les epics suivants s'écrivent quand le produit est clair —
 un backlog complet rédigé au bootstrap est un backlog à réécrire.

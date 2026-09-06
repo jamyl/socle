@@ -19,13 +19,43 @@ Ce que le socle n'apporte pas : ton domaine. Il te le **demande**.
 | Outil | Vérification | Si absent |
 |---|---|---|
 | `gh` authentifié | `gh auth status` | `gh auth login` |
-| Runtime de conteneurs | `docker compose version` | OrbStack (plus rapide que Docker Desktop sur macOS) ou Docker Desktop |
+| Claude Code **2.1.154+** | `claude --version` | mise à jour — en dessous, l'outil Workflow n'existe pas et la revue en fan-out ne tourne pas |
+| Node (pour `npx`) | `node --version` | requis par `/dejavu` et par le MCP `context7` du module Laravel |
+| Runtime de conteneurs | `docker compose version` | OrbStack (plus rapide que Docker Desktop sur macOS) ou Docker Desktop. Requis par le module `stack-laravel` **et** par son MCP `github` |
 | Skill `/dejavu` | `ls ~/.claude/skills/dejavu` | `npx github:jamyl/dejavu install` |
 | `DEJAVU_CONTACT` | `echo $DEJAVU_CONTACT` | `echo 'export DEJAVU_CONTACT="Ton Nom ton@email"' >> ~/.zshrc` puis **rouvre le terminal** |
 
 ⚠️ **`DEJAVU_CONTACT` doit être dans ton `~/.zshrc`, pas seulement exporté dans
 un terminal.** Un `export` à la main n'est pas visible depuis Claude Code : son
 processus a démarré avant. Les APIs académiques réclament ce contact.
+
+### Fonctionnalités de Claude Code que la méthode suppose
+
+Elles ne s'installent pas, mais leur absence se voit tard et mal :
+
+- **L'outil Workflow** (`.claude/workflows/*.js`). C'est lui qui exécute la revue
+  en fan-out. Sans lui, `/deliver-story` va jusqu'aux tests puis saute la revue.
+- **`/loop`**, pour enchaîner les stories en autonomie :
+  `/loop 10m /deliver-story E01`. Facultatif — une story par appel manuel marche
+  aussi bien, plus lentement.
+- **`/security-review`**, skill intégré, obligatoire sur le domaine critique.
+
+### Permissions à autoriser une fois
+
+`/deliver-story` termine par `git push`, `gh pr create`, `gh pr checks` et
+`gh pr merge`. Ces commandes ne sont **pas** dans la liste `allow` par défaut de
+`.claude/settings.json` : le premier passage demandera confirmation à chaque
+étape, ce qui interrompt une boucle. Autorise-les au premier cycle, ou ajoute-les
+toi-même :
+
+```json
+"Bash(git push:*)", "Bash(git fetch:*)", "Bash(git tag:*)",
+"Bash(gh pr:*)", "Bash(gh run:*)"
+```
+
+La liste `deny` du même fichier interdit déjà `git push origin main` et
+`git push --force` : garde-la, c'est la version mécanique des deux interdits les
+plus chers de `.claude/rules/git-operations.md`.
 
 ---
 
