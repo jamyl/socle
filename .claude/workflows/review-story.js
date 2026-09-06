@@ -75,7 +75,12 @@ const rapports = await parallel(NOEUDS.map((n) => () =>
   agent(
     `${contrat}\n\nTu vérifies exactement ces règles, et rien d'autre :\n${n.regles.map((r) => `- ${r}`).join('\n')}`,
     { label: n.label, agentType: n.agentType, phase: 'Revue', schema: FINDINGS },
-  ).then((r) => ({ noeud: n.label, findings: r?.findings ?? [] }))
+  // ⚠️ `agent()` RÉSOUT à `null` quand le nœud meurt — il ne lève pas. Un
+  // `r?.findings ?? []` transformait ce `null` en rapport vide : le nœud mort
+  // était compté comme « a répondu, rien à signaler », exactement le contresens
+  // que la détection de nœuds muets plus bas est censée empêcher. Le rapport
+  // reste `null` jusqu'au filtre, et `muets` le voit.
+  ).then((r) => (r ? { noeud: n.label, findings: r.findings ?? [] } : null))
 ))
 
 const rang = { high: 0, medium: 1, low: 2 }

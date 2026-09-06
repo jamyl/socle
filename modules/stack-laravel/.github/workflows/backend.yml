@@ -54,7 +54,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Tant que Laravel n'est pas scaffoldé (US-104), `backend/` est vide : sans
+      # ce garde, tous les gates échouent et la règle « jamais de merge sur CI
+      # rouge » rend US-101..103 inclôturables. Le garde saute les gates au lieu
+      # de les faire échouer — il ne les assouplit jamais une fois `backend/` là.
+      # `hashFiles()` ne convient pas dans un `if:` de job : il est évalué AVANT
+      # le checkout, sur un workspace vide, et sauterait le job pour toujours.
+      - name: Backend scaffoldé ?
+        id: backend
+        working-directory: .
+        run: |
+          if [ -f backend/composer.json ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::backend/composer.json absent — gates statiques et tests ignorés jusqu'"'"'à US-104'
+          fi
+
       - name: Installer PHP 8.4
+        if: steps.backend.outputs.present == 'true'
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
@@ -62,28 +80,35 @@ jobs:
           coverage: none
 
       - name: Cache Composer
+        if: steps.backend.outputs.present == 'true'
         uses: actions/cache@v4
         with:
           path: backend/vendor
           key: composer-${{ hashFiles('backend/composer.lock') }}
           restore-keys: composer-
 
-      - run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Installer les dépendances
+        if: steps.backend.outputs.present == 'true'
+        run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Préparer l'environnement
+        if: steps.backend.outputs.present == 'true'
         run: |
           cp .env.example .env
           php artisan key:generate
 
       # --- Gate 1 : analyse statique ---
       - name: Pint (formatage)
+        if: steps.backend.outputs.present == 'true'
         run: ./vendor/bin/pint --test
 
       - name: Larastan (niveau 8)
+        if: steps.backend.outputs.present == 'true'
         run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 
       # --- Gate 2 : tests sur PostgreSQL ---
       - name: Migrations
+        if: steps.backend.outputs.present == 'true'
         run: php artisan migrate --force
         env:
           DB_CONNECTION: pgsql
@@ -96,6 +121,7 @@ jobs:
           REDIS_PORT: 6379
 
       - name: Pest
+        if: steps.backend.outputs.present == 'true'
         run: ./vendor/bin/pest
         env:
           DB_CONNECTION: pgsql
@@ -109,4 +135,5 @@ jobs:
 
       # --- Gate 3 : dépendances ---
       - name: Audit des dépendances
+        if: steps.backend.outputs.present == 'true'
         run: composer audit
