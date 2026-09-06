@@ -28,7 +28,7 @@ Un outil du tableau qui n'est pas installé se signale, il ne se contourne pas.
 ## Ce que les sous-agents ne remplacent pas
 
 - `security-scanner` et `reviewer` **ne remplacent pas** `/security-review`.
-- `tester` **ne remplace pas** le cycle TDD de `deliver-story`.
 - La revue en fan-out **ne remplace ni les tests ni `/security-review`**.
+- Aucun sous-agent **ne remplace le cycle TDD** de `deliver-story`.
 
 Leur travail passe par les mêmes tests et la même revue que le tien.

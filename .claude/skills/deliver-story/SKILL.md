@@ -145,7 +145,7 @@ Puis, dans cet ordre :
 ```bash
 git push -u origin us-XXX-<slug>
 gh pr create --title "US-XXX — <titre>" --body "<corps, voir ci-dessous>"
-gh run watch --exit-status          # la CI tourne AVANT que main soit touché
+gh pr checks --watch --fail-fast    # la CI tourne AVANT que main soit touché
 gh pr merge --squash --delete-branch
 ```
 

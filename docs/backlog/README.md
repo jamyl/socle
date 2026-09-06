@@ -31,6 +31,11 @@ par story, écrite par `/deliver-story`.
 | E01 | Fondations projet & environnement | P0 | [E01-fondations.md](E01-fondations.md) |
 | E02 | À COMPLÉTER | | |
 
+> `E01-fondations.md` est écrit à l'amorçage : le module `stack-laravel` en livre
+> un pré-écrit, sinon `/bootstrap-project` le rédige. **Tant que ce fichier
+> n'existe pas, le lien ci-dessus est mort et le backlog n'a aucune story
+> actionnable** — c'est le symptôme d'un amorçage inachevé, pas d'un bug.
+
 ## Roadmap indicative
 
 | Jalon | Contenu | Sortie observable |

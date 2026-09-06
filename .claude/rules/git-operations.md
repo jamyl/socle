@@ -12,9 +12,14 @@ git checkout -b us-XXX-<slug-court>      # depuis un main à jour
 git commit -m "US-XXX: <sujet à l'impératif>"
 git push -u origin us-XXX-<slug>
 gh pr create --title "US-XXX — <titre>" --body "<corps>"
-gh run watch --exit-status                # la CI tourne AVANT que main soit touché
+gh pr checks --watch --fail-fast          # la CI tourne AVANT que main soit touché
 gh pr merge --squash --delete-branch
 ```
+
+`gh run watch` **ne convient pas ici** : il exige un `<run-id>` en argument et le
+demande de façon interactive quand il manque — donc il bloque dans une boucle
+`/loop`. `gh pr checks` résout le run depuis la branche courante et sort en
+non-zéro dès qu'un check échoue.
 
 ## Interdits
 

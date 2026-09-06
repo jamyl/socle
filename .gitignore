@@ -44,3 +44,7 @@ Thumbs.db
 # Artefacts d'outillage agent
 /.playwright-mcp/
 .firecrawl/
+
+# Sauvegardes de `sed -i.bak` laissées par un amorçage interrompu. Le script les
+# nettoie ; cette ligne évite qu'un résidu porteur de placeholders soit commité.
+*.bak

@@ -58,3 +58,7 @@ Extrait d'un projet réel, après 49 PR et 50 stories livrées en
 ~44 h. Ce qui a survécu à l'extraction, c'est ce qui avait déjà attrapé un défaut :
 la contre-épreuve, la revue à trois voix, la section « comment tu peux le vérifier
 toi-même », et la barre de confiance sur l'outillage.
+
+## Licence
+
+[MIT](LICENSE).

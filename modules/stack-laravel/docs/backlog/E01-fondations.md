@@ -58,6 +58,7 @@ Critères d'acceptation :
 - [ ] Connexions PostgreSQL + Redis pointant sur les **conteneurs Compose d'US-101**, jamais un service système ; migration baseline exécutée.
 - [ ] 🔑 **`phpunit.xml` basculé de SQLite vers PostgreSQL.** Le défaut Laravel viole `stack.md` §3.6 — c'est le premier écart à corriger, et il est silencieux.
 - [ ] GitHub Actions conformes aux gates de `testing-strategy.md` §4 : secrets + statique + migrations + tests **sur PostgreSQL** + audit des dépendances. CI verte sur un test trivial.
+- [ ] 🔑 **Garde `Backend scaffoldé ?` retiré de `.github/workflows/backend.yml`**, avec les neuf `if: steps.backend.outputs.present == 'true'` qu'il pilote. Ce garde n'existe que pour rendre US-101..103 clôturables sans `backend/` ; il n'a plus d'objet ici. Un garde temporaire sans date d'expiration mécanique survit toujours à sa raison d'être — c'est le seul endroit qui la lui donne.
 - [ ] Horizon installé pour les queues.
 
 > ⚠️ **À surveiller à cette étape** : le squelette Laravel peut épingler une

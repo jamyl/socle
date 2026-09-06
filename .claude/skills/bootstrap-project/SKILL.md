@@ -55,8 +55,9 @@ conformité — pas des préférences de style.
 Propose des exemples **du domaine décrit**, pas des exemples génériques. Formule
 chaque règle de façon **testable** : « aucun code hors de X n'écrit dans Y »,
 « telle somme vaut exactement zéro », « telle table n'est jamais mise à jour, on
-contre-passe ». Si l'utilisateur reste vague, c'est le moment d'appeler
-`ddd-architect` ou `ba` — pas de deviner.
+contre-passe ». Si l'utilisateur reste vague, **repose la question sur un cas
+concret** de son domaine (« que se passe-t-il si un utilisateur annule après
+paiement ? ») jusqu'à obtenir une clause vérifiable — pas de deviner.
 
 Ces règles deviennent trois choses à la fois : la section « règles » de
 `CLAUDE.md`, la liste d'invariants du nœud `domain-expert` de la revue en
@@ -145,7 +146,11 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
 6. **`docs/backlog/README.md`** — la roadmap et la liste des epics prévus.
 7. **`docs/backlog/E01-fondations.md`** — l'epic qui rend le projet démarrable.
    Le module `stack-laravel` en livre un pré-écrit : **adapte-le** (nom du repo,
-   slug, ports) plutôt que d'en écrire un nouveau.
+   slug, ports) plutôt que d'en écrire un nouveau. Sans module, il n'existe pas :
+   écris-le, et vérifie que le lien de `docs/backlog/README.md` pointe dessus.
+8. **`docs/backlog/JOURNAL.md`** et **`CONTRIBUTING.md`** — deux fichiers courts
+   qui portent chacun un `{{PROJET}}` dans leur première ligne. Faciles à oublier
+   parce qu'on ne les rouvre jamais ; le contrôle final les attrape.
 
 **N'écris que E01.** Les epics suivants s'écrivent quand le produit est clair —
 un backlog complet rédigé au bootstrap est un backlog à réécrire.

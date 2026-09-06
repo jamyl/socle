@@ -1,61 +1,90 @@
 # Sous-agents — réserves à connaître
 
-Onze agents génériques ici, quatre de plus si le module `stack-laravel` est
-activé. **Ils sont repris tels quels d'un jeu importé** (`AratKruglik/claude-laravel`),
-triés mais pas réécrits. Ce fichier dit ce qu'ils ne savent pas — le lire avant
-de croire l'un d'eux.
+**Trois agents ici**, plus quatre si le module `stack-laravel` est activé. Ce
+fichier dit ce qu'ils ne savent pas — le lire avant de croire l'un d'eux.
+
+| Agent | Rôle | Outils |
+|---|---|---|
+| `reviewer` | Conventions, correction, architecture | **lecture seule** |
+| `security-scanner` | Vulnérabilités | **lecture seule** + recherche web |
+| `domain-expert` | Invariants métier — **à spécialiser au bootstrap** | **lecture seule** |
+
+Ce sont exactement les trois nœuds de la revue en fan-out
+(`.claude/workflows/review-story.js`). Il n'y a pas d'agent de plus au cœur : un
+agent qu'aucun workflow n'invoque est un prompt que personne ne relit.
+
+## Aucun des trois ne peut écrire
+
+Les outils des **trois agents du socle** sont limités à la lecture — pas
+d'`Edit`, pas de `Write`, pas de `Bash`, aucun outil MCP GitHub d'écriture, et
+aucun accès sortant. C'est **structurel**, pas une consigne de prompt : un agent
+qui promet de ne rien modifier mais garde `Write` tient sa promesse tant qu'il
+la lit.
+
+⚠️ **Cela ne vaut pas pour les agents ajoutés par un module.** L'amorçage copie
+`modules/<module>/.claude/agents/*` dans ce dossier. Ceux du module
+`stack-laravel` **écrivent** — `developer`, `queue-specialist` et
+`laravel-refactoring-expert` déclarent `Edit`, `Write` et `Bash` ; seul `dba` est
+bridé en lecture seule. `developer` déclare aussi les MCP `figma` et `ide`, qui
+ne sont configurés nulle part : ses instructions de design ne mènent nulle part.
+Avant de croire qu'un agent de ce dossier ne peut rien casser, **ouvre son
+`tools:`**.
+
+Ce projet fait ses PR par le **CLI `gh` en local, après les tests**. Un outil
+comme `push_files` permettrait de pousser du code sans passer par la suite de
+tests locale — exactement ce que la PR est censée empêcher. Il n'est déclaré
+nulle part, et `--read-only` sur le MCP `github` du module ne doit pas être
+retiré.
 
 ## Ce qu'ils ignorent tous
 
-- **Le backlog, le journal et les règles du domaine.** Aucun n'a lu
-  `CLAUDE.md` § « règles qui coûtent le plus cher à violer ». Un agent qui
+- **Le backlog, le journal et les règles du domaine.** Aucun n'a lu la section
+  « règles qui coûtent le plus cher à violer » de `CLAUDE.md` — sauf
+  `domain-expert` une fois spécialisé, et c'est tout son intérêt. Un agent qui
   propose une solution correcte en général peut violer un invariant du projet
   sans le savoir.
 - **La méthode.** Ils ne connaissent ni le cycle `deliver-story`, ni la
   discipline de contre-épreuve, ni le passage obligatoire par une PR.
+- **La stack**, tant qu'ils n'ont pas lu `docs/engineering/stack.md`. Ils ne
+  doivent appliquer aucune liste de contrôle propre à un framework qu'ils n'ont
+  pas vérifié être celui du dépôt.
 
-**Leur travail passe par les mêmes tests et la même revue que le tien.** Onze
-d'entre eux peuvent écrire et lancer des commandes.
+**Leurs findings passent par les mêmes tests et la même revue que le tien.**
 
-## Réserves précises
+## Ce qu'ils ne remplacent pas
 
-- **Plusieurs supposent Vue/Inertia.** Le module `stack-laravel` fait du
-  **Filament**, pas de l'Inertia : `reviewer`, `debugger`, `ddd-architect`,
-  `integration-architect` et `ba` mentionnent des `Inertia props`, des pages Vue
-  ou `routes/web.php` en mode Inertia. Ces passages sont **hors sujet ici** —
-  les ignorer, pas les appliquer.
-- **`developer` référence `figma`/`stitch`**, MCP absents et non prévus. Il
-  travaillera sans, mais ses instructions de design ne mèneront nulle part.
-- **`dba` est bridé en lecture seule** (`Edit`/`Write`/`Bash` retirés). Son
-  métier est d'écrire des migrations, or les nôtres sont additives et passent par
-  le cycle de story. **Il propose, le cycle applique.**
 - **`security-scanner` et `reviewer` ne remplacent pas `/security-review`.** Sur
   le projet d'origine, c'est `/security-review` qui a trouvé une faille
-  exploitable à *chaque* story du domaine critique. Ne jamais le remplacer par
-  l'automatique.
-- **`tester` ne remplace pas le cycle TDD** de `deliver-story`.
-- **`qa` dépend du MCP `playwright`.** Sans lui, il ne peut rien vérifier. Le nom
-  d'un outil peut avoir changé côté serveur — si un appel échoue sur un nom
-  inconnu, c'est la piste.
-
-## Ce qui a été retiré du jeu importé, et pourquoi
-
-- **`frontend`** (Vue/Inertia) : ne correspond à aucune stack du template.
-- **`filament`** : visait une version antérieure à celle du module. Il aurait
-  produit du code pour une stack qui n'est pas la nôtre — le pire cas, parce
-  qu'il compile.
-- **Les 7 outils MCP GitHub d'écriture** (`push_files`, `create_pull_request`,
-  `create_branch`…) réclamés par `devops`, `docs-writer` et `reviewer`. Ce projet
-  fait des PR, mais par le **CLI `gh` en local, après les tests**. `push_files`
-  permettrait de pousser du code sans passer par la suite locale — exactement ce
-  que la PR est censée empêcher. **Ne pas retirer `--read-only` du `.mcp.json`.**
+  exploitable à *chaque* story du domaine critique, après passage des agents.
+- **La revue en fan-out ne remplace ni les tests, ni `/security-review`.** Ce
+  n'est pas un gate : elle attrape avant la PR ce que la suite de tests ne voit
+  pas.
+- **Un rapport vide n'est pas un quitus.** Et un nœud qui ne rend pas de rapport
+  n'est pas un nœud sans finding : `review-story` les distingue et le signale.
 
 ## `domain-expert` : le seul à spécialiser
 
 C'est le seul agent de ce dossier que `/bootstrap-project` **doit** réécrire, et
 c'est celui qui compte. Il porte les invariants du domaine et alimente le
-troisième nœud de la revue en fan-out.
+troisième nœud de la revue.
 
 **S'il ne trouve jamais rien, il n'a pas été spécialisé.** Vérifier alors qu'il
 ne contient plus ni `{{…}}` ni les blocs « À REMPLIR », et que ses invariants
-sont les mêmes que ceux de `.claude/workflows/review-story.js`.
+sont les mêmes que ceux de `.claude/workflows/review-story.js` et de `CLAUDE.md`.
+
+## Historique
+
+Le socle portait douze agents repris d'un jeu importé
+(`AratKruglik/claude-laravel`) sans réécriture. Ils décrivaient une stack qui
+n'est pas celle du template (Inertia/Vue, Socialite, Spatie, des versions
+divergentes), réclamaient une vingtaine de skills absents du dépôt et hors de la
+liste blanche de `CLAUDE.md`, et déclaraient des outils GitHub d'écriture.
+
+Un sous-agent suit son prompt, pas `CLAUDE.md` : un prompt qui décrit un autre
+projet est pire qu'un agent manquant, parce qu'il répond quand même.
+
+Neuf ont été supprimés, `reviewer` et `security-scanner` réécrits autour de leur
+seul rôle réel, `domain-expert` conservé — c'est le seul qui n'était pas importé.
+Les quatre agents propres à la stack Laravel n'ont pas bougé : ils vivent dans
+`modules/stack-laravel/.claude/agents/` et **souffrent des mêmes défauts** — leur
+réécriture reste à faire.

@@ -45,6 +45,13 @@ fi
 cd "$(dirname "$0")/.."
 RACINE="$(pwd)"
 
+# `sed -i.bak` écrit un fichier de sauvegarde par fichier substitué. Le `rm` qui
+# suit chaque appel ne suffit pas : sous `set -e`, un sed qui échoue arrête le
+# script avant, et le `.bak` — qui contient la version pré-substitution, donc les
+# placeholders — reste dans l'arbre du projet, prêt à être commité par le premier
+# `git add -A`. Le trap ferme ce cas quelle que soit la façon dont on sort.
+trap 'find "$RACINE" -name "*.bak" -not -path "$RACINE/.git/*" -delete 2>/dev/null || true' EXIT
+
 [ -d modules ] || { echo "✗ modules/ absent : ce repo est déjà amorcé. Rien à faire." >&2; exit 1; }
 
 for m in "$@"; do
@@ -90,13 +97,17 @@ fichiers_texte() {
 n=0
 while IFS= read -r f; do
   if grep -q '{{SLUG}}\|{{SLUG_SQL}}\|{{NOM_AFFICHE}}' "$f" 2>/dev/null; then
-    # -i '' : syntaxe BSD/macOS. Le script cible ce poste (cf. GETTING-STARTED).
+    # `-i.bak` est la seule forme de remplacement en place acceptée à la fois
+    # par le sed BSD (macOS) et le sed GNU (Linux, CI) : `-i ''` casse sur GNU,
+    # `-i` seul casse sur BSD. On édite en place plutôt que d'écrire un fichier
+    # temporaire, sinon le bit d'exécution de scan-secrets.sh est perdu.
     # {{SLUG_SQL}} d'ABORD : sinon `{{SLUG}}` matcherait son préfixe et
     # laisserait un `ma-boutique_SQL}}` derrière lui.
-    sed -i '' \
+    sed -i.bak \
       -e "s/{{SLUG_SQL}}/$SLUG_SQL/g" \
       -e "s/{{SLUG}}/$SLUG/g" \
       -e "s/{{NOM_AFFICHE}}/$NOM_AFFICHE/g" "$f"
+    rm -f "$f.bak"
     n=$((n + 1))
   fi
 done < <(fichiers_texte)

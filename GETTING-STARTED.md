@@ -19,13 +19,46 @@ Ce que le socle n'apporte pas : ton domaine. Il te le **demande**.
 | Outil | Vérification | Si absent |
 |---|---|---|
 | `gh` authentifié | `gh auth status` | `gh auth login` |
-| Runtime de conteneurs | `docker compose version` | OrbStack (plus rapide que Docker Desktop sur macOS) ou Docker Desktop |
+| Claude Code **2.1.154+** | `claude --version` | mise à jour — en dessous, l'outil Workflow n'existe pas et la revue en fan-out ne tourne pas |
+| Node (pour `npx`) | `node --version` | requis par `/dejavu` et par le MCP `context7` du module Laravel |
+| Runtime de conteneurs | `docker compose version` | OrbStack (plus rapide que Docker Desktop sur macOS) ou Docker Desktop. Requis par le module `stack-laravel` **et** par son MCP `github` |
 | Skill `/dejavu` | `ls ~/.claude/skills/dejavu` | `npx github:jamyl/dejavu install` |
 | `DEJAVU_CONTACT` | `echo $DEJAVU_CONTACT` | `echo 'export DEJAVU_CONTACT="Ton Nom ton@email"' >> ~/.zshrc` puis **rouvre le terminal** |
 
 ⚠️ **`DEJAVU_CONTACT` doit être dans ton `~/.zshrc`, pas seulement exporté dans
 un terminal.** Un `export` à la main n'est pas visible depuis Claude Code : son
 processus a démarré avant. Les APIs académiques réclament ce contact.
+
+### Fonctionnalités de Claude Code que la méthode suppose
+
+Elles ne s'installent pas, mais leur absence se voit tard et mal :
+
+- **L'outil Workflow** (`.claude/workflows/*.js`). C'est lui qui exécute la revue
+  en fan-out. Sans lui, `/deliver-story` va jusqu'aux tests puis saute la revue.
+- **`/loop`**, pour enchaîner les stories en autonomie :
+  `/loop 10m /deliver-story E01`. Facultatif — une story par appel manuel marche
+  aussi bien, plus lentement.
+- **`/security-review`**, skill intégré, obligatoire sur le domaine critique.
+
+### Permissions à autoriser une fois
+
+`/deliver-story` termine par `git push`, `gh pr create`, `gh pr checks` et
+`gh pr merge`. Ces commandes ne sont **pas** dans la liste `allow` par défaut de
+`.claude/settings.json` : le premier passage demandera confirmation à chaque
+étape, ce qui interrompt une boucle.
+
+**Approuve-les au fil du premier cycle plutôt que d'élargir la liste à l'avance.**
+Un `"Bash(git push:*)"` global paraît pratique et ouvre en réalité le premier
+interdit du dépôt : `git push origin HEAD:main` pousse sur `main` sans PR, sans
+CI et sans revue, et une liste `deny` ne le rattrape pas — elle compare des
+préfixes littéraux, or les formes équivalentes sont innombrables
+(`HEAD:main`, `-u origin main`, un remote nommé autrement, `git push` seul depuis
+`main`). Une liste `deny` **n'est pas un contrôle de sécurité**.
+
+Ce qui en est un : la **protection de branche côté GitHub**. Sur un dépôt privé
+en offre gratuite elle est indisponible (`403 : Upgrade to GitHub Pro`) — dans ce
+cas l'interdit ne tient que par la méthode, et c'est une raison de plus pour ne
+pas pré-approuver `git push` en bloc.
 
 ---
 
