@@ -45,17 +45,20 @@ Elles ne s'installent pas, mais leur absence se voit tard et mal :
 `/deliver-story` termine par `git push`, `gh pr create`, `gh pr checks` et
 `gh pr merge`. Ces commandes ne sont **pas** dans la liste `allow` par défaut de
 `.claude/settings.json` : le premier passage demandera confirmation à chaque
-étape, ce qui interrompt une boucle. Autorise-les au premier cycle, ou ajoute-les
-toi-même :
+étape, ce qui interrompt une boucle.
 
-```json
-"Bash(git push:*)", "Bash(git fetch:*)", "Bash(git tag:*)",
-"Bash(gh pr:*)", "Bash(gh run:*)"
-```
+**Approuve-les au fil du premier cycle plutôt que d'élargir la liste à l'avance.**
+Un `"Bash(git push:*)"` global paraît pratique et ouvre en réalité le premier
+interdit du dépôt : `git push origin HEAD:main` pousse sur `main` sans PR, sans
+CI et sans revue, et une liste `deny` ne le rattrape pas — elle compare des
+préfixes littéraux, or les formes équivalentes sont innombrables
+(`HEAD:main`, `-u origin main`, un remote nommé autrement, `git push` seul depuis
+`main`). Une liste `deny` **n'est pas un contrôle de sécurité**.
 
-La liste `deny` du même fichier interdit déjà `git push origin main` et
-`git push --force` : garde-la, c'est la version mécanique des deux interdits les
-plus chers de `.claude/rules/git-operations.md`.
+Ce qui en est un : la **protection de branche côté GitHub**. Sur un dépôt privé
+en offre gratuite elle est indisponible (`403 : Upgrade to GitHub Pro`) — dans ce
+cas l'interdit ne tient que par la méthode, et c'est une raison de plus pour ne
+pas pré-approuver `git push` en bloc.
 
 ---
 

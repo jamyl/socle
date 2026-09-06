@@ -13,12 +13,22 @@ Ce sont exactement les trois nœuds de la revue en fan-out
 (`.claude/workflows/review-story.js`). Il n'y a pas d'agent de plus au cœur : un
 agent qu'aucun workflow n'invoque est un prompt que personne ne relit.
 
-## Aucun d'eux ne peut écrire
+## Aucun des trois ne peut écrire
 
-Leurs outils sont limités à la lecture — pas d'`Edit`, pas de `Write`, pas de
-`Bash`, aucun outil MCP GitHub d'écriture. C'est **structurel**, pas une
-consigne de prompt : un agent qui promet de ne rien modifier mais garde `Write`
-tient sa promesse tant qu'il la lit.
+Les outils des **trois agents du socle** sont limités à la lecture — pas
+d'`Edit`, pas de `Write`, pas de `Bash`, aucun outil MCP GitHub d'écriture, et
+aucun accès sortant. C'est **structurel**, pas une consigne de prompt : un agent
+qui promet de ne rien modifier mais garde `Write` tient sa promesse tant qu'il
+la lit.
+
+⚠️ **Cela ne vaut pas pour les agents ajoutés par un module.** L'amorçage copie
+`modules/<module>/.claude/agents/*` dans ce dossier. Ceux du module
+`stack-laravel` **écrivent** — `developer`, `queue-specialist` et
+`laravel-refactoring-expert` déclarent `Edit`, `Write` et `Bash` ; seul `dba` est
+bridé en lecture seule. `developer` déclare aussi les MCP `figma` et `ide`, qui
+ne sont configurés nulle part : ses instructions de design ne mènent nulle part.
+Avant de croire qu'un agent de ce dossier ne peut rien casser, **ouvre son
+`tools:`**.
 
 Ce projet fait ses PR par le **CLI `gh` en local, après les tests**. Un outil
 comme `push_files` permettrait de pousser du code sans passer par la suite de
@@ -64,11 +74,17 @@ sont les mêmes que ceux de `.claude/workflows/review-story.js` et de `CLAUDE.md
 
 ## Historique
 
-Un jeu de seize agents importés (`AratKruglik/claude-laravel`) a été retiré :
-ils décrivaient une stack qui n'est pas celle du template (Inertia/Vue, Socialite,
-Spatie, des versions divergentes), réclamaient une vingtaine de skills absents du
-dépôt et hors de la liste blanche de `CLAUDE.md`, et déclaraient des outils
-GitHub d'écriture. Un sous-agent suit son prompt, pas `CLAUDE.md` : un prompt qui
-décrit un autre projet est pire qu'un agent manquant, parce qu'il répond quand
-même. Les agents propres à la stack Laravel vivent désormais dans
-`modules/stack-laravel/.claude/agents/`.
+Le socle portait douze agents repris d'un jeu importé
+(`AratKruglik/claude-laravel`) sans réécriture. Ils décrivaient une stack qui
+n'est pas celle du template (Inertia/Vue, Socialite, Spatie, des versions
+divergentes), réclamaient une vingtaine de skills absents du dépôt et hors de la
+liste blanche de `CLAUDE.md`, et déclaraient des outils GitHub d'écriture.
+
+Un sous-agent suit son prompt, pas `CLAUDE.md` : un prompt qui décrit un autre
+projet est pire qu'un agent manquant, parce qu'il répond quand même.
+
+Neuf ont été supprimés, `reviewer` et `security-scanner` réécrits autour de leur
+seul rôle réel, `domain-expert` conservé — c'est le seul qui n'était pas importé.
+Les quatre agents propres à la stack Laravel n'ont pas bougé : ils vivent dans
+`modules/stack-laravel/.claude/agents/` et **souffrent des mêmes défauts** — leur
+réécriture reste à faire.

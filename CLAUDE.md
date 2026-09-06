@@ -43,7 +43,7 @@
 | `github` | MCP, **lecture seule** | Lire commits, PR, branches, contenu de fichiers |
 | `playwright` | MCP | Vérifier toute UI dans le navigateur — les tests verts ne suffisent pas |
 | `domain-expert` | agent projet | Toute question métier avant de modéliser un flux critique |
-| `.claude/agents/*` | sous-agents, tous en **lecture seule** | Ils **ne connaissent pas** le backlog, le journal, ni les règles ci-dessus : leurs findings passent par les mêmes tests et la même revue que le tien |
+| `.claude/agents/*` | sous-agents. Les **trois du socle** sont en lecture seule ; un module de stack peut en ajouter qui **écrivent** — vérifier leur `tools:` | Ils **ne connaissent pas** le backlog, le journal, ni les règles ci-dessus : leur travail passe par les mêmes tests et la même revue que le tien |
 
 > À AJUSTER au bootstrap : retire de ce tableau tout ce que le projet n'a pas
 > réellement installé, ajoute ce qu'il a en plus.

@@ -56,19 +56,40 @@ jobs:
 
       # Tant que Laravel n'est pas scaffoldé (US-104), `backend/` est vide : sans
       # ce garde, tous les gates échouent et la règle « jamais de merge sur CI
-      # rouge » rend US-101..103 inclôturables. Le garde saute les gates au lieu
-      # de les faire échouer — il ne les assouplit jamais une fois `backend/` là.
-      # `hashFiles()` ne convient pas dans un `if:` de job : il est évalué AVANT
-      # le checkout, sur un workspace vide, et sauterait le job pour toujours.
+      # rouge » rend US-101..103 inclôturables.
+      #
+      # ⚠️ Le prédicat est lu sur la BRANCHE DE BASE, pas sur la tête de PR. Lire
+      # le workspace de la PR laissait la contribution répondre elle-même à la
+      # question « faut-il me vérifier ? » : supprimer backend/composer.json
+      # sautait les neuf gates, et un step sauté ne fait pas échouer un job — la
+      # PR ressortait VERTE sans Pint, sans Larastan, sans Pest, sans
+      # `composer audit`. Un garde dont le code audité fournit la condition n'est
+      # pas un garde. Trouvé en revue sur ce fichier même.
+      #
+      # `hashFiles()` ne convient pas non plus dans un `if:` de job : il est
+      # évalué AVANT le checkout, sur un workspace vide, et sauterait le job pour
+      # toujours.
+      #
+      # `BASE` passe par `env:` et non par interpolation dans le `run:` — un nom
+      # de branche ne doit jamais être concaténé dans un script shell.
       - name: Backend scaffoldé ?
         id: backend
         working-directory: .
+        env:
+          BASE: ${{ github.base_ref || github.ref_name }}
         run: |
-          if [ -f backend/composer.json ]; then
+          git fetch --depth=1 origin "$BASE"
+          if git cat-file -e "FETCH_HEAD:backend/composer.json" 2>/dev/null; then
+            if [ ! -f backend/composer.json ]; then
+              echo "::error::backend/composer.json existe sur $BASE et disparaît ici — les gates ne peuvent pas être sautés par une suppression"
+              exit 1
+            fi
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          elif [ -f backend/composer.json ]; then
             echo 'present=true' >> "$GITHUB_OUTPUT"
           else
             echo 'present=false' >> "$GITHUB_OUTPUT"
-            echo '::notice::backend/composer.json absent — gates statiques et tests ignorés jusqu'"'"'à US-104'
+            echo '::notice::backend/composer.json absent des deux côtés — gates statiques et tests ignorés jusqu'"'"'à US-104'
           fi
 
       - name: Installer PHP 8.4

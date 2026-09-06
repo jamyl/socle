@@ -28,7 +28,7 @@
       "command": "sh",
       "args": [
         "-c",
-        "GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token) exec docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server:v1.12.0 stdio --read-only"
+        "GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token) exec docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server:v1.12.0@sha256:46cdbbd810faf6f7aed1745ea04057443f5cb9fcadc15c7308add18cf9a83e33 stdio --read-only"
       ],
       "env": {}
     }

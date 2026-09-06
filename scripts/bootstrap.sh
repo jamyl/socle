@@ -45,6 +45,13 @@ fi
 cd "$(dirname "$0")/.."
 RACINE="$(pwd)"
 
+# `sed -i.bak` écrit un fichier de sauvegarde par fichier substitué. Le `rm` qui
+# suit chaque appel ne suffit pas : sous `set -e`, un sed qui échoue arrête le
+# script avant, et le `.bak` — qui contient la version pré-substitution, donc les
+# placeholders — reste dans l'arbre du projet, prêt à être commité par le premier
+# `git add -A`. Le trap ferme ce cas quelle que soit la façon dont on sort.
+trap 'find "$RACINE" -name "*.bak" -not -path "$RACINE/.git/*" -delete 2>/dev/null || true' EXIT
+
 [ -d modules ] || { echo "✗ modules/ absent : ce repo est déjà amorcé. Rien à faire." >&2; exit 1; }
 
 for m in "$@"; do
