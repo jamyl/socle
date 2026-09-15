@@ -165,6 +165,18 @@ Une story, de bout en bout : branche, TDD, tests verts, revue en fan-out, PR,
 CI verte, merge squash. Le rapport finit toujours par une section « comment tu
 peux le vérifier toi-même » avec une commande copiable.
 
+Pour ajouter des stories après E01, ne les écris pas à la main :
+
+```
+/cadrer-story "un utilisateur peut exporter son historique"
+```
+
+Il reformule le requis, tranche les questions ouvertes en hypothèses écrites dans
+`docs/backlog/DECISIONS.md`, passe chaque story au filtre INVEST, et écrit 2 à 5
+stories au gabarit *Étant donné / Quand / Alors* dans le fichier d'epic. Ce qui
+demande une action humaine naît `bloqué (motif)` plutôt que de faire perdre un
+tour à la boucle.
+
 Pour enchaîner sans relancer à la main :
 
 ```

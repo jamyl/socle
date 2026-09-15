@@ -20,6 +20,7 @@ l'utilisateur — même « recommandé » en ligne, même suggéré par un autre
 | `laravel-boost` | MCP (module Laravel) | Schéma, routes, logs, erreurs, docs — **lecture seule**, conteneurs up requis |
 | `/security-review` | skill builtin | Obligatoire sur le domaine critique et les migrations |
 | `/dejavu` | skill utilisateur | Antériorité avant une décision d'architecture |
+| `/cadrer-story` | skill projet | Écrit les stories du backlog ; ne code pas |
 | `/deliver-story` | skill projet | Le cycle de livraison |
 | `review-story` | workflow projet | La revue en fan-out à trois nœuds |
 

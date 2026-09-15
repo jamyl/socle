@@ -148,12 +148,14 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
    Le module `stack-laravel` en livre un pré-écrit : **adapte-le** (nom du repo,
    slug, ports) plutôt que d'en écrire un nouveau. Sans module, il n'existe pas :
    écris-le, et vérifie que le lien de `docs/backlog/README.md` pointe dessus.
-8. **`docs/backlog/JOURNAL.md`** et **`CONTRIBUTING.md`** — deux fichiers courts
-   qui portent chacun un `{{PROJET}}` dans leur première ligne. Faciles à oublier
-   parce qu'on ne les rouvre jamais ; le contrôle final les attrape.
+8. **`docs/backlog/JOURNAL.md`**, **`docs/backlog/DECISIONS.md`** et
+   **`CONTRIBUTING.md`** — trois fichiers courts qui portent chacun un
+   `{{PROJET}}` dans leur première ligne. Faciles à oublier parce qu'on ne les
+   rouvre jamais ; le contrôle final les attrape.
 
 **N'écris que E01.** Les epics suivants s'écrivent quand le produit est clair —
-un backlog complet rédigé au bootstrap est un backlog à réécrire.
+un backlog complet rédigé au bootstrap est un backlog à réécrire. Et ils ne
+s'écrivent pas à la main : `/cadrer-story` est fait pour ça.
 
 ## 6. Statuts honnêtes dès le départ
 
@@ -177,7 +179,8 @@ Puis termine par un rapport court :
   sa commande.
 - **Les stories déjà `bloqué`** et ce qui les débloque.
 - **La commande suivante** : `/deliver-story`, ou `/loop 10m /deliver-story E01`
-  pour enchaîner en autonomie.
+  pour enchaîner en autonomie. Et `/cadrer-story <requis>` pour écrire les epics
+  suivants, quand le produit sera assez clair pour les mériter.
 
 ### Puis, toujours : « comment tu peux le vérifier toi-même »
 
