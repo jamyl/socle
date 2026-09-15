@@ -20,10 +20,11 @@ Ce que le socle n'apporte pas : ton domaine. Il te le **demande**.
 |---|---|---|
 | `gh` authentifié | `gh auth status` | `gh auth login` |
 | Claude Code **2.1.154+** | `claude --version` | mise à jour — en dessous, l'outil Workflow n'existe pas et la revue en fan-out ne tourne pas |
-| Node (pour `npx`) | `node --version` | requis par `/dejavu` et par le MCP `context7` du module Laravel |
+| Node (pour `npx`) | `node --version` | requis par le MCP `context7` du module Laravel |
+| Python 3 | `python3 --version` | requis par le module `dejavu` — ses scripts sont en bibliothèque standard seule, il n'y a rien à installer avec `pip` |
 | Runtime de conteneurs | `docker compose version` | OrbStack (plus rapide que Docker Desktop sur macOS) ou Docker Desktop. Requis par le module `stack-laravel` **et** par son MCP `github` |
-| Skill `/dejavu` | `ls ~/.claude/skills/dejavu` | `npx github:jamyl/dejavu install` |
-| `DEJAVU_CONTACT` | `echo $DEJAVU_CONTACT` | `echo 'export DEJAVU_CONTACT="Ton Nom ton@email"' >> ~/.zshrc` puis **rouvre le terminal** |
+| Skill `/dejavu` | `ls ~/.claude/skills/dejavu` | **Facultatif, et une seule fois** : soit le module `dejavu` à l'interview, soit `npx github:jamyl/dejavu install` en global. **Pas les deux** — deux skills du même nom |
+| `DEJAVU_CONTACT` | `echo $DEJAVU_CONTACT` | `echo 'export DEJAVU_CONTACT="Ton Nom ton@email"' >> ~/.zshrc` puis **rouvre le terminal**. Sans objet si tu n'utilises pas `/dejavu` |
 
 ⚠️ **`DEJAVU_CONTACT` doit être dans ton `~/.zshrc`, pas seulement exporté dans
 un terminal.** Un `export` à la main n'est pas visible depuis Claude Code : son
@@ -123,11 +124,13 @@ puis, dans la session :
 ## Étape 3 — Vérifier l'amorçage
 
 ```bash
-grep -rn "{{" . --exclude-dir=.git
+grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
 ```
 
-**Ce que tu dois voir : rien.** Chaque `{{…}}` survivant est un endroit où ton
-projet parle encore du template.
+**Ce que tu dois voir : rien.** Chaque `{{MAJUSCULES}}` survivant est un endroit
+où ton projet parle encore du template. Le motif ne cherche que cette forme :
+un `grep "{{"` nu attrape aussi des accolades légitimes dans du code, et un
+contrôle qui crie au loup cesse d'être lu.
 
 ```bash
 ls modules scripts 2>&1
@@ -193,12 +196,13 @@ expire après 7 jours ; `CronList` puis `CronDelete <id>` l'arrête plus tôt.
 
 ---
 
-## Les deux modules
+## Les trois modules
 
 | Module | Ce qu'il apporte | Quand l'activer |
 |---|---|---|
 | `stack-laravel` | Docker Compose (PHP 8.4, PostgreSQL 16, Redis, Mailpit, Horizon — images pinnées par digest), CI GitHub Actions (Pint, Larastan 8, Pest sur PostgreSQL, `composer audit`), scanner de secrets, `.mcp.json` (laravel-boost, context7, github lecture seule), 4 sous-agents Laravel, `stack.md` et `testing-strategy.md` remplis, `E01-fondations.md` pré-écrit | Backend PHP/Laravel |
 | `mobile-flutter` | Dossier `mobile/`, stories E01 de toolchain (déjà `bloqué` : Xcode et Android Studio ne s'automatisent pas), niveaux de test N7/N8, notes du plugin `dart-flutter` | App iOS/Android/PWA |
+| `dejavu` | Le skill `/dejavu` embarqué dans `.claude/skills/`, donc **versionné avec le projet** : arXiv, OpenAlex, Crossref, Europe PMC, scripts Python en bibliothèque standard seule, aucune clé d'API. Plus `docs/engineering/dejavu.md` (prérequis, coût, mise à jour) | Architecture non triviale — cohérence, concurrence, cache, protocole, scale-out. **Pas si le poste l'a déjà** en global |
 
 Aucun module → le cœur seul : méthode, skills, agents génériques, squelettes de
 docs. L'amorçage rédige alors `stack.md` de zéro depuis l'interview.

@@ -48,3 +48,9 @@ Thumbs.db
 # Sauvegardes de `sed -i.bak` laissées par un amorçage interrompu. Le script les
 # nettoie ; cette ligne évite qu'un résidu porteur de placeholders soit commité.
 *.bak
+
+# Bytecode Python. Les scripts du module `dejavu` tournent en place dans
+# .claude/skills/dejavu/scripts/ : l'interpréteur y écrit des __pycache__ propres
+# à sa version, qui seraient périmés pour quiconque clone le dépôt.
+__pycache__/
+*.pyc

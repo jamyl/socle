@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-MODULES_DISPONIBLES="stack-laravel mobile-flutter"
+MODULES_DISPONIBLES="stack-laravel mobile-flutter dejavu"
 
 usage() {
   cat >&2 <<EOF
@@ -23,8 +23,12 @@ Usage : ./scripts/bootstrap.sh <slug> [module...]
 
 Exemples :
   ./scripts/bootstrap.sh ma-boutique stack-laravel
-  ./scripts/bootstrap.sh ma-boutique stack-laravel mobile-flutter
+  ./scripts/bootstrap.sh ma-boutique stack-laravel mobile-flutter dejavu
   ./scripts/bootstrap.sh mon-outil
+
+Le module « dejavu » embarque la recherche d'antériorité dans le projet.
+À NE PAS activer si ~/.claude/skills/dejavu existe déjà sur le poste :
+deux skills du même nom.
 EOF
   exit 2
 }

@@ -39,8 +39,7 @@
 |---|---|---|
 | `/cadrer-story` | skill projet, manuel | Transforme un requis brut en stories `à faire` au gabarit. Tout le backlog au-delà de E01 passe par lui. Ne code pas |
 | `/security-review` | skill **builtin**, manuel | **Obligatoire** avant de clôturer toute story touchant le domaine critique ci-dessus, ou une migration de données |
-| `/dejavu` | skill utilisateur, manuel | **Avant toute décision d'architecture structurante** — cohérence, concurrence, cache, protocole, intégrité cryptographique, scale-out. Pas pour du CRUD. Consigner la conclusion dans `docs/engineering/prior-art.md` **avec ses identifiants** |
-| `/dejavu-finance` | skill utilisateur, manuel | Ce que des sociétés cotées **déclarent** sur un risque, dans leurs dépôts SEC. Corpus américain — utile sur une pratique de marché, sans objet sur un droit local |
+| `/dejavu` | skill — module `dejavu` **ou** installation globale du poste, manuel | **Avant toute décision d'architecture structurante** — cohérence, concurrence, cache, protocole, intégrité cryptographique, scale-out. Pas pour du CRUD. Consigner la conclusion dans `docs/engineering/prior-art.md` **avec ses identifiants**. Requiert `python3` et `DEJAVU_CONTACT` |
 | `context7` | MCP | Doc **à jour** d'une lib plutôt que de deviner une API |
 | `github` | MCP, **lecture seule** | Lire commits, PR, branches, contenu de fichiers |
 | `playwright` | MCP | Vérifier toute UI dans le navigateur — les tests verts ne suffisent pas |
