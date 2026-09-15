@@ -1,5 +1,8 @@
 # Contribuer à {{PROJET}}
 
+> Ce fichier appartient au **projet engendré**, pas au template. Pour contribuer
+> à `socle` lui-même, voir la section « Contribuer » de son README.
+
 ## Convention de commits
 
 Un commit = **une story livrée**, format court :

@@ -101,8 +101,8 @@ Retire le garde, le verrou ou le correctif qu'ils prétendent couvrir, relance,
 **constate le rouge**, restaure. Une vérification qui reste verte ne prouve rien
 — et vaut moins que rien, car on cessera de la regarder.
 
-Les huit motifs ci-dessous ont tous été rencontrés en vrai, sur un projet
-financier, en deux jours. Ils ne dépendent pas du langage :
+Les huit motifs ci-dessous ont tous été rencontrés en vrai, en deux jours, sur un
+projet livré selon cette méthode. Ils ne dépendent pas du langage :
 
 1. **Tautologie** — comparer la sortie d'un générateur à son entrée.
 2. **`throws` à deux appels** — le premier lève, le second n'est jamais

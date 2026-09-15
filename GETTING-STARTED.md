@@ -7,8 +7,7 @@
 
 Un projet où la **méthode est déjà là** : une story se livre en une commande
 (`/deliver-story`), passe par TDD, une revue en fan-out à trois nœuds, une CI
-verte et une PR mergée en squash. C'est ce cycle qui a produit 50 stories en
-44 h sur le projet dont ce socle est extrait.
+verte et une PR mergée en squash.
 
 Ce que le socle n'apporte pas : ton domaine. Il te le **demande**.
 
