@@ -18,7 +18,8 @@ Cadrage : [../product/vision.md](../product/vision.md).
 **Statuts** : `à faire` → `en cours` → `fait`, ou `bloqué (motif précis)` quand
 une action externe est attendue. Mise à jour directement dans les fichiers
 d'epic. Le fil des livraisons est tenu dans [JOURNAL.md](JOURNAL.md) — une ligne
-par story, écrite par `/deliver-story`.
+par story, écrite par `/deliver-story`. Les choix tranchés sans arbitrage humain
+sont dans [DECISIONS.md](DECISIONS.md), à relire en fin de cycle.
 
 > ⚠️ **Un statut `bloqué` porte toujours son motif entre parenthèses**, et ce
 > motif dit ce qui est attendu et **de qui**. « bloqué » seul fait perdre un tour
@@ -49,6 +50,48 @@ par story, écrite par `/deliver-story`.
 > redevient candidate quand sa dépendance est livrée. Aucune exception n'a besoin
 > d'être codée en dur.
 
+## Gabarit d'une story
+
+`/cadrer-story` le produit. Il vaut pour tout ce qui s'écrit désormais ; les
+stories déjà `fait` restent en texte libre — les convertir coûterait cher et ne
+prouverait rien de plus.
+
+```markdown
+## US-XYZ — Titre court
+**En tant que** <rôle>, **je veux** <capacité> **afin de** <bénéfice>.
+**Priorité** P0 · **Estimation** S · **Statut** à faire
+**Dépend de** : US-ABC
+
+Critères d'acceptation :
+- [ ] **Le type est obligatoire à la création**
+      Étant donné que je crée le dossier « Atelier Nord »
+      Quand je valide le formulaire sans choisir de type
+      Alors la création est refusée, et le champ manquant est signalé
+```
+
+Le titre en gras **est** le nom du test : un scénario, un test. La case à cocher
+reste une case à cocher, `/deliver-story` la coche `[x]` en livrant.
+
+## Checklist d'entrée au backlog
+
+À passer sur chaque story **avant** qu'elle prenne le statut `à faire`. Une story
+qui échoue à un item ne s'écrit pas : on la corrige d'abord. La source de chaque
+règle est citée entre parenthèses.
+
+- [ ] Le requis est reformulé en une phrase, sans jargon (BABOK, *Elicitation*)
+- [ ] Un exemple concret et nommé accompagne l'énoncé (*Specification by Example*)
+- [ ] Chaque mot métier nouveau a une définition, une seule (IREB, non ambiguë)
+- [ ] Toute question ouverte est tranchée en hypothèse écrite et datée (IREB, complète)
+- [ ] Aucune règle métier inventée : chaque hypothèse est signalée comme telle (IREB, traçable)
+- [ ] La story ne contredit pas une story déjà `fait` (IREB, cohérente)
+- [ ] Elle passe les six lettres d'INVEST, en particulier *Small* et *Testable*
+- [ ] Chaque critère a un scénario nominal, et la story au moins un scénario de refus ou de cas limite (BDD)
+- [ ] Chaque *Alors* est observable : un écran, une valeur, un refus. Jamais « correctement » ni « rapidement » (IREB, vérifiable)
+- [ ] Aucun critère ne nomme une bibliothèque — le choix technique vit dans [stack.md](../engineering/stack.md)
+- [ ] Chaque règle de `CLAUDE.md` § « règles qui coûtent le plus cher à violer » que la story touche a son scénario qui la prouve
+- [ ] Priorité P0–P3 posée avec sa justification, estimation XS–L, `Dépend de` vérifié contre les statuts réels (MoSCoW)
+- [ ] Les choix tranchés seuls sont dans [DECISIONS.md](DECISIONS.md), avec l'alternative écartée et le coût du revirement
+
 ## Definition of Done (toutes les stories)
 
 1. Critères d'acceptation couverts par des tests automatisés au niveau prévu par
@@ -64,6 +107,10 @@ par story, écrite par `/deliver-story`.
 
 ## Méthode de travail
 
+- **La chaîne** : `/cadrer-story` écrit la story · `/deliver-story` la livre ·
+  `review-story` relit le diff · `/security-review` garde le domaine critique. Le
+  cadrage est séparé de la livraison parce qu'une story mal cadrée coûte une
+  branche déjà ouverte.
 - **Une story = un cycle** : `/deliver-story`. Branche → plan → TDD → tests verts
   → revue en fan-out → `/security-review` si le domaine critique est touché → PR
   → CI verte → merge squash.

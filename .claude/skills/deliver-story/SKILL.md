@@ -30,6 +30,11 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
    outil non automatisable, secret de production — passe son statut à
    `bloqué (motif précis)`, note ce qui est attendu de l'utilisateur, et prends
    la story actionnable suivante.
+5. Une question qui surgit **en cours de livraison** et que tu pourrais trancher
+   seul ne s'arrête pas : tranche sur la recommandation, applique, et écris la
+   ligne dans `docs/backlog/DECISIONS.md` — même règle que `/cadrer-story`. Ce
+   qui bloque, c'est ce que tu ne *peux* pas trancher, pas ce que tu préférerais
+   faire valider.
 
 ## 2. Garde-fous (non négociables)
 
@@ -41,6 +46,11 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
   sandbox, fakes et interfaces mockées uniquement.
 - Story estimée XL ou manifestement trop grosse pour une itération : découpe-la
   en sous-stories (US-XXXa, US-XXXb…) dans le fichier d'epic, livre la première.
+- **Story mal cadrée → `/cadrer-story` d'abord.** Un critère d'acceptation sans
+  *Quand* ni *Alors*, ou qui nomme une bibliothèque plutôt qu'un comportement
+  observable, n'est pas livrable tel quel : repasse la story par
+  `/cadrer-story`, puis livre. Ne s'applique **pas** aux critères déjà `fait` —
+  ils ne se réécrivent pas.
 
 ## 3. Implémentation
 
@@ -49,6 +59,10 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
   travail directement sur `main`.
 - Plan bref (3-5 lignes) en début d'itération, puis TDD : pour chaque critère
   d'acceptation, test qui échoue → code → vert.
+- **Un scénario = un test portant son titre.** Quand le critère porte un titre en
+  gras suivi d'un *Étant donné / Quand / Alors* (gabarit de `/cadrer-story`), le
+  test reprend ce titre mot pour mot : le lien entre le critère et sa preuve se
+  lit alors sans interprétation.
 - Coche `[x]` chaque critère couvert dans le fichier d'epic, au fur et à mesure.
 
 ## 4. Vérification

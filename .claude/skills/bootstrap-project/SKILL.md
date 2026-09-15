@@ -1,6 +1,6 @@
 ---
 name: bootstrap-project
-description: Transforme ce template « socle » en projet réel — interviewe l'utilisateur (nom, but, personas, contraintes, modules), passe /dejavu sur l'architecture cible, remplit tous les placeholders, puis se supprime. À lancer UNE SEULE FOIS, dans la toute première session d'un repo créé depuis le template.
+description: Transforme ce template « socle » en projet réel — interviewe l'utilisateur (nom, but, personas, contraintes, modules), propose /dejavu sur l'architecture cible quand il y a matière, remplit tous les placeholders, puis se supprime. À lancer UNE SEULE FOIS, dans la toute première session d'un repo créé depuis le template.
 argument-hint: "<nom du projet, optionnel>"
 ---
 
@@ -43,7 +43,11 @@ Tu as besoin de tout ce qui suit ; ne devine rien d'important.
   régulé, juridiction) — s'il n'y en a pas, le dire explicitement.
 - **Contraintes techniques imposées** (hébergeur, langue d'interface, offline,
   accessibilité, multi-tenant…).
-- **Modules** : `stack-laravel` ? `mobile-flutter` ? Aucun (cœur seul) ?
+- **Modules** : `stack-laravel` ? `mobile-flutter` ? `dejavu` ? Aucun (cœur seul) ?
+  Le module `dejavu` embarque la recherche d'antériorité dans le projet, donc
+  versionnée avec lui. **Ne le propose pas si le poste l'a déjà** en global —
+  `ls ~/.claude/skills/dejavu/SKILL.md` — sinon deux skills porteraient le même
+  nom. Dis-le à l'utilisateur plutôt que de choisir à sa place.
 
 **Lot 4 — les règles qui coûtent le plus cher à violer** (`{{REGLES}}`)
 
@@ -69,16 +73,19 @@ une revue molle pendant tout le projet.**
 **Avant** de proposer une architecture, cherche si le problème dur est déjà
 résolu et publié.
 
-D'abord vérifier que l'outil est là :
+D'abord vérifier que l'outil est là. Deux emplacements possibles — le skill
+global du poste, ou celui du module `dejavu` une fois copié :
 
 ```bash
-ls ~/.claude/skills/dejavu/SKILL.md 2>/dev/null || echo "ABSENT"
+ls ~/.claude/skills/dejavu/SKILL.md .claude/skills/dejavu/SKILL.md 2>/dev/null || echo "ABSENT"
 echo "DEJAVU_CONTACT=[${DEJAVU_CONTACT:-non défini}]"
 ```
 
-- **Absent** → dis-le, donne la commande (`npx github:jamyl/dejavu install`),
-  et **continue sans** : l'absence d'un outil ne bloque pas un bootstrap. Note
-  dans `prior-art.md` que la recherche reste à faire.
+- **Absent des deux** → dis-le et **continue sans** : l'absence d'un outil ne
+  bloque pas un bootstrap. Note dans `prior-art.md` que la recherche reste à
+  faire. Si l'utilisateur a choisi le module `dejavu` au lot 3, la recherche
+  devient possible **après** l'étape 4 (le module n'est pas encore copié ici) :
+  propose-la alors, et rappelle-le dans le rapport final.
 - **`DEJAVU_CONTACT` non défini** → signale-le (les APIs le demandent), continue.
 
 Puis **juge s'il y a matière**. `/dejavu` a son propre pre-flight et te dira
@@ -86,6 +93,13 @@ ABORT s'il n'y a rien à chercher — respecte-le, ne force pas. Il y a matière
 l'architecture porte un mécanisme dont « la version naïve casse à l'échelle » :
 cohérence, concurrence, cache, protocole, intégrité cryptographique, scale-out,
 scoring, recherche. Il n'y en a pas pour du CRUD, un back-office, du glue code.
+
+⚠️ **S'il y a matière, propose le run et attends la confirmation.** Un run coûte
+une douzaine à une vingtaine de lectures isolées plus du HTTP réel : ce n'est pas
+une décision à prendre à la place de l'utilisateur. Dis ce que tu cherches et ce
+que ça coûte, puis attends. **Refus** → consigne « recherche refusée le JJ/MM »
+dans `prior-art.md` et continue : un refus consigné est un résultat, un refus
+oublié est une recherche qu'on croira faite.
 
 Lance-le sur **la question d'architecture**, pas sur le produit. « Comment
 garantir l'unicité d'une réservation sous concurrence » se cherche ; « plateforme
@@ -148,12 +162,14 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
    Le module `stack-laravel` en livre un pré-écrit : **adapte-le** (nom du repo,
    slug, ports) plutôt que d'en écrire un nouveau. Sans module, il n'existe pas :
    écris-le, et vérifie que le lien de `docs/backlog/README.md` pointe dessus.
-8. **`docs/backlog/JOURNAL.md`** et **`CONTRIBUTING.md`** — deux fichiers courts
-   qui portent chacun un `{{PROJET}}` dans leur première ligne. Faciles à oublier
-   parce qu'on ne les rouvre jamais ; le contrôle final les attrape.
+8. **`docs/backlog/JOURNAL.md`**, **`docs/backlog/DECISIONS.md`** et
+   **`CONTRIBUTING.md`** — trois fichiers courts qui portent chacun un
+   `{{PROJET}}` dans leur première ligne. Faciles à oublier parce qu'on ne les
+   rouvre jamais ; le contrôle final les attrape.
 
 **N'écris que E01.** Les epics suivants s'écrivent quand le produit est clair —
-un backlog complet rédigé au bootstrap est un backlog à réécrire.
+un backlog complet rédigé au bootstrap est un backlog à réécrire. Et ils ne
+s'écrivent pas à la main : `/cadrer-story` est fait pour ça.
 
 ## 6. Statuts honnêtes dès le départ
 
@@ -177,18 +193,25 @@ Puis termine par un rapport court :
   sa commande.
 - **Les stories déjà `bloqué`** et ce qui les débloque.
 - **La commande suivante** : `/deliver-story`, ou `/loop 10m /deliver-story E01`
-  pour enchaîner en autonomie.
+  pour enchaîner en autonomie. Et `/cadrer-story <requis>` pour écrire les epics
+  suivants, quand le produit sera assez clair pour les mériter.
 
 ### Puis, toujours : « comment tu peux le vérifier toi-même »
 
 Même exigence que `deliver-story`, et elle commence ici :
 
 ```bash
-grep -rn "{{" . --exclude-dir=.git
+grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
 ```
 
 → **aucune ligne**. Un placeholder qui survit est un endroit où le projet parle
 encore du template.
+
+Le motif est resserré sur la forme réelle d'un placeholder — `{{MAJUSCULES}}` —
+et non sur `{{` tout court. Un `grep -rn "{{"` attrape aussi les accolades
+doublées d'un f-string Python dans les scripts du module `dejavu`, et la prose
+des documents qui *parlent* des placeholders. Un contrôle qui crie au loup cesse
+d'être lu.
 
 Donne aussi la commande qui prouve que l'environnement démarre (celle du module
 activé), ce qu'il doit voir, et ce qui signalerait un problème.

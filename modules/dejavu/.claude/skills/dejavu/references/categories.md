@@ -1,0 +1,285 @@
+# arXiv category reference
+
+All 155 categories in arXiv's subject taxonomy, generated from
+<https://arxiv.org/category_taxonomy>. Pick 3-5 whose subject matter plausibly
+contains prior art for the problem. Ids are validated before any query is sent,
+so a wrong guess produces a named error and a suggestion, never an empty result
+set that looks like "no prior art exists".
+
+## Contents
+
+- Astrophysics (`astro-ph`)
+- Condensed Matter (`cond-mat`)
+- Computer Science (`cs`)
+- Economics (`econ`)
+- Electrical Engineering and Systems Science (`eess`)
+- General Relativity and Quantum Cosmology (`gr-qc`)
+- High Energy Physics - Experiment (`hep-ex`)
+- High Energy Physics - Lattice (`hep-lat`)
+- High Energy Physics - Phenomenology (`hep-ph`)
+- High Energy Physics - Theory (`hep-th`)
+- Mathematics (`math`)
+- Mathematical Physics (`math-ph`)
+- Nonlinear Sciences (`nlin`)
+- Nuclear Experiment (`nucl-ex`)
+- Nuclear Theory (`nucl-th`)
+- Physics (`physics`)
+- Quantitative Biology (`q-bio`)
+- Quantitative Finance (`q-fin`)
+- Quantum Physics (`quant-ph`)
+- Statistics (`stat`)
+
+## Astrophysics (`astro-ph`)
+
+| Category | Covers |
+|---|---|
+| `astro-ph.CO` | Cosmology and Nongalactic Astrophysics |
+| `astro-ph.EP` | Earth and Planetary Astrophysics |
+| `astro-ph.GA` | Astrophysics of Galaxies |
+| `astro-ph.HE` | High Energy Astrophysical Phenomena |
+| `astro-ph.IM` | Instrumentation and Methods for Astrophysics |
+| `astro-ph.SR` | Solar and Stellar Astrophysics |
+
+## Condensed Matter (`cond-mat`)
+
+| Category | Covers |
+|---|---|
+| `cond-mat.dis-nn` | Disordered Systems and Neural Networks |
+| `cond-mat.mes-hall` | Mesoscale and Nanoscale Physics |
+| `cond-mat.mtrl-sci` | Materials Science |
+| `cond-mat.other` | Other Condensed Matter |
+| `cond-mat.quant-gas` | Quantum Gases |
+| `cond-mat.soft` | Soft Condensed Matter |
+| `cond-mat.stat-mech` | Statistical Mechanics |
+| `cond-mat.str-el` | Strongly Correlated Electrons |
+| `cond-mat.supr-con` | Superconductivity |
+
+## Computer Science (`cs`)
+
+| Category | Covers |
+|---|---|
+| `cs.AI` | Artificial Intelligence |
+| `cs.AR` | Hardware Architecture |
+| `cs.CC` | Computational Complexity |
+| `cs.CE` | Computational Engineering, Finance, and Science |
+| `cs.CG` | Computational Geometry |
+| `cs.CL` | Computation and Language |
+| `cs.CR` | Cryptography and Security |
+| `cs.CV` | Computer Vision and Pattern Recognition |
+| `cs.CY` | Computers and Society |
+| `cs.DB` | Databases |
+| `cs.DC` | Distributed, Parallel, and Cluster Computing |
+| `cs.DL` | Digital Libraries |
+| `cs.DM` | Discrete Mathematics |
+| `cs.DS` | Data Structures and Algorithms |
+| `cs.ET` | Emerging Technologies |
+| `cs.FL` | Formal Languages and Automata Theory |
+| `cs.GL` | General Literature |
+| `cs.GR` | Graphics |
+| `cs.GT` | Computer Science and Game Theory |
+| `cs.HC` | Human-Computer Interaction |
+| `cs.IR` | Information Retrieval |
+| `cs.IT` | Information Theory |
+| `cs.LG` | Machine Learning |
+| `cs.LO` | Logic in Computer Science |
+| `cs.MA` | Multiagent Systems |
+| `cs.MM` | Multimedia |
+| `cs.MS` | Mathematical Software |
+| `cs.NA` | Numerical Analysis |
+| `cs.NE` | Neural and Evolutionary Computing |
+| `cs.NI` | Networking and Internet Architecture |
+| `cs.OH` | Other Computer Science |
+| `cs.OS` | Operating Systems |
+| `cs.PF` | Performance |
+| `cs.PL` | Programming Languages |
+| `cs.RO` | Robotics |
+| `cs.SC` | Symbolic Computation |
+| `cs.SD` | Sound |
+| `cs.SE` | Software Engineering |
+| `cs.SI` | Social and Information Networks |
+| `cs.SY` | Systems and Control |
+
+## Economics (`econ`)
+
+| Category | Covers |
+|---|---|
+| `econ.EM` | Econometrics |
+| `econ.GN` | General Economics |
+| `econ.TH` | Theoretical Economics |
+
+## Electrical Engineering and Systems Science (`eess`)
+
+| Category | Covers |
+|---|---|
+| `eess.AS` | Audio and Speech Processing |
+| `eess.IV` | Image and Video Processing |
+| `eess.SP` | Signal Processing |
+| `eess.SY` | Systems and Control |
+
+## General Relativity and Quantum Cosmology (`gr-qc`)
+
+| Category | Covers |
+|---|---|
+| `gr-qc` | General Relativity and Quantum Cosmology |
+
+## High Energy Physics - Experiment (`hep-ex`)
+
+| Category | Covers |
+|---|---|
+| `hep-ex` | High Energy Physics - Experiment |
+
+## High Energy Physics - Lattice (`hep-lat`)
+
+| Category | Covers |
+|---|---|
+| `hep-lat` | High Energy Physics - Lattice |
+
+## High Energy Physics - Phenomenology (`hep-ph`)
+
+| Category | Covers |
+|---|---|
+| `hep-ph` | High Energy Physics - Phenomenology |
+
+## High Energy Physics - Theory (`hep-th`)
+
+| Category | Covers |
+|---|---|
+| `hep-th` | High Energy Physics - Theory |
+
+## Mathematics (`math`)
+
+| Category | Covers |
+|---|---|
+| `math.AC` | Commutative Algebra |
+| `math.AG` | Algebraic Geometry |
+| `math.AP` | Analysis of PDEs |
+| `math.AT` | Algebraic Topology |
+| `math.CA` | Classical Analysis and ODEs |
+| `math.CO` | Combinatorics |
+| `math.CT` | Category Theory |
+| `math.CV` | Complex Variables |
+| `math.DG` | Differential Geometry |
+| `math.DS` | Dynamical Systems |
+| `math.FA` | Functional Analysis |
+| `math.GM` | General Mathematics |
+| `math.GN` | General Topology |
+| `math.GR` | Group Theory |
+| `math.GT` | Geometric Topology |
+| `math.HO` | History and Overview |
+| `math.IT` | Information Theory |
+| `math.KT` | K-Theory and Homology |
+| `math.LO` | Logic |
+| `math.MG` | Metric Geometry |
+| `math.MP` | Mathematical Physics |
+| `math.NA` | Numerical Analysis |
+| `math.NT` | Number Theory |
+| `math.OA` | Operator Algebras |
+| `math.OC` | Optimization and Control |
+| `math.PR` | Probability |
+| `math.QA` | Quantum Algebra |
+| `math.RA` | Rings and Algebras |
+| `math.RT` | Representation Theory |
+| `math.SG` | Symplectic Geometry |
+| `math.SP` | Spectral Theory |
+| `math.ST` | Statistics Theory |
+
+## Mathematical Physics (`math-ph`)
+
+| Category | Covers |
+|---|---|
+| `math-ph` | Mathematical Physics |
+
+## Nonlinear Sciences (`nlin`)
+
+| Category | Covers |
+|---|---|
+| `nlin.AO` | Adaptation and Self-Organizing Systems |
+| `nlin.CD` | Chaotic Dynamics |
+| `nlin.CG` | Cellular Automata and Lattice Gases |
+| `nlin.PS` | Pattern Formation and Solitons |
+| `nlin.SI` | Exactly Solvable and Integrable Systems |
+
+## Nuclear Experiment (`nucl-ex`)
+
+| Category | Covers |
+|---|---|
+| `nucl-ex` | Nuclear Experiment |
+
+## Nuclear Theory (`nucl-th`)
+
+| Category | Covers |
+|---|---|
+| `nucl-th` | Nuclear Theory |
+
+## Physics (`physics`)
+
+| Category | Covers |
+|---|---|
+| `physics.acc-ph` | Accelerator Physics |
+| `physics.ao-ph` | Atmospheric and Oceanic Physics |
+| `physics.app-ph` | Applied Physics |
+| `physics.atm-clus` | Atomic and Molecular Clusters |
+| `physics.atom-ph` | Atomic Physics |
+| `physics.bio-ph` | Biological Physics |
+| `physics.chem-ph` | Chemical Physics |
+| `physics.class-ph` | Classical Physics |
+| `physics.comp-ph` | Computational Physics |
+| `physics.data-an` | Data Analysis, Statistics and Probability |
+| `physics.ed-ph` | Physics Education |
+| `physics.flu-dyn` | Fluid Dynamics |
+| `physics.gen-ph` | General Physics |
+| `physics.geo-ph` | Geophysics |
+| `physics.hist-ph` | History and Philosophy of Physics |
+| `physics.ins-det` | Instrumentation and Detectors |
+| `physics.med-ph` | Medical Physics |
+| `physics.optics` | Optics |
+| `physics.plasm-ph` | Plasma Physics |
+| `physics.pop-ph` | Popular Physics |
+| `physics.soc-ph` | Physics and Society |
+| `physics.space-ph` | Space Physics |
+
+## Quantitative Biology (`q-bio`)
+
+| Category | Covers |
+|---|---|
+| `q-bio.BM` | Biomolecules |
+| `q-bio.CB` | Cell Behavior |
+| `q-bio.GN` | Genomics |
+| `q-bio.MN` | Molecular Networks |
+| `q-bio.NC` | Neurons and Cognition |
+| `q-bio.OT` | Other Quantitative Biology |
+| `q-bio.PE` | Populations and Evolution |
+| `q-bio.QM` | Quantitative Methods |
+| `q-bio.SC` | Subcellular Processes |
+| `q-bio.TO` | Tissues and Organs |
+
+## Quantitative Finance (`q-fin`)
+
+| Category | Covers |
+|---|---|
+| `q-fin.CP` | Computational Finance |
+| `q-fin.EC` | Economics |
+| `q-fin.GN` | General Finance |
+| `q-fin.MF` | Mathematical Finance |
+| `q-fin.PM` | Portfolio Management |
+| `q-fin.PR` | Pricing of Securities |
+| `q-fin.RM` | Risk Management |
+| `q-fin.ST` | Statistical Finance |
+| `q-fin.TR` | Trading and Market Microstructure |
+
+## Quantum Physics (`quant-ph`)
+
+| Category | Covers |
+|---|---|
+| `quant-ph` | Quantum Physics |
+
+## Statistics (`stat`)
+
+| Category | Covers |
+|---|---|
+| `stat.AP` | Applications |
+| `stat.CO` | Computation |
+| `stat.ME` | Methodology |
+| `stat.ML` | Machine Learning |
+| `stat.OT` | Other Statistics |
+| `stat.TH` | Statistics Theory |

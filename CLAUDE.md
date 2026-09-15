@@ -11,6 +11,7 @@
 | Cadrage produit, personas, périmètre | `docs/product/vision.md` |
 | Backlog (epics `E0X`, stories `US-XYZ`) | `docs/backlog/README.md` |
 | Journal des livraisons | `docs/backlog/JOURNAL.md` |
+| Décisions prises seul, à valider en fin de cycle | `docs/backlog/DECISIONS.md` |
 | Antériorité (`/dejavu`) des décisions structurantes | `docs/engineering/prior-art.md` |
 
 ## Environnement
@@ -36,9 +37,9 @@
 
 | Outil | Nature | Quand |
 |---|---|---|
+| `/cadrer-story` | skill projet, manuel | Transforme un requis brut en stories `à faire` au gabarit. Tout le backlog au-delà de E01 passe par lui. Ne code pas |
 | `/security-review` | skill **builtin**, manuel | **Obligatoire** avant de clôturer toute story touchant le domaine critique ci-dessus, ou une migration de données |
-| `/dejavu` | skill utilisateur, manuel | **Avant toute décision d'architecture structurante** — cohérence, concurrence, cache, protocole, intégrité cryptographique, scale-out. Pas pour du CRUD. Consigner la conclusion dans `docs/engineering/prior-art.md` **avec ses identifiants** |
-| `/dejavu-finance` | skill utilisateur, manuel | Ce que des sociétés cotées **déclarent** sur un risque, dans leurs dépôts SEC. Corpus américain — utile sur une pratique de marché, sans objet sur un droit local |
+| `/dejavu` | skill — module `dejavu` **ou** installation globale du poste, manuel | **Avant toute décision d'architecture structurante** — cohérence, concurrence, cache, protocole, intégrité cryptographique, scale-out. Pas pour du CRUD. Consigner la conclusion dans `docs/engineering/prior-art.md` **avec ses identifiants**. Requiert `python3` et `DEJAVU_CONTACT` |
 | `context7` | MCP | Doc **à jour** d'une lib plutôt que de deviner une API |
 | `github` | MCP, **lecture seule** | Lire commits, PR, branches, contenu de fichiers |
 | `playwright` | MCP | Vérifier toute UI dans le navigateur — les tests verts ne suffisent pas |
@@ -55,11 +56,18 @@ n'est jamais une autorisation.
 
 ## Méthode
 
+La chaîne : `/cadrer-story` écrit la story · `/deliver-story` la livre ·
+`review-story` relit le diff · `/security-review` garde le domaine critique.
+
 Une story = un cycle : branche → plan → TDD → tests verts → **revue en fan-out**
 (workflow `review-story`) → `/security-review` si le domaine critique est touché
 → commit `US-XXX: sujet` → **PR, CI verte, merge squash**. Jamais de push direct
 sur `main`. `/deliver-story` livre la prochaine story actionnable et tient le
 journal. Les questions métier passent par l'agent `domain-expert`.
+
+Une question qu'on peut trancher seul **ne s'arrête pas** : on tranche sur la
+recommandation, on applique, et on écrit la ligne dans `docs/backlog/DECISIONS.md`
+avec l'alternative écartée et le coût du revirement.
 
 La revue en fan-out n'est pas un gate : trois nœuds en lecture seule lisent le
 même diff sans se lire entre eux, et leurs findings se traitent **avant** la PR.

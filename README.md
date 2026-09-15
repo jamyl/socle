@@ -19,6 +19,11 @@ puis, dans la session : **`/bootstrap-project`**.
 branche → plan → TDD → tests verts → revue en fan-out à trois nœuds → PR → CI
 verte → merge squash. Conçu pour tourner en boucle (`/loop`).
 
+**Le cadrage, séparé de la livraison.** `/cadrer-story` transforme un requis brut
+en 2 à 5 stories au gabarit *Étant donné / Quand / Alors*, filtrées par INVEST,
+avec les questions ouvertes tranchées et consignées. Séparé exprès : une story
+mal cadrée découverte en livraison coûte une branche déjà ouverte.
+
 **La discipline de contre-épreuve.** Un test n'est une preuve que si on l'a vu
 échouer. Le skill porte les **huit motifs** de fausse vérification rencontrés en
 vrai — tautologie, mise en scène absente, garde doublé ailleurs… — et la question
@@ -33,12 +38,13 @@ incomplète n'est pas « rien à signaler ».
 déjà résolu et publié, avant qu'on le rebâtisse. Conclusions consignées avec
 leurs identifiants dans `docs/engineering/prior-art.md`.
 
-**Deux modules optionnels**, activés à l'interview :
+**Trois modules optionnels**, activés à l'interview :
 
 | Module | Contenu |
 |---|---|
 | `stack-laravel` | Docker Compose (PHP 8.4 · PostgreSQL 16 · Redis · Mailpit · Horizon, images pinnées par digest), CI GitHub Actions (Pint, Larastan 8, Pest **sur PostgreSQL**, `composer audit`), scanner de secrets, MCP, 4 sous-agents Laravel, `E01` pré-écrit |
 | `mobile-flutter` | `mobile/`, stories de toolchain (déjà `bloqué` — Xcode ne s'automatise pas), niveaux de test golden/intégration |
+| `dejavu` | Le skill `/dejavu` embarqué et **versionné avec le projet** : scripts Python en bibliothèque standard seule, 4 sources académiques, aucune clé d'API. À ne pas activer si le poste l'a déjà en global |
 
 Sans module : le cœur seul, agnostique.
 
