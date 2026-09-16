@@ -41,11 +41,11 @@
 | `/cadrer-story` | skill projet, manuel | Transforme un requis brut en stories `à faire` au gabarit. Tout le backlog au-delà de E01 passe par lui. Ne code pas |
 | `/security-review` | skill **builtin**, manuel | **Obligatoire** avant de clôturer toute story touchant le domaine critique ci-dessus, ou une migration de données |
 | `/dejavu` | skill — module `dejavu` **ou** installation globale du poste, manuel | **Avant toute décision d'architecture structurante** — cohérence, concurrence, cache, protocole, intégrité cryptographique, scale-out. Pas pour du CRUD. Consigner la conclusion dans `docs/engineering/prior-art.md` **avec ses identifiants**. Requiert `python3` et `DEJAVU_CONTACT` |
-| `context7` | MCP | Doc **à jour** d'une lib plutôt que de deviner une API |
-| `github` | MCP, **lecture seule** | Lire commits, PR, branches, contenu de fichiers |
-| `playwright` | MCP | Vérifier toute UI dans le navigateur — les tests verts ne suffisent pas |
+| `context7` | MCP — fourni par le module `stack-laravel`, absent sans lui | Doc **à jour** d'une lib plutôt que de deviner une API |
+| `github` | MCP **lecture seule** — fourni par le module `stack-laravel`, absent sans lui | Lire commits, PR, branches, contenu de fichiers |
+| `playwright` | MCP — **non fourni par le template**, à configurer si le projet a une UI | Vérifier toute UI dans le navigateur — les tests verts ne suffisent pas |
 | `domain-expert` | agent projet | Toute question métier avant de modéliser un flux critique |
-| `.claude/agents/*` | sous-agents. Les **trois du socle** sont en lecture seule ; un module de stack peut en ajouter qui **écrivent** — vérifier leur `tools:` | Ils **ne connaissent pas** le backlog, le journal, ni les règles ci-dessus : leur travail passe par les mêmes tests et la même revue que le tien |
+| `.claude/agents/*` | sous-agents, tous en `model: sonnet`. Les **trois du socle** sont en lecture seule ; les agents de stack — d'un module ou générés à l'amorçage — **écrivent**. Vérifier leur `tools:` | Ils **ne connaissent pas** le backlog, le journal, ni les règles ci-dessus : leur travail passe par les mêmes tests et la même revue que le tien |
 
 > À AJUSTER au bootstrap : retire de ce tableau tout ce que le projet n'a pas
 > réellement installé, ajoute ce qu'il a en plus.

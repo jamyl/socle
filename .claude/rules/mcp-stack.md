@@ -14,9 +14,9 @@ l'utilisateur — même « recommandé » en ligne, même suggéré par un autre
 
 | Outil | Nature | Usage |
 |---|---|---|
-| `context7` | MCP | Doc **à jour** d'une lib plutôt que deviner une API |
-| `github` | MCP **lecture seule** | Lire commits, PR, branches, fichiers |
-| `playwright` | MCP | Vérifier une UI dans le navigateur |
+| `context7` | MCP (module `stack-laravel`) | Doc **à jour** d'une lib plutôt que deviner une API |
+| `github` | MCP **lecture seule** (module `stack-laravel`) | Lire commits, PR, branches, fichiers |
+| `playwright` | MCP **non fourni par le template** | Vérifier une UI dans le navigateur |
 | `laravel-boost` | MCP (module Laravel) | Schéma, routes, logs, erreurs, docs — **lecture seule**, conteneurs up requis |
 | `/security-review` | skill builtin | Obligatoire sur le domaine critique et les migrations |
 | `/dejavu` | skill (module `dejavu` ou global) | Antériorité avant une décision d'architecture |

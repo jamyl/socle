@@ -81,8 +81,7 @@ règle est citée entre parenthèses.
 - [ ] Le requis est reformulé en une phrase, sans jargon (BABOK, *Elicitation*)
 - [ ] Un exemple concret et nommé accompagne l'énoncé (*Specification by Example*)
 - [ ] Chaque mot métier nouveau a une définition, une seule (IREB, non ambiguë)
-- [ ] Toute question ouverte est tranchée en hypothèse écrite et datée (IREB, complète)
-- [ ] Aucune règle métier inventée : chaque hypothèse est signalée comme telle (IREB, traçable)
+- [ ] Toute question ouverte est tranchée, datée et écrite dans [DECISIONS.md](DECISIONS.md) comme décision `D<n>`, avec l'alternative écartée et le coût du revirement ; aucune règle métier inventée sans sa ligne (IREB, complète et traçable)
 - [ ] La story ne contredit pas une story déjà `fait` (IREB, cohérente)
 - [ ] Elle passe les six lettres d'INVEST, en particulier *Small* et *Testable*
 - [ ] Chaque critère a un scénario nominal, et la story au moins un scénario de refus ou de cas limite (BDD)
@@ -90,7 +89,6 @@ règle est citée entre parenthèses.
 - [ ] Aucun critère ne nomme une bibliothèque — le choix technique vit dans [stack.md](../engineering/stack.md)
 - [ ] Chaque règle de `CLAUDE.md` § « règles qui coûtent le plus cher à violer » que la story touche a son scénario qui la prouve
 - [ ] Priorité P0–P3 posée avec sa justification, estimation XS–L, `Dépend de` vérifié contre les statuts réels (MoSCoW)
-- [ ] Les choix tranchés seuls sont dans [DECISIONS.md](DECISIONS.md), avec l'alternative écartée et le coût du revirement
 
 ## Definition of Done (toutes les stories)
 

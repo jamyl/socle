@@ -92,8 +92,9 @@ puis, dans la session :
 **Ce qui va se passer**, dans cet ordre — et tu es sollicité à chaque palier :
 
 1. **Interview** — quatre lots de questions : identité (nom, slug, but en une
-   phrase), produit (personas, premier jalon, hors périmètre), contraintes
-   (légales, techniques, modules à activer), puis **les 3 à 5 règles qui coûtent
+   phrase), produit (personas, premier jalon, hors périmètre), contraintes et
+   architecture (légales, hébergement, compétences de l'équipe, échelle, temps
+   réel ou hors-ligne, délai, stack imposée), puis **les 3 à 5 règles qui coûtent
    le plus cher à violer** dans ton domaine.
 
    > 🔑 **Ce dernier lot décide de la qualité de tout le projet.** Ces règles
@@ -101,20 +102,30 @@ puis, dans la session :
    > *chaque* diff, pendant des mois. Une règle molle ici produit une revue molle
    > jusqu'à la fin. Prends le temps.
 
-2. **Antériorité** — si ton architecture porte un mécanisme non trivial
-   (concurrence, cohérence, cache, protocole, crypto, scale-out), `/dejavu` va
-   chercher si c'est déjà résolu et publié. La conclusion est consignée dans
-   `docs/engineering/prior-art.md` **avec ses identifiants**. Sur du CRUD, il
-   s'abstiendra — c'est normal, il a sa propre porte d'entrée.
+2. **Découverte d'architecture** — Claude nomme le mécanisme dur de ta
+   conception s'il y en a un (concurrence, cohérence, cache, protocole, crypto,
+   scale-out, synchronisation hors-ligne), te propose `/dejavu` dessus **en
+   annonçant son coût**, et attend ta réponse. Un refus est consigné et daté dans
+   `docs/engineering/prior-art.md` : un refus oublié devient une recherche qu'on
+   croira faite. Puis il vérifie dans deux ou trois écosystèmes qu'une
+   implémentation maintenue des briques existe — `codesearch.py`, quelques
+   requêtes HTTP, aucun modèle dans la boucle.
 
-3. **Proposition d'architecture** — moins d'une page : stack, modèle de domaine,
-   où vit chaque invariant, questions ouvertes. **Rien n'est écrit avant que tu
-   valides.** C'est le moment de corriger : un bootstrap part sur un
-   malentendu ou ne part pas.
+   > Sur du CRUD, aucune recherche n'est proposée. Et **ne compte pas sur
+   > `/dejavu` pour refuser à ta place** : appelé par son nom, il considère que
+   > tu as choisi et saute ses propres questions d'abandon.
+
+3. **Proposition d'architecture** — moins d'une page : stack retenue **et une
+   alternative écartée**, briques vérifiées, ce que l'antériorité dit du
+   mécanisme, modèle de domaine, où vit chaque invariant, questions ouvertes.
+   Laravel n'est qu'une issue possible. **Rien n'est écrit avant que tu
+   valides.** C'est le moment de corriger : un bootstrap part sur un malentendu
+   ou ne part pas.
 
 4. **Écriture** — `scripts/bootstrap.sh` fait la mécanique (placeholders,
-   modules, auto-suppression), puis Claude rédige `vision.md`, `stack.md`,
-   `CLAUDE.md`, l'agent `domain-expert`, le backlog et **E01 uniquement**.
+   modules, gabarits d'agents, auto-suppression), puis Claude rédige
+   `vision.md`, `stack.md`, `CLAUDE.md`, l'agent `domain-expert`, les agents de
+   stack quand il y en a à générer, le backlog et **E01 uniquement**.
 
 5. **Commit initial** et un rapport qui te dit ce qui reste à faire de ton côté.
 
@@ -148,9 +159,9 @@ docker compose up -d && docker compose ps
 **Ce que tu dois voir** : tous les services en `running`, et un `healthy` sur la
 base.
 
-> ⚠️ **Deux projets issus de ce template ne peuvent pas tourner en même temps.**
-> Ils publient les mêmes ports hôte — app 8080, PostgreSQL 5433, Redis 6380,
-> Mailpit 8026. Le second `up -d` échouera sur un port déjà pris, **ou pire**, un
+> ⚠️ **Deux projets ayant tous deux activé `stack-laravel` ne peuvent pas
+> tourner en même temps.** Ils publient les mêmes ports hôte — app 8080,
+> PostgreSQL 5433, Redis 6380, Mailpit 8026. Le second `up -d` échouera sur un port déjà pris, **ou pire**, un
 > outil se connectera au 5433 de l'autre projet et les données n'auront aucun
 > sens. Si tu fais tourner deux projets en parallèle, décale les ports du second
 > dans son `docker-compose.yml` (5434, 6381, 8027, 8081) et note-les dans son
@@ -174,7 +185,7 @@ Pour ajouter des stories après E01, ne les écris pas à la main :
 /cadrer-story "un utilisateur peut exporter son historique"
 ```
 
-Il reformule le requis, tranche les questions ouvertes en hypothèses écrites dans
+Il reformule le requis, tranche les questions ouvertes en décisions écrites dans
 `docs/backlog/DECISIONS.md`, passe chaque story au filtre INVEST, et écrit 2 à 5
 stories au gabarit *Étant donné / Quand / Alors* dans le fichier d'epic. Ce qui
 demande une action humaine naît `bloqué (motif)` plutôt que de faire perdre un
@@ -201,17 +212,20 @@ expire après 7 jours ; `CronList` puis `CronDelete <id>` l'arrête plus tôt.
 | Module | Ce qu'il apporte | Quand l'activer |
 |---|---|---|
 | `stack-laravel` | Docker Compose (PHP 8.4, PostgreSQL 16, Redis, Mailpit, Horizon — images pinnées par digest), CI GitHub Actions (Pint, Larastan 8, Pest sur PostgreSQL, `composer audit`), scanner de secrets, `.mcp.json` (laravel-boost, context7, github lecture seule), 4 sous-agents Laravel, `stack.md` et `testing-strategy.md` remplis, `E01-fondations.md` pré-écrit | Backend PHP/Laravel |
-| `mobile-flutter` | Dossier `mobile/`, stories E01 de toolchain (déjà `bloqué` : Xcode et Android Studio ne s'automatisent pas), niveaux de test N7/N8, notes du plugin `dart-flutter` | App iOS/Android/PWA |
+| `mobile-flutter` | Dossier `mobile/`, stories E01 de toolchain (déjà `bloqué` : Xcode et Android Studio ne s'automatisent pas), niveaux de test N7/N8, notes du plugin `dart-flutter` | La découverte retient une app native iOS/Android |
 | `dejavu` | Le skill `/dejavu` embarqué dans `.claude/skills/`, donc **versionné avec le projet** : arXiv, OpenAlex, Crossref, Europe PMC, scripts Python en bibliothèque standard seule, aucune clé d'API. Plus `docs/engineering/dejavu.md` (prérequis, coût, mise à jour) | Architecture non triviale — cohérence, concurrence, cache, protocole, scale-out. **Pas si le poste l'a déjà** en global |
 
-Aucun module → le cœur seul : méthode, skills, agents génériques, squelettes de
-docs. L'amorçage rédige alors `stack.md` de zéro depuis l'interview.
+Aucun module de stack → le cœur seul : méthode, skills, trois relecteurs,
+squelettes de docs. L'amorçage rédige alors `stack.md` et `testing-strategy.md`
+depuis la découverte, et **génère** les agents `developer` et `dba` depuis
+`.claude/templates/agent-stack-*.md`.
 
 > **Le scaffold applicatif n'est pas dans le template**, volontairement. Ni
 > `composer create-project`, ni `flutter create`. Il naît de la première
-> itération `/deliver-story` (US-104), avec les versions du jour. Un scaffold
+> itération `/deliver-story`, avec les versions du jour. Un scaffold
 > figé dans un template pourrit en quelques mois — et personne ne s'en aperçoit
-> avant d'avoir bâti dessus.
+> avant d'avoir bâti dessus. Avec `stack-laravel` c'est la story US-104 ; sans
+> module, c'est la story de scaffold que l'amorçage écrit dans E01.
 
 ---
 
@@ -223,4 +237,5 @@ docs. L'amorçage rédige alors `stack.md` de zéro depuis l'interview.
 | `bootstrap.sh` affiche l'usage | Slug manquant ou invalide | Slug en kebab-case, 3 à 40 caractères, commence par une lettre |
 | Des `{{…}}` subsistent après l'amorçage | Rédaction interrompue | Relance la session et demande de finir la rédaction ; **ne relance pas** le script |
 | Un nœud de la revue reste muet | Agent absent ou mal nommé | Le workflow le signale. Couverture incomplète ≠ « rien à signaler » |
+| L'agent `developer` généré parle encore d'une stack en placeholder | Rédaction interrompue à l'étape 5bis | Même remède que les placeholders : relance la session et demande de finir. `grep -n '{{\|À REMPLIR' .claude/agents/*.md` doit être vide |
 | `domain-expert` ne trouve jamais rien | Ses invariants sont restés génériques | Rouvre `.claude/workflows/review-story.js` et `.claude/agents/domain-expert.md` : le bootstrap ne les a pas spécialisés |
