@@ -60,6 +60,34 @@ en offre gratuite elle est indisponible (`403 : Upgrade to GitHub Pro`) — dans
 cas l'interdit ne tient que par la méthode, et c'est une raison de plus pour ne
 pas pré-approuver `git push` en bloc.
 
+Ce qui se commite et ce qui reste sur ton poste — `settings.local.json`, l'état
+des boucles `/loop`, le cache de `/dejavu`, les variables d'environnement — est
+détaillé dans
+[`docs/engineering/config-locale.md`](docs/engineering/config-locale.md).
+
+---
+
+## Ton projet existe déjà ?
+
+Ce guide décrit un dépôt neuf. Si tu as déjà du code, un historique et ta propre
+documentation, prends l'autre chemin — il n'écrase rien de ce que tu as écrit :
+
+```bash
+git clone --depth 1 https://github.com/jamyl/socle /tmp/socle
+cd mon-projet-existant
+/tmp/socle/scripts/adopt.sh          # ajoute --stack stack-laravel si ta stack correspond
+```
+
+puis, dans une session ouverte sur ton projet : `/adopter-socle`. Il lit ton
+dépôt pour déduire la stack au lieu de te la redemander, lance ta suite de tests
+et rapporte sa sortie réelle, puis écrit un premier epic de ce qui manque à la
+méthode pour tourner.
+
+La section [« Adopter la méthode dans un projet existant »](README.md#adopter-la-méthode-dans-un-projet-existant)
+du README détaille ce qui est copié, ce qui n'est jamais touché, et ce qui reste
+à rapprocher à la main. Le reste de ce guide — prérequis, permissions, dépannage
+— s'applique aux deux chemins.
+
 ---
 
 ## Étape 1 — Créer le repo depuis le template

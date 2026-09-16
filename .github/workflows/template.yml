@@ -21,7 +21,9 @@ jobs:
       - name: Syntaxe et analyse statique
         run: |
           bash -n scripts/bootstrap.sh
+          bash -n scripts/adopt.sh
           shellcheck -S warning scripts/bootstrap.sh
+          shellcheck -S warning scripts/adopt.sh
           shellcheck -S warning modules/stack-laravel/.github/scan-secrets.sh
 
   static:
@@ -103,7 +105,8 @@ jobs:
         run: |
           cd "$RUNNER_TEMP/p"
           for p in modules scripts GETTING-STARTED.md CHANGELOG.md \
-                   .claude/skills/bootstrap-project .github/workflows/template.yml \
+                   .claude/skills/bootstrap-project .claude/skills/adopter-socle \
+                   .github/workflows/template.yml \
                    .claude/templates/agent-stack-developer.md \
                    .claude/templates/agent-stack-dba.md; do
             [ ! -e "$p" ] || { echo "::error::$p survit à l'amorçage"; exit 1; }
