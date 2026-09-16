@@ -1,352 +1,17 @@
 # socle
 
-A project template for Claude Code. The working method ships with it; your
-domain gets filled in by an interview the first time you run it.
+Un template de projet pour Claude Code : la méthode de travail est déjà en
+place, ton domaine se remplit par une interview au premier lancement. Le socle
+s'installe aussi dans **un projet déjà commencé**.
+
+*A project template for Claude Code. The working method ships with it; your
+domain gets filled in by an interview the first time you run it — and it can be
+adopted by a project that already has code.*
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.154%2B-blue)](https://claude.com/claude-code)
 
-**[English](#english) · [Français](#français)**
-
----
-
-## English
-
-- [What this is](#what-this-is)
-- [Requirements](#requirements)
-- [Quickstart](#quickstart)
-- [What the bootstrap asks you](#what-the-bootstrap-asks-you)
-- [The daily cycle](#the-daily-cycle)
-- [What's inside](#whats-inside)
-- [Optional modules](#optional-modules)
-- [What it leaves out, on purpose](#what-it-leaves-out-on-purpose)
-- [What a run costs](#what-a-run-costs)
-- [Check that it worked](#check-that-it-worked)
-- [Words used here](#words-used-here)
-- [When something breaks](#when-something-breaks)
-- [Contributing](#contributing)
-- [Origin and license](#origin-and-license)
-
-### What this is
-
-Building software with an AI coding agent has two recurring problems. You
-re-explain your rules every session, and you have to take the agent's word that
-the tests pass.
-
-This template removes both. The method lives in files that Claude Code reads on
-its own, so the rules survive between sessions. And every report the agent
-writes ends with a command *you* run to check the result yourself, so you never
-have to believe a claim you can't reproduce.
-
-What you get is a repository where one command delivers a user story from branch
-to merged pull request, a code review where three independent readers examine the
-same change without seeing each other's findings, and one firm rule: a test only
-counts as proof once somebody has watched it fail.
-
-The template ships no application code and no business rules. It asks for yours.
-
-New to Claude Code? Every term on this page is defined in
-[Words used here](#words-used-here). Read that section first if *skill*,
-*subagent*, *story*, or *epic* isn't already familiar.
-
-### Requirements
-
-Check these once per machine, before you start:
-
-| Tool | Check it with | If it's missing |
-|---|---|---|
-| Claude Code 2.1.154 or later | `claude --version` | Update. Below that version the Workflow tool doesn't exist, and the three-reader review silently doesn't run |
-| GitHub CLI, signed in | `gh auth status` | `gh auth login` |
-| Node.js | `node --version` | Needed by the `context7` documentation server in the Laravel module |
-| Python 3 | `python3 --version` | Needed by the `dejavu` module. Its scripts use the standard library only, so there's nothing to install with `pip` |
-| A container runtime | `docker compose version` | Install Docker Desktop, or OrbStack on macOS. Needed by the `stack-laravel` module |
-
-Node.js, Python, and Docker are each tied to one optional module. Skip the ones
-whose module you don't activate.
-
-### Quickstart
-
-Three steps take you from nothing to a project with its first epic written.
-
-1. Create your repository from this template:
-
-   ```bash
-   gh repo create my-project --template jamyl/socle --private --clone
-   cd my-project
-   ```
-
-   You should now see `CLAUDE.md`, `GETTING-STARTED.md`, `modules/`, and
-   `scripts/bootstrap.sh`. If `modules/` is absent, the copy was incomplete;
-   start over.
-
-2. Open a session and bootstrap the project:
-
-   ```bash
-   claude
-   ```
-
-   Then, inside the session, run `/bootstrap-project`. This is a **skill** — a
-   named instruction set that Claude Code loads on demand, invoked with a
-   leading slash. The bootstrap runs once, interviews you, writes your
-   documentation, and then deletes itself.
-
-3. Deliver the first story:
-
-   ```text
-   /deliver-story
-   ```
-
-Read [GETTING-STARTED.md](GETTING-STARTED.md) in full before step 2. It covers
-prerequisites, each step in detail, what to check, and what to do when something
-goes wrong. The bootstrap deletes that file too, because it describes the
-template rather than your project.
-
-### What the bootstrap asks you
-
-The interview comes in four rounds, and you're asked to approve the result
-before anything gets written.
-
-1. **Identity** — the project name, a slug in kebab-case for container and
-   database names, and the purpose in one sentence.
-2. **Product** — who uses it and for what, what has to work before you can say
-   the product exists, and what is explicitly out of scope.
-3. **Constraints and architecture** — legal or regulatory obligations, hosting
-   target, the languages your team debugs in production, scale at twelve months,
-   realtime or offline needs, your deadline, and any stack you've already been
-   handed.
-4. **The rules that cost the most to break** — three to five invariants of your
-   domain, each phrased so a test can check it.
-
-Round 4 decides the quality of everything that follows. Those rules become the
-checklist that one of the three reviewers applies to *every* change, for as long
-as the project lives. "No code outside X writes to Y" can be checked. "The code
-should be clean" cannot. A vague answer here produces a vague review for months.
-
-After the interview, the agent names the hard mechanism in your design, if there
-is one — concurrency, consistency, offline sync — and offers a prior-art search
-on it, with the cost stated, then waits. It checks two or three candidate
-ecosystems for maintained implementations of the building blocks you need, which
-costs nothing but a few HTTP requests. Then it proposes one stack, one
-alternative, and the sentence that rules the alternative out.
-
-**Laravel is one possible outcome, not the default.** The `stack-laravel` module
-activates because the discovery lands on PHP; any other answer gets a stack
-written from the interview and a `developer` subagent generated for it.
-
-Nothing is written before you approve.
-
-### The daily cycle
-
-Two commands carry the work, and each leaves a trace on disk:
-
-```text
-/cadrer-story "<a raw requirement>"
-      |
-      v   2 to 5 stories written to an epic file, in Given/When/Then form
-      |
-/deliver-story
-      |
-      v   branch -> plan -> TDD -> tests green -> three-reader review
-      |   -> pull request -> CI green -> squash merge
-      |
-docs/backlog/JOURNAL.md        one line per delivery
-docs/backlog/DECISIONS.md      one line per call made without asking you
-```
-
-To chain several stories without retyping, run `/loop 10m /deliver-story E01`.
-The loop stops on its own when no story in scope is still actionable.
-
-Writing a story and delivering it are separate commands on purpose. A badly
-framed story discovered during delivery costs a branch that's already open and a
-plan that's already written. Discovered during framing, it costs a re-read.
-
-### What's inside
-
-**The delivery cycle.** `/deliver-story` picks the next actionable story by
-walking the dependency graph, not a fixed list. A story whose prerequisite lives
-in a later epic gets skipped, then becomes a candidate again once that
-prerequisite ships. If a story needs a human — a legal opinion, an account with
-a third party, an API key — it's marked `blocked` with the reason, and the agent
-moves to the next one instead of losing a turn discovering the wall.
-
-**Counter-proof discipline.** A test is proof only once you've seen it fail.
-Before writing "this is covered", the agent removes the guard the test claims to
-protect, re-runs it, confirms red, and restores. The skill carries eight
-concrete ways a test can stay green while proving nothing: tautology, missing
-setup, a race timed with `sleep` instead of a signal, a guard that's duplicated
-elsewhere, and four more. All eight were met in practice, within two days. The
-question that summarizes them: *what would this test have to see to turn red?*
-
-**The three-reader review.** After the tests pass, three read-only subagents
-read the same diff in parallel without seeing each other's findings:
-`reviewer` for conventions and structure, `security-scanner` for
-vulnerabilities, and `domain-expert` for your own invariants. Their findings are
-deduplicated and sorted in code, not by a model. Their tools are limited to
-reading files: no editing, no shell. `reviewer` and `security-scanner` have no
-network access at all, because their input is a diff someone else may have
-written. `domain-expert` keeps web search, so it can check a regulatory text.
-That's structural, not a promise in a prompt.
-
-If one reader returns nothing at all, the workflow says so. Incomplete coverage
-is not the same as "nothing to report", and treating the two alike is how a
-review quietly stops being a review.
-
-**Prior art before architecture.** The `dejavu` module searches published
-research for the hard part of your design before you rebuild it. It reads one
-paper per isolated subagent, so no source anchors another, then commits to a
-single recommended path with citations. Conclusions get recorded in
-`docs/engineering/prior-art.md` with their identifiers, because a conclusion
-nobody can reopen gets re-researched next session.
-
-**Eleven test levels.** `docs/engineering/testing-strategy.md` defines levels N1
-to N11, each with its scope and the moment it runs in CI. Two of them are the
-ones most projects skip and the ones that find the expensive defects: N4 runs
-concurrent operations as real processes and proves the executions actually
-overlapped, and N6 runs mutation testing on the critical domain only.
-
-### Optional modules
-
-You choose modules during the interview. Nothing is copied unless you ask for it.
-
-| Module | What it adds | Activate it when |
-|---|---|---|
-| `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. A secret scanner, four Laravel subagents, and a pre-written first epic | The architecture discovery lands on PHP and Laravel |
-| `mobile-flutter` | A `mobile/` directory, toolchain stories that start out `blocked` because Xcode and Android Studio can't be automated, and visual regression test levels | You're building an iOS, Android, or PWA app |
-| `dejavu` | The `/dejavu` prior-art skill embedded in your repository and versioned with it. Four academic sources, no API keys, standard-library Python | Your architecture has a non-trivial mechanism. Skip it if your machine already has `/dejavu` installed globally |
-
-The module rows say *when the discovery lands there*, not what you pick up front.
-
-With no stack module you get the core: the method, the skills, three read-only
-reviewers, and documentation skeletons. The bootstrap then writes `stack.md` and
-`testing-strategy.md` from the discovery, and generates a `developer` subagent —
-plus `dba` when there's a relational database — from `.claude/templates/`.
-
-### What it leaves out, on purpose
-
-**No application scaffold.** Neither `composer create-project` nor
-`flutter create` ships here. The scaffold is born in the first delivery
-iteration, with that day's versions. A scaffold frozen inside a template rots
-within months, and nobody notices before they've built on top of it.
-
-**No business domain.** The template asks for your invariants rather than
-assuming any.
-
-**No complete backlog.** The bootstrap writes the first epic and nothing else.
-Epics written months before they're needed are epics you rewrite.
-
-### What a run costs
-
-These commands spawn subagents and make real network calls. Know the cost before
-you start a loop.
-
-| Action | What it spends |
-|---|---|
-| One three-reader review | 3 subagents, one per reader, on every story |
-| One `/dejavu` search | Roughly 18 to 26 agent-shaped calls (1 categorize, 12 to 20 isolated reads on Haiku, scoring, clustering, up to 3 full-text reads, 1 convergence), plus real HTTP to four APIs |
-| Checking ecosystems with `codesearch.py` | Nothing. It's a Python script — no model in the loop |
-| `/loop` | Runs unattended until the backlog is exhausted. It expires after seven days |
-
-Every subagent declares `model: sonnet`; the isolated prior-art reads run on
-Haiku. The heavy model is reserved for `/security-review`, the one gate the
-delivery cycle imposes on the critical domain. The full policy, and how to move
-one agent up when your domain warrants it, is in
-[`docs/engineering/models.md`](docs/engineering/models.md).
-
-A loop that's running consumes tokens while you're looking elsewhere, and it
-re-launches `/deliver-story` even when you thought you were done. If a delivery
-starts without you typing anything, that's the loop: check `CronList` before
-concluding anything, and `CronDelete <id>` stops it early.
-
-### Check that it worked
-
-After the bootstrap, two commands tell you whether it finished. First, look for
-leftover placeholders:
-
-```bash
-grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
-```
-
-You should see nothing. Every surviving placeholder is a spot where your project
-still talks about the template. The pattern matches only the real shape — two
-braces, uppercase letters, two braces — so a bare `grep "{{"` doesn't drag in
-legitimate braces from code.
-
-Then confirm the template removed itself:
-
-```bash
-ls modules scripts
-```
-
-You should see "No such file or directory". If those directories are still
-there, the bootstrap stopped partway.
-
-If you activated `stack-laravel`, check that the environment starts:
-
-```bash
-docker compose up -d && docker compose ps
-```
-
-Every service should read `running`, and the database should read `healthy`.
-
-Two projects that both activated `stack-laravel` can't run at the same time
-without editing ports. Both publish 8080 for the app, 5433 for PostgreSQL, 6380
-for Redis, and 8026 for Mailpit. The second `docker compose up -d` either fails on a taken
-port or, worse, connects a tool to the other project's database.
-
-### Words used here
-
-| Term | What it means |
-|---|---|
-| Claude Code | Anthropic's coding agent, run from a terminal, an IDE, or a browser |
-| Skill | A named instruction set that the agent loads on demand. You invoke one by typing a slash and its name, like `/deliver-story` |
-| Subagent | A separate agent run with its own tool list and its own context. The three reviewers are subagents |
-| Workflow | A JavaScript file in `.claude/workflows/` that orchestrates several subagents deterministically. `review-story` is one |
-| Story | One unit of work with acceptance criteria, numbered `US-XYZ`. Also called a user story |
-| Epic | A file grouping related stories, numbered `E01`, `E02`, and so on |
-| Backlog | Everything in `docs/backlog/`: the epics, the delivery journal, and the decision log |
-| TDD | Test-driven development. Write the failing test, then the code that makes it pass |
-| Counter-proof | Deliberately breaking the code a test protects, to confirm the test turns red |
-| Squash merge | Merging a branch as a single commit, so one story reads as one commit on `main` |
-| Bootstrap | The one-time run that turns this template into your project |
-
-### When something breaks
-
-[GETTING-STARTED.md](GETTING-STARTED.md) ends with a symptom-cause-fix table
-covering the failures people actually hit: the bootstrap refusing to start,
-placeholders surviving, a reviewer staying silent, and a `domain-expert` that
-never finds anything because it was never specialized.
-
-Two rules are worth repeating here. Never merge on a red CI. And if a reviewer
-returns no report, that's incomplete coverage, not a clean bill of health.
-
-### Contributing
-
-Issues and pull requests are welcome. Two things to know before you open one.
-
-`.github/workflows/template.yml` bootstraps a throwaway copy in five module
-combinations on every pull request, and checks that nothing of the template
-survives, that no backup file is left behind, and that only the writing
-placeholders remain. Run the same check locally before opening a pull request:
-
-```bash
-cp -R . /tmp/socle-check && cd /tmp/socle-check
-./scripts/bootstrap.sh test-slug stack-laravel
-grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git   # only the writing placeholders
-ls modules scripts                              # No such file or directory
-```
-
-`CONTRIBUTING.md` at the root belongs to the *generated project*, not to this
-template. It's one of the files your project inherits.
-
-### Origin and license
-
-This template was extracted from a real project delivered with this method. What
-survived the extraction is what had already caught a defect: the counter-proof
-discipline, the three-reader review, the "here's how to check it yourself"
-section that closes every report, and the whitelist that keeps the agent from
-installing tools nobody approved.
-
-Licensed under [MIT](LICENSE).
+**[Français](#français) · [English](#english)**
 
 ---
 
@@ -355,6 +20,7 @@ Licensed under [MIT](LICENSE).
 - [Ce que c'est](#ce-que-cest)
 - [Prérequis](#prérequis)
 - [Démarrage rapide](#démarrage-rapide)
+- [Adopter la méthode dans un projet existant](#adopter-la-méthode-dans-un-projet-existant)
 - [Ce que l'amorçage te demande](#ce-que-lamorçage-te-demande)
 - [Le cycle quotidien](#le-cycle-quotidien)
 - [Ce qu'il y a dedans](#ce-quil-y-a-dedans)
@@ -362,6 +28,7 @@ Licensed under [MIT](LICENSE).
 - [Ce qu'il n'y a pas dedans, exprès](#ce-quil-ny-a-pas-dedans-exprès)
 - [Ce qu'un run coûte](#ce-quun-run-coûte)
 - [Vérifier que ça a marché](#vérifier-que-ça-a-marché)
+- [Configuration locale](#configuration-locale)
 - [Les mots employés ici](#les-mots-employés-ici)
 - [Quand quelque chose casse](#quand-quelque-chose-casse)
 - [Contribuer](#contribuer)
@@ -442,6 +109,74 @@ Lis [GETTING-STARTED.md](GETTING-STARTED.md) en entier avant l'étape 2. Il
 couvre les prérequis, chaque étape en détail, ce qu'il faut vérifier, et quoi
 faire quand ça ne va pas. L'amorçage supprime ce fichier aussi, parce qu'il
 parle du template et non de ton projet.
+
+### Adopter la méthode dans un projet existant
+
+Le démarrage rapide ci-dessus suppose un dépôt neuf. Si ton projet a déjà du
+code, un historique et sa propre documentation, c'est un autre chemin — et il ne
+touche à rien de ce que tu as écrit.
+
+Trois commandes, depuis ton projet :
+
+```bash
+git clone --depth 1 https://github.com/jamyl/socle /tmp/socle
+cd mon-projet-existant
+/tmp/socle/scripts/adopt.sh
+```
+
+Puis, dans une session Claude Code ouverte sur ton projet : **`/adopter-socle`**.
+
+**Ce que le script fait.** Il vérifie que ton arbre de travail est propre, crée
+une branche `adopter-socle`, et copie la méthode : les skills, les trois
+relecteurs, les règles, le workflow de revue et les squelettes de documentation.
+
+**Ce qu'il ne fait jamais.** Il n'écrase aucun fichier. Ton `README.md`, ta
+`LICENSE` et ton `.claude/settings.json` ne sont pas touchés du tout. Si tu as
+déjà un `CLAUDE.md`, la version du socle atterrit à côté en `CLAUDE.socle.md` et
+c'est le skill qui te proposera la fusion, section par section. Ton `.gitignore`
+reçoit seulement les lignes qui lui manquent, ajoutées à la fin. Tout ce qui a
+été sauté est listé en clair à la fin du script : c'est la liste de ce qu'il te
+reste à rapprocher.
+
+**Ce que le skill fait de différent.** Là où `/bootstrap-project` interviewe pour
+connaître la stack, `/adopter-socle` **lit ton dépôt** : les manifestes et leurs
+verrous pour les versions exactes, les scripts et cibles de build pour les
+commandes réelles, la CI existante pour les gates déjà en place. Une stack ne se
+redemande pas quand le code fait autorité.
+
+Il lance ensuite **ta suite de tests** et rapporte sa sortie réelle. Trois cas,
+et aucun n'est un échec de l'adoption :
+
+| Ce qu'il trouve | Ce qu'il en fait |
+|---|---|
+| Suite verte | Note le compte, tu as une base de référence |
+| Suite rouge | **Ne l'écrit pas comme verte.** Ça devient la première story du backlog |
+| Pas de suite | Le dit franchement. C'est la story la plus importante : « on l'a vu échouer » n'a aucun sens sans tests |
+
+Il t'interroge alors sur ce que le code ne peut pas dire — le but du produit, les
+personas, le jalon en cours — et sur **les règles qui coûtent le plus cher à
+violer**, en te proposant celles qu'il a déduites de ton code pour que tu les
+corriges plutôt que de partir d'une page blanche.
+
+Enfin il écrit un premier epic qui n'est pas « fondations », puisqu'elles
+existent : c'est l'epic de ce qui manque pour que la méthode puisse tourner —
+les tests, la CI, le garde-fou qui empêche la suite d'atteindre ta base de
+développement, et chaque dette que tu as choisi d'assumer.
+
+**Si ta stack correspond à un module**, reprends aussi ses sous-agents et ses
+règles — et rien d'autre :
+
+```bash
+/tmp/socle/scripts/adopt.sh --stack stack-laravel
+```
+
+Le drapeau ne copie que le `.claude/` du module. Ni `docker-compose.yml`, ni CI,
+ni `Dockerfile` : l'infrastructure d'un projet qui tourne ne se remplace pas par
+celle d'un template.
+
+**Ce qui n'est pas repris, exprès** : aucun scaffold, aucune story de fondation,
+aucune spécification rétroactive de ce que tu as déjà livré. Le backlog part de
+maintenant ; `git log` porte déjà le passé.
 
 ### Ce que l'amorçage te demande
 
@@ -645,6 +380,41 @@ même temps sans modifier les ports. Les deux publient 8080 pour l'app, 5433 pou
 PostgreSQL, 6380 pour Redis et 8026 pour Mailpit. Le second `docker compose up -d` échoue
 sur un port déjà pris ou, pire, connecte un outil à la base de l'autre projet.
 
+### Configuration locale
+
+Certains fichiers de configuration appartiennent au dépôt, d'autres à ton poste.
+Les mélanger produit deux symptômes désagréables : une permission qui marche chez
+toi et nulle part ailleurs, ou un chemin de machine commité dans une PR.
+
+**Se commite**, parce que toute l'équipe doit avoir les mêmes garde-fous :
+`.claude/settings.json` (les permissions `allow` et `deny`), la méthode entière
+sous `.claude/`, `CLAUDE.md`, et le `.mcp.json` qu'un module fournit.
+
+**Ne se commite jamais**, et c'est déjà dans le `.gitignore` :
+`.claude/settings.local.json` (tes surcharges personnelles),
+`.claude/scheduled_tasks.json` et son verrou (l'état des boucles `/loop`, qui
+appartient à la session qui les a lancées), le bytecode Python, et les `*.bak`
+d'un amorçage interrompu.
+
+**Ne vit pas dans le dépôt du tout** : tes préférences globales dans
+`~/.claude/`, les skills que tu as installés pour toi seul, le cache de `/dejavu`
+dans `~/.cache/dejavu` — partagé entre tous tes projets — et les variables
+d'environnement comme `DEJAVU_CONTACT`.
+
+⚠️ **Une variable d'environnement doit être dans ton fichier de profil**
+(`~/.zshrc`, `~/.bashrc`), pas seulement exportée dans un terminal : le processus
+de Claude Code a démarré avant ton `export`, il ne le voit pas. Après édition,
+rouvre le terminal.
+
+🔑 **Une liste `deny` n'est pas un contrôle de sécurité.** Elle compare des
+préfixes littéraux, et les formes équivalentes d'un même push sont innombrables.
+Les trois règles `deny` du template attrapent les fautes d'inattention, rien de
+plus. Ce qui en est un : la protection de branche côté GitHub.
+
+Le détail — ce qui manque exprès à la liste `allow`, et pourquoi il ne faut pas
+l'élargir à l'avance — est dans
+[`docs/engineering/config-locale.md`](docs/engineering/config-locale.md).
+
 ### Les mots employés ici
 
 | Terme | Ce que ça veut dire |
@@ -702,3 +472,447 @@ tu peux le vérifier toi-même » qui clôt chaque rapport, et la liste blanche 
 empêche l'agent d'installer un outil que personne n'a approuvé.
 
 Sous licence [MIT](LICENSE).
+
+---
+
+## English
+
+- [What this is](#what-this-is)
+- [Requirements](#requirements)
+- [Quickstart](#quickstart)
+- [Adopting the method in an existing project](#adopting-the-method-in-an-existing-project)
+- [What the bootstrap asks you](#what-the-bootstrap-asks-you)
+- [The daily cycle](#the-daily-cycle)
+- [What's inside](#whats-inside)
+- [Optional modules](#optional-modules)
+- [What it leaves out, on purpose](#what-it-leaves-out-on-purpose)
+- [What a run costs](#what-a-run-costs)
+- [Check that it worked](#check-that-it-worked)
+- [Local configuration](#local-configuration)
+- [Words used here](#words-used-here)
+- [When something breaks](#when-something-breaks)
+- [Contributing](#contributing)
+- [Origin and license](#origin-and-license)
+
+### What this is
+
+Building software with an AI coding agent has two recurring problems. You
+re-explain your rules every session, and you have to take the agent's word that
+the tests pass.
+
+This template removes both. The method lives in files that Claude Code reads on
+its own, so the rules survive between sessions. And every report the agent
+writes ends with a command *you* run to check the result yourself, so you never
+have to believe a claim you can't reproduce.
+
+What you get is a repository where one command delivers a user story from branch
+to merged pull request, a code review where three independent readers examine the
+same change without seeing each other's findings, and one firm rule: a test only
+counts as proof once somebody has watched it fail.
+
+The template ships no application code and no business rules. It asks for yours.
+
+New to Claude Code? Every term on this page is defined in
+[Words used here](#words-used-here). Read that section first if *skill*,
+*subagent*, *story*, or *epic* isn't already familiar.
+
+### Requirements
+
+Check these once per machine, before you start:
+
+| Tool | Check it with | If it's missing |
+|---|---|---|
+| Claude Code 2.1.154 or later | `claude --version` | Update. Below that version the Workflow tool doesn't exist, and the three-reader review silently doesn't run |
+| GitHub CLI, signed in | `gh auth status` | `gh auth login` |
+| Node.js | `node --version` | Needed by the `context7` documentation server in the Laravel module |
+| Python 3 | `python3 --version` | Needed by the `dejavu` module. Its scripts use the standard library only, so there's nothing to install with `pip` |
+| A container runtime | `docker compose version` | Install Docker Desktop, or OrbStack on macOS. Needed by the `stack-laravel` module |
+
+Node.js, Python, and Docker are each tied to one optional module. Skip the ones
+whose module you don't activate.
+
+### Quickstart
+
+Three steps take you from nothing to a project with its first epic written.
+
+1. Create your repository from this template:
+
+   ```bash
+   gh repo create my-project --template jamyl/socle --private --clone
+   cd my-project
+   ```
+
+   You should now see `CLAUDE.md`, `GETTING-STARTED.md`, `modules/`, and
+   `scripts/bootstrap.sh`. If `modules/` is absent, the copy was incomplete;
+   start over.
+
+2. Open a session and bootstrap the project:
+
+   ```bash
+   claude
+   ```
+
+   Then, inside the session, run `/bootstrap-project`. This is a **skill** — a
+   named instruction set that Claude Code loads on demand, invoked with a
+   leading slash. The bootstrap runs once, interviews you, writes your
+   documentation, and then deletes itself.
+
+3. Deliver the first story:
+
+   ```text
+   /deliver-story
+   ```
+
+Read [GETTING-STARTED.md](GETTING-STARTED.md) in full before step 2. It covers
+prerequisites, each step in detail, what to check, and what to do when something
+goes wrong. The bootstrap deletes that file too, because it describes the
+template rather than your project.
+
+### Adopting the method in an existing project
+
+The quickstart above assumes a fresh repository. If your project already has
+code, a history, and documentation of its own, that's a different path — and it
+touches none of what you wrote.
+
+Three commands, from inside your project:
+
+```bash
+git clone --depth 1 https://github.com/jamyl/socle /tmp/socle
+cd my-existing-project
+/tmp/socle/scripts/adopt.sh
+```
+
+Then, in a Claude Code session open on your project: **`/adopter-socle`**.
+
+**What the script does.** It checks that your working tree is clean, creates an
+`adopter-socle` branch, and copies the method: the skills, the three reviewers,
+the rules, the review workflow, and the documentation skeletons.
+
+**What it never does.** It overwrites nothing. Your `README.md`, your `LICENSE`,
+and your `.claude/settings.json` are left alone entirely. If you already have a
+`CLAUDE.md`, the template's version lands beside it as `CLAUDE.socle.md`, and the
+skill walks you through the merge section by section. Your `.gitignore` gets only
+the lines it's missing, appended at the end. Everything skipped is listed in
+plain text when the script finishes: that list is what's left for you to
+reconcile.
+
+**What the skill does differently.** Where `/bootstrap-project` interviews you
+about the stack, `/adopter-socle` **reads your repository**: the manifests and
+their lock files for exact versions, the build scripts and targets for the real
+commands, the existing CI for the gates already in place. A stack isn't worth
+asking about when the code is authoritative.
+
+It then runs **your test suite** and reports the real output. Three cases, none
+of which is a failed adoption:
+
+| What it finds | What it does |
+|---|---|
+| Green suite | Records the count — you have a baseline |
+| Red suite | **Doesn't write it up as green.** It becomes the first story in the backlog |
+| No suite | Says so plainly. That's the most important story: "we watched it fail" is meaningless without tests |
+
+It asks you only what the code cannot tell — the product's purpose, the personas,
+the milestone in progress — and about **the rules that cost the most to break**,
+proposing the ones it inferred from your code so you correct them rather than
+start from a blank page.
+
+Finally it writes a first epic that isn't "foundations", since those exist: it's
+the epic of what's missing for the method to run — the tests, the CI, the guard
+that keeps the suite away from your development database, and each piece of debt
+you chose to accept.
+
+**If your stack matches a module**, pick up its subagents and rules too — and
+nothing else:
+
+```bash
+/tmp/socle/scripts/adopt.sh --stack stack-laravel
+```
+
+The flag copies only the module's `.claude/` directory. No `docker-compose.yml`,
+no CI, no `Dockerfile`: a running project's infrastructure doesn't get replaced
+by a template's.
+
+**What isn't brought over, on purpose**: no scaffold, no foundation stories, no
+retroactive specification of what you already shipped. The backlog starts now;
+`git log` already carries the past.
+
+### What the bootstrap asks you
+
+The interview comes in four rounds, and you're asked to approve the result
+before anything gets written.
+
+1. **Identity** — the project name, a slug in kebab-case for container and
+   database names, and the purpose in one sentence.
+2. **Product** — who uses it and for what, what has to work before you can say
+   the product exists, and what is explicitly out of scope.
+3. **Constraints and architecture** — legal or regulatory obligations, hosting
+   target, the languages your team debugs in production, scale at twelve months,
+   realtime or offline needs, your deadline, and any stack you've already been
+   handed.
+4. **The rules that cost the most to break** — three to five invariants of your
+   domain, each phrased so a test can check it.
+
+Round 4 decides the quality of everything that follows. Those rules become the
+checklist that one of the three reviewers applies to *every* change, for as long
+as the project lives. "No code outside X writes to Y" can be checked. "The code
+should be clean" cannot. A vague answer here produces a vague review for months.
+
+After the interview, the agent names the hard mechanism in your design, if there
+is one — concurrency, consistency, offline sync — and offers a prior-art search
+on it, with the cost stated, then waits. It checks two or three candidate
+ecosystems for maintained implementations of the building blocks you need, which
+costs nothing but a few HTTP requests. Then it proposes one stack, one
+alternative, and the sentence that rules the alternative out.
+
+**Laravel is one possible outcome, not the default.** The `stack-laravel` module
+activates because the discovery lands on PHP; any other answer gets a stack
+written from the interview and a `developer` subagent generated for it.
+
+Nothing is written before you approve.
+
+### The daily cycle
+
+Two commands carry the work, and each leaves a trace on disk:
+
+```text
+/cadrer-story "<a raw requirement>"
+      |
+      v   2 to 5 stories written to an epic file, in Given/When/Then form
+      |
+/deliver-story
+      |
+      v   branch -> plan -> TDD -> tests green -> three-reader review
+      |   -> pull request -> CI green -> squash merge
+      |
+docs/backlog/JOURNAL.md        one line per delivery
+docs/backlog/DECISIONS.md      one line per call made without asking you
+```
+
+To chain several stories without retyping, run `/loop 10m /deliver-story E01`.
+The loop stops on its own when no story in scope is still actionable.
+
+Writing a story and delivering it are separate commands on purpose. A badly
+framed story discovered during delivery costs a branch that's already open and a
+plan that's already written. Discovered during framing, it costs a re-read.
+
+### What's inside
+
+**The delivery cycle.** `/deliver-story` picks the next actionable story by
+walking the dependency graph, not a fixed list. A story whose prerequisite lives
+in a later epic gets skipped, then becomes a candidate again once that
+prerequisite ships. If a story needs a human — a legal opinion, an account with
+a third party, an API key — it's marked `blocked` with the reason, and the agent
+moves to the next one instead of losing a turn discovering the wall.
+
+**Counter-proof discipline.** A test is proof only once you've seen it fail.
+Before writing "this is covered", the agent removes the guard the test claims to
+protect, re-runs it, confirms red, and restores. The skill carries eight
+concrete ways a test can stay green while proving nothing: tautology, missing
+setup, a race timed with `sleep` instead of a signal, a guard that's duplicated
+elsewhere, and four more. All eight were met in practice, within two days. The
+question that summarizes them: *what would this test have to see to turn red?*
+
+**The three-reader review.** After the tests pass, three read-only subagents
+read the same diff in parallel without seeing each other's findings:
+`reviewer` for conventions and structure, `security-scanner` for
+vulnerabilities, and `domain-expert` for your own invariants. Their findings are
+deduplicated and sorted in code, not by a model. Their tools are limited to
+reading files: no editing, no shell. `reviewer` and `security-scanner` have no
+network access at all, because their input is a diff someone else may have
+written. `domain-expert` keeps web search, so it can check a regulatory text.
+That's structural, not a promise in a prompt.
+
+If one reader returns nothing at all, the workflow says so. Incomplete coverage
+is not the same as "nothing to report", and treating the two alike is how a
+review quietly stops being a review.
+
+**Prior art before architecture.** The `dejavu` module searches published
+research for the hard part of your design before you rebuild it. It reads one
+paper per isolated subagent, so no source anchors another, then commits to a
+single recommended path with citations. Conclusions get recorded in
+`docs/engineering/prior-art.md` with their identifiers, because a conclusion
+nobody can reopen gets re-researched next session.
+
+**Eleven test levels.** `docs/engineering/testing-strategy.md` defines levels N1
+to N11, each with its scope and the moment it runs in CI. Two of them are the
+ones most projects skip and the ones that find the expensive defects: N4 runs
+concurrent operations as real processes and proves the executions actually
+overlapped, and N6 runs mutation testing on the critical domain only.
+
+### Optional modules
+
+You choose modules during the interview. Nothing is copied unless you ask for it.
+
+| Module | What it adds | Activate it when |
+|---|---|---|
+| `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. A secret scanner, four Laravel subagents, and a pre-written first epic | The architecture discovery lands on PHP and Laravel |
+| `mobile-flutter` | A `mobile/` directory, toolchain stories that start out `blocked` because Xcode and Android Studio can't be automated, and visual regression test levels | You're building an iOS, Android, or PWA app |
+| `dejavu` | The `/dejavu` prior-art skill embedded in your repository and versioned with it. Four academic sources, no API keys, standard-library Python | Your architecture has a non-trivial mechanism. Skip it if your machine already has `/dejavu` installed globally |
+
+The module rows say *when the discovery lands there*, not what you pick up front.
+
+With no stack module you get the core: the method, the skills, three read-only
+reviewers, and documentation skeletons. The bootstrap then writes `stack.md` and
+`testing-strategy.md` from the discovery, and generates a `developer` subagent —
+plus `dba` when there's a relational database — from `.claude/templates/`.
+
+### What it leaves out, on purpose
+
+**No application scaffold.** Neither `composer create-project` nor
+`flutter create` ships here. The scaffold is born in the first delivery
+iteration, with that day's versions. A scaffold frozen inside a template rots
+within months, and nobody notices before they've built on top of it.
+
+**No business domain.** The template asks for your invariants rather than
+assuming any.
+
+**No complete backlog.** The bootstrap writes the first epic and nothing else.
+Epics written months before they're needed are epics you rewrite.
+
+### What a run costs
+
+These commands spawn subagents and make real network calls. Know the cost before
+you start a loop.
+
+| Action | What it spends |
+|---|---|
+| One three-reader review | 3 subagents, one per reader, on every story |
+| One `/dejavu` search | Roughly 18 to 26 agent-shaped calls (1 categorize, 12 to 20 isolated reads on Haiku, scoring, clustering, up to 3 full-text reads, 1 convergence), plus real HTTP to four APIs |
+| Checking ecosystems with `codesearch.py` | Nothing. It's a Python script — no model in the loop |
+| `/loop` | Runs unattended until the backlog is exhausted. It expires after seven days |
+
+Every subagent declares `model: sonnet`; the isolated prior-art reads run on
+Haiku. The heavy model is reserved for `/security-review`, the one gate the
+delivery cycle imposes on the critical domain. The full policy, and how to move
+one agent up when your domain warrants it, is in
+[`docs/engineering/models.md`](docs/engineering/models.md).
+
+A loop that's running consumes tokens while you're looking elsewhere, and it
+re-launches `/deliver-story` even when you thought you were done. If a delivery
+starts without you typing anything, that's the loop: check `CronList` before
+concluding anything, and `CronDelete <id>` stops it early.
+
+### Check that it worked
+
+After the bootstrap, two commands tell you whether it finished. First, look for
+leftover placeholders:
+
+```bash
+grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
+```
+
+You should see nothing. Every surviving placeholder is a spot where your project
+still talks about the template. The pattern matches only the real shape — two
+braces, uppercase letters, two braces — so a bare `grep "{{"` doesn't drag in
+legitimate braces from code.
+
+Then confirm the template removed itself:
+
+```bash
+ls modules scripts
+```
+
+You should see "No such file or directory". If those directories are still
+there, the bootstrap stopped partway.
+
+If you activated `stack-laravel`, check that the environment starts:
+
+```bash
+docker compose up -d && docker compose ps
+```
+
+Every service should read `running`, and the database should read `healthy`.
+
+Two projects that both activated `stack-laravel` can't run at the same time
+without editing ports. Both publish 8080 for the app, 5433 for PostgreSQL, 6380
+for Redis, and 8026 for Mailpit. The second `docker compose up -d` either fails on a taken
+port or, worse, connects a tool to the other project's database.
+
+### Local configuration
+
+Some configuration files belong to the repository, others to your machine. Mixing
+them produces two unpleasant symptoms: a permission that works for you and
+nowhere else, or a machine path committed in a pull request.
+
+**Committed**, because the whole team needs the same guardrails:
+`.claude/settings.json` (the `allow` and `deny` permissions), the entire method
+under `.claude/`, `CLAUDE.md`, and the `.mcp.json` a module provides.
+
+**Never committed**, and already in `.gitignore`:
+`.claude/settings.local.json` (your personal overrides),
+`.claude/scheduled_tasks.json` and its lock (the state of `/loop` runs, which
+belongs to the session that started them), Python bytecode, and the `*.bak` files
+an interrupted bootstrap leaves behind.
+
+**Doesn't live in the repository at all**: your global preferences in
+`~/.claude/`, skills you installed for yourself, the `/dejavu` cache in
+`~/.cache/dejavu` — shared across all your projects — and environment variables
+such as `DEJAVU_CONTACT`.
+
+⚠️ **An environment variable has to be in your shell profile** (`~/.zshrc`,
+`~/.bashrc`), not just exported in a terminal: the Claude Code process started
+before your `export`, so it doesn't see it. Reopen the terminal after editing.
+
+🔑 **A `deny` list is not a security control.** It compares literal prefixes, and
+the equivalent forms of the same push are countless. The template's three `deny`
+rules catch slips of attention, nothing more. What is a control: branch
+protection on the GitHub side.
+
+The details — what's deliberately missing from the `allow` list, and why you
+shouldn't widen it in advance — are in
+[`docs/engineering/config-locale.md`](docs/engineering/config-locale.md).
+
+### Words used here
+
+| Term | What it means |
+|---|---|
+| Claude Code | Anthropic's coding agent, run from a terminal, an IDE, or a browser |
+| Skill | A named instruction set that the agent loads on demand. You invoke one by typing a slash and its name, like `/deliver-story` |
+| Subagent | A separate agent run with its own tool list and its own context. The three reviewers are subagents |
+| Workflow | A JavaScript file in `.claude/workflows/` that orchestrates several subagents deterministically. `review-story` is one |
+| Story | One unit of work with acceptance criteria, numbered `US-XYZ`. Also called a user story |
+| Epic | A file grouping related stories, numbered `E01`, `E02`, and so on |
+| Backlog | Everything in `docs/backlog/`: the epics, the delivery journal, and the decision log |
+| TDD | Test-driven development. Write the failing test, then the code that makes it pass |
+| Counter-proof | Deliberately breaking the code a test protects, to confirm the test turns red |
+| Squash merge | Merging a branch as a single commit, so one story reads as one commit on `main` |
+| Bootstrap | The one-time run that turns this template into your project |
+
+### When something breaks
+
+[GETTING-STARTED.md](GETTING-STARTED.md) ends with a symptom-cause-fix table
+covering the failures people actually hit: the bootstrap refusing to start,
+placeholders surviving, a reviewer staying silent, and a `domain-expert` that
+never finds anything because it was never specialized.
+
+Two rules are worth repeating here. Never merge on a red CI. And if a reviewer
+returns no report, that's incomplete coverage, not a clean bill of health.
+
+### Contributing
+
+Issues and pull requests are welcome. Two things to know before you open one.
+
+`.github/workflows/template.yml` bootstraps a throwaway copy in five module
+combinations on every pull request, and checks that nothing of the template
+survives, that no backup file is left behind, and that only the writing
+placeholders remain. Run the same check locally before opening a pull request:
+
+```bash
+cp -R . /tmp/socle-check && cd /tmp/socle-check
+./scripts/bootstrap.sh test-slug stack-laravel
+grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git   # only the writing placeholders
+ls modules scripts                              # No such file or directory
+```
+
+`CONTRIBUTING.md` at the root belongs to the *generated project*, not to this
+template. It's one of the files your project inherits.
+
+### Origin and license
+
+This template was extracted from a real project delivered with this method. What
+survived the extraction is what had already caught a defect: the counter-proof
+discipline, the three-reader review, the "here's how to check it yourself"
+section that closes every report, and the whitelist that keeps the agent from
+installing tools nobody approved.
+
+Licensed under [MIT](LICENSE).

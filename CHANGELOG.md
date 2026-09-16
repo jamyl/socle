@@ -9,6 +9,14 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Chemin d'adoption pour un projet existant** : `scripts/adopt.sh` copie la
+  méthode sans jamais écraser (un `CLAUDE.socle.md` se dépose à côté d'un
+  `CLAUDE.md` existant, `.gitignore` ne reçoit que ses lignes manquantes,
+  `README.md` et `LICENSE` ne sont pas touchés), et le skill `/adopter-socle`
+  déduit la stack en lisant le dépôt au lieu de l'interviewer. `--stack <module>`
+  reprend les agents et règles d'un module sans son infrastructure.
+- **`docs/engineering/config-locale.md`** : ce qui se commite, ce qui reste local,
+  et pourquoi une liste `deny` n'est pas un contrôle de sécurité.
 - **Découverte d'architecture** à l'amorçage : sept questions fermées qui
   discriminent une stack, un run `/dejavu` proposé et chiffré sur le seul
   mécanisme dur, et `codesearch.py` seul pour vérifier les briques dans deux ou
@@ -37,6 +45,8 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 - **Un seul vocabulaire** : `H<n>` pour les hypothèses produit de `vision.md` §8,
   `D<n>` pour les décisions de `DECISIONS.md`. `/cadrer-story` ne dit plus
   « hypothèse ».
+- **README en français d'abord**, puis en anglais, et deux sections de plus par
+  langue : l'adoption dans un projet existant, et la configuration locale.
 
 ### Corrigé
 - Le contrôle final de l'amorçage criait au loup sur sa propre documentation : le

@@ -153,7 +153,15 @@ rm -f "$RACINE/CHANGELOG.md"
 rm -f "$RACINE/.github/workflows/template.yml"
 rmdir "$RACINE/.github/workflows" "$RACINE/.github" 2>/dev/null || true
 rm -rf "$RACINE/.claude/skills/bootstrap-project"
+# Le skill d'adoption ne sert qu'à un projet qui avait déjà du code. Dans un
+# projet né du template, il décrirait une situation qui n'arrivera jamais — et un
+# skill qui décrit un cas impossible répond quand même si on l'invoque.
+rm -rf "$RACINE/.claude/skills/adopter-socle"
 rm -f "$RACINE/GETTING-STARTED.md"
+# adopt.sh est le pendant de ce script pour un dépôt qui avait déjà du code : il
+# n'a rien à faire dans un projet né du template, et son garde « ce projet a déjà
+# /deliver-story » le ferait de toute façon refuser.
+rm -f "$RACINE/scripts/adopt.sh"
 rm -f "$0"
 rmdir "$RACINE/scripts" 2>/dev/null || true
 
