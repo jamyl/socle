@@ -1,6 +1,6 @@
 ---
 name: cadrer-story
-description: Transforme un requis brut — une phrase, une décision consignée, un finding d'audit, une contrainte reçue d'un tiers — en stories `à faire` prêtes pour /deliver-story : critères en Étant donné/Quand/Alors, hypothèses consignées, priorité et dépendances posées. Écrit dans un fichier d'epic, ne code jamais.
+description: Transforme un requis brut — une phrase, une décision consignée, un finding d'audit, une contrainte reçue d'un tiers — en stories `à faire` prêtes pour /deliver-story : critères en Étant donné/Quand/Alors, décisions consignées, priorité et dépendances posées. Écrit dans un fichier d'epic, ne code jamais.
 argument-hint: "<le requis brut, et l'epic cible si tu le sais>"
 ---
 
@@ -25,7 +25,8 @@ Ce cycle a déjà son vocabulaire. Ne lui en ajoute pas un deuxième.
 | MoSCoW (Must / Should / Could / Won't) | **P0 / P1 / P2 / P3** de `docs/backlog/README.md`. Won't = « Hors périmètre, délibérément » (`docs/product/vision.md` §5) |
 | Ordonnancement, WSJF, RICE | Le **graphe `Dépend de`**, seule source d'ordonnancement de `/deliver-story` §1 |
 | Format Connextra | `**En tant que** … **je veux** … **afin de** …`, déjà le gabarit du backlog |
-| Validation avec les parties prenantes | **`docs/backlog/DECISIONS.md`** : on tranche, on consigne, l'utilisateur valide en fin de cycle |
+| Validation avec les parties prenantes | **`docs/backlog/DECISIONS.md`** : on tranche, on consigne `D<n>`, l'utilisateur valide en fin de cycle |
+| Hypothèses (Lean, validées par une expérience) | `docs/product/vision.md` §8, `H<n>` — **réservé au produit**. Ici on tranche des **décisions** `D<n>` ; ne mélange pas les deux numérotations |
 | Découpage d'une story trop grosse | Sous-stories `US-XXXa`, `US-XXXb` dans le fichier d'epic |
 
 Et surtout : **les stories déjà `fait` ne se réécrivent pas.** Le gabarit
@@ -57,20 +58,20 @@ Produis une fiche, dans ta réponse et non dans un fichier :
 | Origine | D'où vient le requis, avec sa date |
 | Glossaire | Chaque mot métier nouveau, une définition chacun |
 | Questions ouvertes | Tout ce que le requis ne dit pas |
-| Hypothèses | Chaque question ouverte, tranchée |
+| Décisions | Chaque question ouverte, tranchée |
 
 **Une question ouverte ne se pose pas : elle se tranche.** Chaque question devient
-une hypothèse `H1…Hn`, appliquée, et **une ligne dans `docs/backlog/DECISIONS.md`**
-au format du fichier : date, story, question, ce qui est retenu en gras,
-l'alternative écartée, le coût du revirement. Marque `🔴` toute décision qui
-touche le domaine critique déclaré dans `CLAUDE.md` — celui qui porte les règles
-les plus chères à violer.
+une décision `D<n>` — le numéro suivant du journal — appliquée, et **une ligne
+dans `docs/backlog/DECISIONS.md`** au format du fichier : numéro, date, story,
+question, ce qui est retenu en gras, l'alternative écartée, le coût du
+revirement. Marque `🔴` toute décision qui touche le domaine critique déclaré
+dans `CLAUDE.md` — celui qui porte les règles les plus chères à violer.
 
 C'est ce qui permet au cadrage de tourner sans t'arrêter, y compris sous `/loop` :
 une boucle ne peut pas attendre une réponse.
 
 ⚠️ **Ne jamais inventer une règle métier absente du requis.** Une règle inventée
-et non signalée devient un fait dans six mois. Si une hypothèse touche le domaine
+et non signalée devient un fait dans six mois. Si une décision touche le domaine
 critique, passe par l'agent `domain-expert` avant de la trancher.
 
 **Ce qui interrompt encore** : une action humaine ou externe — avis juridique,
@@ -121,7 +122,7 @@ Critères d'acceptation :
       Quand je choisis le type « externe » et je valide
       Alors la fiche de « Atelier Nord » affiche le type « externe »
 
-> **[H2] Le type reste modifiable après la création.** Le requis ne parlait que
+> **[D7] Le type reste modifiable après la création.** Le requis ne parlait que
 > de la création. Consigné le JJ/MM dans DECISIONS.md.
 ```
 
@@ -147,7 +148,7 @@ Règles d'écriture des critères — *BDD, Given/When/Then ; Specification by E
    scénario ne les cite, la revue en fan-out est le dernier filet, et il est plus
    fin que prévu.
 
-Les hypothèses se recopient sous la story en blockquote `>`. Le récit long va dans
+Les décisions se recopient sous la story en blockquote `>`, avec leur `D<n>`. Le récit long va dans
 le corps de la PR, pas ici.
 
 ## 4. Contrôle qualité
@@ -182,7 +183,7 @@ Ne touche pas à la roadmap de `docs/backlog/README.md` : elle est indicative, e
 Termine par :
 
 - **Les stories créées** : numéro, titre, priorité, estimation, dépendances.
-- **Les hypothèses posées**, chacune avec sa ligne dans `DECISIONS.md`.
+- **Les décisions prises**, chacune avec son `D<n>` et sa ligne dans `DECISIONS.md`.
 - **Ce qui reste bloqué** sur une action humaine, avec ce qui est attendu de
   l'utilisateur.
 - **La commande de contrôle et sa sortie réelle** :

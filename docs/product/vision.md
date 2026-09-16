@@ -57,6 +57,11 @@ avis**. Ne jamais présenter une lecture réglementaire comme acquise.
 
 ## 8. Hypothèses à vérifier
 
+**Hypothèses produit uniquement** : ce qu'on suppose du marché, des usages ou de
+la valeur, et qu'une expérience tranchera. Une question de cadrage ou de
+livraison qu'on a tranchée seul n'est pas une hypothèse : c'est une décision
+`D<n>` dans [`docs/backlog/DECISIONS.md`](../backlog/DECISIONS.md).
+
 | # | Hypothèse | Comment on la tranche | Statut |
 |---|---|---|---|
 | H1 | À COMPLÉTER | | ouverte |

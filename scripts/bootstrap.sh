@@ -3,11 +3,12 @@
 # socle — amorçage mécanique d'un nouveau projet.
 #
 # Ce script ne rédige RIEN. Il substitue les placeholders, copie les modules
-# choisis à la racine, puis se supprime avec le skill de bootstrap.
+# choisis à la racine, met en place les gabarits d'agents de stack quand aucun
+# module de stack n'est activé, puis se supprime avec le skill de bootstrap.
 # La rédaction (vision, stack, règles, backlog) est le travail de Claude Code
 # via /bootstrap-project — c'est lui qui appelle ce script, pas l'inverse.
 #
-# Usage : ./scripts/bootstrap.sh <slug> [stack-laravel] [mobile-flutter]
+# Usage : ./scripts/bootstrap.sh <slug> [stack-laravel] [mobile-flutter] [dejavu]
 
 set -euo pipefail
 
@@ -25,6 +26,10 @@ Exemples :
   ./scripts/bootstrap.sh ma-boutique stack-laravel
   ./scripts/bootstrap.sh ma-boutique stack-laravel mobile-flutter dejavu
   ./scripts/bootstrap.sh mon-outil
+
+Sans module de stack (aucun « stack-* »), les gabarits d'agents de
+.claude/templates/agent-stack-*.md sont déplacés dans .claude/agents/ :
+c'est /bootstrap-project qui les spécialise ensuite avec la stack retenue.
 
 Le module « dejavu » embarque la recherche d'antériorité dans le projet.
 À NE PAS activer si ~/.claude/skills/dejavu existe déjà sur le poste :
@@ -117,10 +122,36 @@ while IFS= read -r f; do
 done < <(fichiers_texte)
 echo "→ $n fichier(s) substitué(s)"
 
-# --- 3. Auto-suppression.
-# Le template ne doit pas survivre dans le projet : modules/ non choisis,
-# skill de bootstrap, et ce script lui-même. Un amorçage ne se rejoue pas.
+# --- 3. Agents de stack.
+# Un module de stack (stack-*) apporte ses propres agents ; sans lui, le projet
+# n'en a aucun qui connaisse sa stack. Les gabarits deviennent alors de vrais
+# squelettes dans .claude/agents/, que /bootstrap-project spécialise — exactement
+# comme domain-expert.md. Ils portent des {{…}} : laissés dans .claude/templates/
+# ils feraient échouer le contrôle final dans TOUS les cas, y compris avec module.
+case " $* " in
+  *" stack-"*) module_stack=1 ;;
+  *) module_stack=0 ;;
+esac
+
+for gabarit in "$RACINE"/.claude/templates/agent-stack-*.md; do
+  [ -e "$gabarit" ] || continue
+  if [ "$module_stack" -eq 0 ]; then
+    nom="${gabarit##*/agent-stack-}"
+    mv "$gabarit" "$RACINE/.claude/agents/$nom"
+    echo "→ agent de stack à spécialiser : .claude/agents/$nom"
+  else
+    rm -f "$gabarit"
+  fi
+done
+
+# --- 4. Auto-suppression.
+# Le template ne doit pas survivre dans le projet : modules/ non choisis, skill
+# de bootstrap, journal des versions du template, CI qui teste le template, et ce
+# script lui-même. Un amorçage ne se rejoue pas.
 rm -rf "$RACINE/modules"
+rm -f "$RACINE/CHANGELOG.md"
+rm -f "$RACINE/.github/workflows/template.yml"
+rmdir "$RACINE/.github/workflows" "$RACINE/.github" 2>/dev/null || true
 rm -rf "$RACINE/.claude/skills/bootstrap-project"
 rm -f "$RACINE/GETTING-STARTED.md"
 rm -f "$0"

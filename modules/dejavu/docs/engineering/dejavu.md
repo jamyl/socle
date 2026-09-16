@@ -17,8 +17,12 @@ force une décision fondée sur elles.
 
 Quand l'utiliser : cohérence, concurrence, cache, protocole, intégrité
 cryptographique, scale-out, scoring, recherche — tout ce dont « la version naïve
-casse à l'échelle ». Le skill a son propre pre-flight et **refuse de tourner**
-sur du CRUD, du glue code ou une approche déjà tranchée. Respecter ce refus.
+casse à l'échelle ». Pas pour du CRUD, du glue code, ni une approche déjà tranchée.
+
+⚠️ **Le pre-flight du skill ne te protège pas quand tu l'appelles par son nom.**
+Son étape 1 considère que `/dejavu` tapé explicitement vaut consentement, et
+saute les trois questions qui feraient abandonner le run. Le filtre, c'est toi :
+nomme le mécanisme dur avant de lancer, ou ne lance pas.
 
 Les conclusions se consignent dans `docs/engineering/prior-art.md` **avec leurs
 identifiants** (arXiv, DOI). Sans eux, la recherche est à refaire à la session
@@ -73,14 +77,26 @@ changement de comportement se lit dans un diff.
 
 ## Mettre à jour
 
-Le contenu de `.claude/skills/dejavu/` est une **copie intacte** de l'amont. Il
-ne se modifie pas ici : un correctif se fait en amont, puis se recopie.
+Le contenu de `.claude/skills/dejavu/` est une copie de l'amont **à une ligne
+près** : la phase 2 impose `model: haiku` aux lectures isolées. C'est là que
+passe l'essentiel du coût d'un run — 12 à 20 appels qui extraient chacun quatre
+champs d'un seul résumé — et l'amont ne précise aucun modèle, donc ces appels
+hériteraient du modèle de session. Politique complète : `docs/engineering/models.md`.
+
+Rien d'autre ne se modifie ici : un correctif se fait en amont, puis se recopie.
 
 ```bash
 git clone https://github.com/jamyl/dejavu /tmp/dejavu
 rsync -a --delete --exclude '__pycache__' --exclude '*.pyc' \
   /tmp/dejavu/skills/dejavu/ .claude/skills/dejavu/
 python3 -m compileall -q .claude/skills/dejavu/scripts && echo OK
+```
+
+**Réapplique le delta après chaque `rsync`**, puis prouve qu'il n'y en a qu'un :
+
+```bash
+diff /tmp/dejavu/skills/dejavu/SKILL.md .claude/skills/dejavu/SKILL.md
+# → une seule paire de lignes, celle qui porte « model: haiku »
 ```
 
 Version embarquée : **v0.2.0**, commit `7c9fded` de `jamyl/dejavu`.

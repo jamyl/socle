@@ -10,8 +10,9 @@ est écrit, daté, et relisible d'un coup d'œil.
 
 ## Comment lire ce fichier
 
-Une ligne par décision, la plus récente en bas. Trois colonnes portent
-l'information utile :
+Une ligne par décision, la plus récente en bas, **numérotée `D<n>`** — c'est ce
+numéro que les stories citent quand elles s'appuient dessus. Trois colonnes
+portent l'information utile :
 
 - **Ce qui a été retenu** — la recommandation appliquée.
 - **L'alternative écartée** — ce qu'on aurait fait sinon.
@@ -23,6 +24,11 @@ Une décision sans coût de revirement chiffré n'est pas relisible : « faible 
 écran à rouvrir » et « élevé — migration sur des données réelles » ne se relisent
 pas avec la même urgence.
 
+Ce fichier ne porte que des **décisions** : des questions tranchées. Les
+**hypothèses produit** — ce qu'on suppose du marché ou des usages et qu'une
+expérience validera — vivent dans `docs/product/vision.md` §8, numérotées `H<n>`.
+Deux artefacts, deux numérotations, aucun recouvrement.
+
 ⚠️ Les lignes marquées 🔴 touchent le **domaine critique** déclaré dans
 `CLAUDE.md` § « les règles qui coûtent le plus cher à violer ». Une décision 🔴
 déjà appliquée à des données réelles ne se révise pas gratuitement : la revoir
@@ -30,7 +36,7 @@ demande une migration de correction, pas un changement de code.
 
 ## Journal
 
-| Date | Story | La décision | Ce qui a été retenu | Alternative écartée | Coût du revirement |
-|---|---|---|---|---|---|
+| # | Date | Story | La décision | Ce qui a été retenu | Alternative écartée | Coût du revirement |
+|---|---|---|---|---|---|---|
 
 *Aucune décision pour l'instant.*

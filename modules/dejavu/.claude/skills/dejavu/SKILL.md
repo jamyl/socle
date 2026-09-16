@@ -92,7 +92,7 @@ WebFetch summarizes and truncates.
 
 ### Phase 2 — Diverge (one isolated read per document)
 
-For every document, spawn a **parallel** sub-agent. One per document. Each gets
+For every document, spawn a **parallel** sub-agent **with `model: haiku`**. One per document. Each gets
 only: the build problem, that ONE document's title/abstract/authors/year/venue,
 and this instruction:
 

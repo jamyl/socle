@@ -1,7 +1,7 @@
 ---
 name: security-scanner
 description: "Recherche de vulnérabilités en lecture seule — secrets, autorisation, validation des entrées, fuites d'information. Deuxième nœud de la revue en fan-out de review-story. Ne corrige rien. Ne remplace pas /security-review.\n\nTrigger — EN: security scan, vulnerability, credential leak, OWASP, XSS, SQL injection, authorization review.\nTrigger — FR: faille, vulnérabilité, audit de sécurité, fuite de secret, injection, autorisation.\n\n<example>\nuser: 'Cherche les failles dans le diff de la story'\nassistant: 'Using security-scanner: secrets, autorisation, validation et fuites, en lecture seule sur le diff.'\n</example>"
-model: opus
+model: sonnet
 color: red
 tools:
   - Read

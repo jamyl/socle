@@ -110,8 +110,10 @@ before anything gets written.
    database names, and the purpose in one sentence.
 2. **Product** — who uses it and for what, what has to work before you can say
    the product exists, and what is explicitly out of scope.
-3. **Constraints** — legal or regulatory obligations, imposed technical choices,
-   and which optional modules to activate.
+3. **Constraints and architecture** — legal or regulatory obligations, hosting
+   target, the languages your team debugs in production, scale at twelve months,
+   realtime or offline needs, your deadline, and any stack you've already been
+   handed.
 4. **The rules that cost the most to break** — three to five invariants of your
    domain, each phrased so a test can check it.
 
@@ -120,9 +122,18 @@ checklist that one of the three reviewers applies to *every* change, for as long
 as the project lives. "No code outside X writes to Y" can be checked. "The code
 should be clean" cannot. A vague answer here produces a vague review for months.
 
-After the interview, the agent searches for prior art if the architecture
-warrants it, proposes an architecture in under a page, and waits for your
-approval. Only then does it write anything.
+After the interview, the agent names the hard mechanism in your design, if there
+is one — concurrency, consistency, offline sync — and offers a prior-art search
+on it, with the cost stated, then waits. It checks two or three candidate
+ecosystems for maintained implementations of the building blocks you need, which
+costs nothing but a few HTTP requests. Then it proposes one stack, one
+alternative, and the sentence that rules the alternative out.
+
+**Laravel is one possible outcome, not the default.** The `stack-laravel` module
+activates because the discovery lands on PHP; any other answer gets a stack
+written from the interview and a `developer` subagent generated for it.
+
+Nothing is written before you approve.
 
 ### The daily cycle
 
@@ -171,8 +182,10 @@ read the same diff in parallel without seeing each other's findings:
 `reviewer` for conventions and structure, `security-scanner` for
 vulnerabilities, and `domain-expert` for your own invariants. Their findings are
 deduplicated and sorted in code, not by a model. Their tools are limited to
-reading files: no editing, no shell, no network. That's structural, not a
-promise in a prompt.
+reading files: no editing, no shell. `reviewer` and `security-scanner` have no
+network access at all, because their input is a diff someone else may have
+written. `domain-expert` keeps web search, so it can check a regulatory text.
+That's structural, not a promise in a prompt.
 
 If one reader returns nothing at all, the workflow says so. Incomplete coverage
 is not the same as "nothing to report", and treating the two alike is how a
@@ -197,13 +210,16 @@ You choose modules during the interview. Nothing is copied unless you ask for it
 
 | Module | What it adds | Activate it when |
 |---|---|---|
-| `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. A secret scanner, four Laravel subagents, and a pre-written first epic | You're building a PHP or Laravel backend |
+| `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. A secret scanner, four Laravel subagents, and a pre-written first epic | The architecture discovery lands on PHP and Laravel |
 | `mobile-flutter` | A `mobile/` directory, toolchain stories that start out `blocked` because Xcode and Android Studio can't be automated, and visual regression test levels | You're building an iOS, Android, or PWA app |
 | `dejavu` | The `/dejavu` prior-art skill embedded in your repository and versioned with it. Four academic sources, no API keys, standard-library Python | Your architecture has a non-trivial mechanism. Skip it if your machine already has `/dejavu` installed globally |
 
-With no module you get the core: the method, the skills, three generic
-subagents, and documentation skeletons. The bootstrap then writes your technical
-stack from the interview instead of copying one.
+The module rows say *when the discovery lands there*, not what you pick up front.
+
+With no stack module you get the core: the method, the skills, three read-only
+reviewers, and documentation skeletons. The bootstrap then writes `stack.md` and
+`testing-strategy.md` from the discovery, and generates a `developer` subagent —
+plus `dba` when there's a relational database — from `.claude/templates/`.
 
 ### What it leaves out, on purpose
 
@@ -226,8 +242,15 @@ you start a loop.
 | Action | What it spends |
 |---|---|
 | One three-reader review | 3 subagents, one per reader, on every story |
-| One `/dejavu` search | Roughly 18 to 26 agent-shaped calls (1 categorize, 12 to 20 isolated reads, scoring, clustering, up to 3 full-text reads, 1 convergence), plus real HTTP to four APIs |
+| One `/dejavu` search | Roughly 18 to 26 agent-shaped calls (1 categorize, 12 to 20 isolated reads on Haiku, scoring, clustering, up to 3 full-text reads, 1 convergence), plus real HTTP to four APIs |
+| Checking ecosystems with `codesearch.py` | Nothing. It's a Python script — no model in the loop |
 | `/loop` | Runs unattended until the backlog is exhausted. It expires after seven days |
+
+Every subagent declares `model: sonnet`; the isolated prior-art reads run on
+Haiku. The heavy model is reserved for `/security-review`, the one gate the
+delivery cycle imposes on the critical domain. The full policy, and how to move
+one agent up when your domain warrants it, is in
+[`docs/engineering/models.md`](docs/engineering/models.md).
 
 A loop that's running consumes tokens while you're looking elsewhere, and it
 re-launches `/deliver-story` even when you thought you were done. If a delivery
@@ -243,8 +266,10 @@ leftover placeholders:
 grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
 ```
 
-You should see nothing. Every surviving `{{UPPERCASE}}` is a spot where your
-project still talks about the template.
+You should see nothing. Every surviving placeholder is a spot where your project
+still talks about the template. The pattern matches only the real shape — two
+braces, uppercase letters, two braces — so a bare `grep "{{"` doesn't drag in
+legitimate braces from code.
 
 Then confirm the template removed itself:
 
@@ -263,9 +288,9 @@ docker compose up -d && docker compose ps
 
 Every service should read `running`, and the database should read `healthy`.
 
-Two projects from this template can't run at the same time without editing
-ports. Both publish 8080 for the app, 5433 for PostgreSQL, 6380 for Redis, and
-8026 for Mailpit. The second `docker compose up -d` either fails on a taken
+Two projects that both activated `stack-laravel` can't run at the same time
+without editing ports. Both publish 8080 for the app, 5433 for PostgreSQL, 6380
+for Redis, and 8026 for Mailpit. The second `docker compose up -d` either fails on a taken
 port or, worse, connects a tool to the other project's database.
 
 ### Words used here
@@ -298,10 +323,17 @@ returns no report, that's incomplete coverage, not a clean bill of health.
 
 Issues and pull requests are welcome. Two things to know before you open one.
 
-The template has no CI of its own, so changes are verified by hand. The check
-that matters most: copy the repository to a throwaway directory, run
-`./scripts/bootstrap.sh test-slug <modules>`, and confirm that no placeholder
-survives and that the template deleted itself.
+`.github/workflows/template.yml` bootstraps a throwaway copy in five module
+combinations on every pull request, and checks that nothing of the template
+survives, that no backup file is left behind, and that only the writing
+placeholders remain. Run the same check locally before opening a pull request:
+
+```bash
+cp -R . /tmp/socle-check && cd /tmp/socle-check
+./scripts/bootstrap.sh test-slug stack-laravel
+grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git   # only the writing placeholders
+ls modules scripts                              # No such file or directory
+```
 
 `CONTRIBUTING.md` at the root belongs to the *generated project*, not to this
 template. It's one of the files your project inherits.
@@ -420,8 +452,10 @@ résultat.
    conteneurs et à la base de données, et le but en une phrase.
 2. **Produit** — qui l'utilise et pour quoi, ce qui doit marcher pour dire que
    le produit existe, et ce qui est explicitement hors périmètre.
-3. **Contraintes** — obligations légales ou réglementaires, choix techniques
-   imposés, et les modules optionnels à activer.
+3. **Contraintes et architecture** — obligations légales ou réglementaires,
+   cible d'hébergement, les langages que ton équipe sait déboguer en production,
+   l'échelle à douze mois, les besoins temps réel ou hors-ligne, ton délai, et
+   une stack déjà imposée s'il y en a une.
 4. **Les règles qui coûtent le plus cher à violer** — trois à cinq invariants de
    ton domaine, chacun formulé pour qu'un test puisse le vérifier.
 
@@ -431,9 +465,19 @@ que le projet vit. « Aucun code hors de X n'écrit dans Y » se vérifie. « Le
 doit être propre » ne se vérifie pas. Une réponse molle ici produit une revue
 molle pendant des mois.
 
-Après l'interview, l'agent cherche l'antériorité si l'architecture le mérite,
-propose une architecture en moins d'une page, et attend ta validation. Il n'écrit
-rien avant.
+Après l'interview, l'agent nomme le mécanisme dur de ta conception s'il y en a
+un — concurrence, cohérence, synchronisation hors-ligne — te propose une
+recherche d'antériorité dessus en annonçant son coût, et **attend**. Il vérifie
+dans deux ou trois écosystèmes candidats qu'une implémentation maintenue des
+briques dont tu as besoin existe, ce qui ne coûte que quelques requêtes HTTP.
+Puis il propose une stack, une alternative, et la phrase qui écarte l'alternative.
+
+**Laravel est une issue possible, pas le choix par défaut.** Le module
+`stack-laravel` s'active parce que la découverte aboutit à PHP ; toute autre
+réponse donne un `stack.md` rédigé depuis l'interview et un sous-agent
+`developer` généré pour cette stack.
+
+Rien n'est écrit avant que tu valides.
 
 ### Le cycle quotidien
 
@@ -484,8 +528,11 @@ lecture seule lisent le même diff en parallèle sans se lire entre eux :
 `reviewer` pour les conventions et la structure, `security-scanner` pour les
 vulnérabilités, et `domain-expert` pour tes propres invariants. Leurs remarques
 sont dédupliquées et triées en code, pas par un modèle. Leurs outils sont
-limités à la lecture de fichiers : pas d'édition, pas de shell, pas de réseau.
-C'est structurel, pas une promesse dans un prompt.
+limités à la lecture de fichiers : pas d'édition, pas de shell. `reviewer` et
+`security-scanner` n'ont **aucun accès réseau**, parce que leur entrée est un
+diff que quelqu'un d'autre a peut-être écrit. `domain-expert` garde la recherche
+web, pour pouvoir vérifier un texte réglementaire. C'est structurel, pas une
+promesse dans un prompt.
 
 Si un relecteur ne rend rien du tout, le workflow le signale. Une couverture
 incomplète n'est pas « rien à signaler », et confondre les deux est la façon
@@ -513,13 +560,18 @@ demandes.
 
 | Module | Ce qu'il apporte | Quand l'activer |
 |---|---|---|
-| `stack-laravel` | Docker Compose avec PHP 8.4, PostgreSQL 16, Redis, Mailpit et Horizon, toutes les images épinglées par digest. GitHub Actions qui lance Pint, Larastan niveau 8, Pest sur PostgreSQL et un audit des dépendances. Un scanner de secrets, quatre sous-agents Laravel, et un premier epic pré-écrit | Tu construis un backend PHP ou Laravel |
+| `stack-laravel` | Docker Compose avec PHP 8.4, PostgreSQL 16, Redis, Mailpit et Horizon, toutes les images épinglées par digest. GitHub Actions qui lance Pint, Larastan niveau 8, Pest sur PostgreSQL et un audit des dépendances. Un scanner de secrets, quatre sous-agents Laravel, et un premier epic pré-écrit | La découverte d'architecture aboutit à PHP et Laravel |
 | `mobile-flutter` | Un dossier `mobile/`, des stories de toolchain qui partent `bloqué` parce que Xcode et Android Studio ne s'automatisent pas, et des niveaux de test de régression visuelle | Tu construis une app iOS, Android ou PWA |
 | `dejavu` | Le skill d'antériorité `/dejavu` embarqué dans ton dépôt et versionné avec lui. Quatre sources académiques, aucune clé d'API, Python en bibliothèque standard | Ton architecture porte un mécanisme non trivial. À ignorer si ton poste a déjà `/dejavu` en global |
 
-Sans module, tu as le cœur : la méthode, les skills, trois sous-agents
-génériques et des squelettes de documentation. L'amorçage rédige alors ta stack
-technique depuis l'interview au lieu d'en copier une.
+Les colonnes « quand l'activer » disent **où la découverte aboutit**, pas ce que
+tu choisis d'avance.
+
+Sans module de stack, tu as le cœur : la méthode, les skills, trois relecteurs en
+lecture seule et des squelettes de documentation. L'amorçage rédige alors
+`stack.md` et `testing-strategy.md` depuis la découverte, et génère un sous-agent
+`developer` — plus `dba` s'il y a une base relationnelle — depuis
+`.claude/templates/`.
 
 ### Ce qu'il n'y a pas dedans, exprès
 
@@ -542,8 +594,15 @@ coût avant de démarrer une boucle.
 | Action | Ce qu'elle dépense |
 |---|---|
 | Une revue à trois relecteurs | 3 sous-agents, un par relecteur, sur chaque story |
-| Une recherche `/dejavu` | Environ 18 à 26 appels d'agent (1 catégorisation, 12 à 20 lectures isolées, notation, regroupement, jusqu'à 3 lectures de texte intégral, 1 convergence), plus du HTTP réel vers quatre APIs |
+| Une recherche `/dejavu` | Environ 18 à 26 appels d'agent (1 catégorisation, 12 à 20 lectures isolées en Haiku, notation, regroupement, jusqu'à 3 lectures de texte intégral, 1 convergence), plus du HTTP réel vers quatre APIs |
+| Vérifier les écosystèmes avec `codesearch.py` | Rien. C'est un script Python — aucun modèle dans la boucle |
 | `/loop` | Tourne sans surveillance jusqu'à épuisement du backlog. Elle expire après sept jours |
+
+Chaque sous-agent déclare `model: sonnet` ; les lectures isolées d'antériorité
+tournent en Haiku. Le modèle lourd est réservé à `/security-review`, le seul gate
+que le cycle de livraison impose sur le domaine critique. La politique complète,
+et comment monter un agent d'un cran quand ton domaine le justifie, sont dans
+[`docs/engineering/models.md`](docs/engineering/models.md).
 
 Une boucle qui tourne consomme des tokens pendant que tu regardes ailleurs, et
 elle relance `/deliver-story` même quand tu croyais avoir fini. Si une livraison
@@ -559,8 +618,10 @@ cherche les placeholders restants :
 grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
 ```
 
-Tu ne dois rien voir. Chaque `{{MAJUSCULES}}` survivant est un endroit où ton
-projet parle encore du template.
+Tu ne dois rien voir. Chaque placeholder survivant est un endroit où ton projet
+parle encore du template. Le motif ne cherche que la forme réelle — deux
+accolades, des majuscules, deux accolades — pour qu'un `grep "{{"` nu n'attrape
+pas les accolades légitimes d'un bout de code.
 
 Puis confirme que le template s'est retiré :
 
@@ -579,9 +640,9 @@ docker compose up -d && docker compose ps
 
 Tous les services doivent afficher `running`, et la base `healthy`.
 
-Deux projets issus de ce template ne peuvent pas tourner en même temps sans
-modifier les ports. Les deux publient 8080 pour l'app, 5433 pour PostgreSQL,
-6380 pour Redis et 8026 pour Mailpit. Le second `docker compose up -d` échoue
+Deux projets ayant tous deux activé `stack-laravel` ne peuvent pas tourner en
+même temps sans modifier les ports. Les deux publient 8080 pour l'app, 5433 pour
+PostgreSQL, 6380 pour Redis et 8026 pour Mailpit. Le second `docker compose up -d` échoue
 sur un port déjà pris ou, pire, connecte un outil à la base de l'autre projet.
 
 ### Les mots employés ici
@@ -617,10 +678,17 @@ quitus.
 Les issues et les pull requests sont bienvenues. Deux choses à savoir avant
 d'en ouvrir une.
 
-Le template n'a pas de CI propre, donc les changements se vérifient à la main.
-Le contrôle qui compte le plus : copie le dépôt dans un dossier jetable, lance
-`./scripts/bootstrap.sh test-slug <modules>`, et confirme qu'aucun placeholder
-ne survit et que le template s'est bien supprimé.
+`.github/workflows/template.yml` amorce une copie jetable dans cinq combinaisons
+de modules à chaque pull request, et vérifie que rien du template ne survit,
+qu'aucune sauvegarde ne traîne, et que seuls les placeholders de rédaction
+restent. Lance le même contrôle en local avant d'ouvrir une PR :
+
+```bash
+cp -R . /tmp/socle-check && cd /tmp/socle-check
+./scripts/bootstrap.sh test-slug stack-laravel
+grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git   # seulement les placeholders de rédaction
+ls modules scripts                              # No such file or directory
+```
 
 Le `CONTRIBUTING.md` à la racine appartient au *projet engendré*, pas à ce
 template. C'est l'un des fichiers dont ton projet hérite.
