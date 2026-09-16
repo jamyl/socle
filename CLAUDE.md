@@ -13,6 +13,7 @@
 | Journal des livraisons | `docs/backlog/JOURNAL.md` |
 | Décisions prises seul, à valider en fin de cycle | `docs/backlog/DECISIONS.md` |
 | Antériorité (`/dejavu`) des décisions structurantes | `docs/engineering/prior-art.md` |
+| Quel modèle tourne où, et ce qu'un cycle coûte | `docs/engineering/models.md` |
 
 ## Environnement
 

@@ -126,10 +126,11 @@ puis, dans la session :
 grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
 ```
 
-**Ce que tu dois voir : rien.** Chaque `{{MAJUSCULES}}` survivant est un endroit
-où ton projet parle encore du template. Le motif ne cherche que cette forme :
-un `grep "{{"` nu attrape aussi des accolades légitimes dans du code, et un
-contrôle qui crie au loup cesse d'être lu.
+**Ce que tu dois voir : rien.** Chaque placeholder survivant est un endroit où
+ton projet parle encore du template. Le motif ne cherche que la forme réelle —
+deux accolades, des majuscules, deux accolades : un `grep "{{"` nu attrape aussi
+des accolades légitimes dans du code, et un contrôle qui crie au loup cesse
+d'être lu.
 
 ```bash
 ls modules scripts 2>&1

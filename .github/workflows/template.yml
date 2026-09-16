@@ -1,0 +1,146 @@
+name: Template
+
+# Ce dépôt est un template : ce qu'il faut tester, c'est qu'il s'amorce.
+# `bootstrap.sh` supprime ce fichier au passage — il parle du template, pas du
+# projet engendré, exactement comme GETTING-STARTED.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shell:
+    name: Scripts shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntaxe et analyse statique
+        run: |
+          bash -n scripts/bootstrap.sh
+          shellcheck -S warning scripts/bootstrap.sh
+          shellcheck -S warning modules/stack-laravel/.github/scan-secrets.sh
+
+  static:
+    name: Syntaxe des artefacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Scripts Python du module dejavu
+        run: python3 -m compileall -q modules/dejavu/.claude/skills/dejavu/scripts
+
+      - name: Workflow review-story
+        # Le runtime Workflow autorise un `return` au premier niveau ; `node` non.
+        # On enveloppe pour vérifier la syntaxe — et on neutralise le `export`
+        # de tête, illégal dans un corps de fonction.
+        run: |
+          {
+            printf 'export default async function(){\n'
+            sed 's/^export const meta/const meta/' .claude/workflows/review-story.js
+            printf '\n}\n'
+          } > "$RUNNER_TEMP/w.mjs"
+          node --check "$RUNNER_TEMP/w.mjs"
+
+      - name: YAML de ce workflow
+        # backend.yml n'est PAS validé ici : il porte {{SLUG_SQL}} non quoté, donc
+        # il n'est du YAML valide qu'après substitution. Il l'est dans le job
+        # `bootstrap`, sur un projet amorcé.
+        run: |
+          python3 -c "import yaml; yaml.safe_load(open('.github/workflows/template.yml')); print('yaml ok')"
+
+      - name: Liens relatifs des documents d'accueil
+        run: |
+          python3 - <<'PY'
+          import os, re, sys
+          morts = []
+          for doc in ('README.md', 'GETTING-STARTED.md'):
+              base = os.path.dirname(doc)
+              for cible in re.findall(r'\]\(([^)]+)\)', open(doc, encoding='utf-8').read()):
+                  if cible.startswith(('http', '#', 'mailto:')):
+                      continue
+                  chemin = os.path.join(base, cible.split('#')[0])
+                  if chemin and not os.path.exists(chemin):
+                      morts.append(f'{doc} -> {cible}')
+          for m in morts:
+              print(f'::error::lien mort {m}')
+          sys.exit(1 if morts else 0)
+          PY
+
+  bootstrap:
+    name: Amorçage à blanc (${{ matrix.nom }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { nom: 'aucun module', modules: '' }
+          - { nom: 'stack-laravel', modules: 'stack-laravel' }
+          - { nom: 'mobile-flutter', modules: 'mobile-flutter' }
+          - { nom: 'dejavu', modules: 'dejavu' }
+          - { nom: 'les trois', modules: 'stack-laravel mobile-flutter dejavu' }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Amorcer une copie jetable
+        env:
+          MODULES: ${{ matrix.modules }}
+        run: |
+          cp -R "$GITHUB_WORKSPACE" "$RUNNER_TEMP/p"
+          cd "$RUNNER_TEMP/p"
+          git config user.email ci@example.invalid
+          git config user.name CI
+          # shellcheck disable=SC2086
+          ./scripts/bootstrap.sh smoke-test $MODULES
+
+      - name: Le template ne survit pas, et rien ne traîne
+        run: |
+          cd "$RUNNER_TEMP/p"
+          for p in modules scripts GETTING-STARTED.md CHANGELOG.md \
+                   .claude/skills/bootstrap-project .github/workflows/template.yml \
+                   .claude/templates/agent-stack-developer.md \
+                   .claude/templates/agent-stack-dba.md; do
+            [ ! -e "$p" ] || { echo "::error::$p survit à l'amorçage"; exit 1; }
+          done
+          ! find . -name '*.bak' -not -path './.git/*' | grep -q . \
+            || { echo '::error::des .bak subsistent'; exit 1; }
+          grep -rlI '^#!' . --exclude-dir=.git | while read -r f; do
+            [ -x "$f" ] || { echo "::error::$f a un shebang mais pas le bit d'exécution"; exit 1; }
+          done
+
+      - name: Seuls les placeholders de rédaction survivent
+        run: |
+          cd "$RUNNER_TEMP/p"
+          grep -rhoE '\{\{[A-Z_]+\}\}' . --exclude-dir=.git | sort -u > "$RUNNER_TEMP/trouves"
+          printf '{{BUT}}\n{{INVARIANTS}}\n{{PROJET}}\n{{REGLES}}\n{{STACK}}\n' | sort > "$RUNNER_TEMP/permis"
+          inattendus=$(comm -23 "$RUNNER_TEMP/trouves" "$RUNNER_TEMP/permis")
+          [ -z "$inattendus" ] || { echo "::error::placeholder non substitué : $inattendus"; exit 1; }
+          echo "placeholders de rédaction : $(tr '\n' ' ' < "$RUNNER_TEMP/trouves")"
+
+      - name: Agents et CI du projet, selon le module
+        env:
+          MODULES: ${{ matrix.modules }}
+        run: |
+          cd "$RUNNER_TEMP/p"
+          case " $MODULES " in
+            *" stack-laravel "*)
+              python3 -c "import yaml; yaml.safe_load(open('.github/workflows/backend.yml')); print('backend.yml: yaml ok')"
+              grep -q 'smoke_test' .github/workflows/backend.yml \
+                || { echo '::error::SLUG_SQL non substitué dans backend.yml'; exit 1; }
+              grep -q 'Laravel' .claude/agents/developer.md \
+                || { echo '::error::developer.md ne vient pas du module stack-laravel'; exit 1; }
+              ;;
+            *)
+              test -f .claude/agents/developer.md \
+                || { echo '::error::aucun agent de stack genere'; exit 1; }
+              grep -q '^model: sonnet' .claude/agents/developer.md \
+                || { echo '::error::agent genere sans model: sonnet'; exit 1; }
+              ;;
+          esac
+          echo "agents : $(ls .claude/agents/ | tr '\n' ' ')"

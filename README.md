@@ -243,8 +243,10 @@ leftover placeholders:
 grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
 ```
 
-You should see nothing. Every surviving `{{UPPERCASE}}` is a spot where your
-project still talks about the template.
+You should see nothing. Every surviving placeholder is a spot where your project
+still talks about the template. The pattern matches only the real shape — two
+braces, uppercase letters, two braces — so a bare `grep "{{"` doesn't drag in
+legitimate braces from code.
 
 Then confirm the template removed itself:
 
@@ -559,8 +561,10 @@ cherche les placeholders restants :
 grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git
 ```
 
-Tu ne dois rien voir. Chaque `{{MAJUSCULES}}` survivant est un endroit où ton
-projet parle encore du template.
+Tu ne dois rien voir. Chaque placeholder survivant est un endroit où ton projet
+parle encore du template. Le motif ne cherche que la forme réelle — deux
+accolades, des majuscules, deux accolades — pour qu'un `grep "{{"` nu n'attrape
+pas les accolades légitimes d'un bout de code.
 
 Puis confirme que le template s'est retiré :
 

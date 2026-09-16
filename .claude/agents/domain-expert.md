@@ -1,6 +1,7 @@
 ---
 name: domain-expert
 description: Expert métier du projet — tranche les questions de domaine et renvoie des invariants testables. À invoquer AVANT de modéliser un flux critique, un statut, une règle de conformité. Ne code pas. SQUELETTE À SPÉCIALISER au bootstrap.
+model: sonnet
 tools: Read, Grep, Glob, WebSearch, WebFetch
 ---
 
