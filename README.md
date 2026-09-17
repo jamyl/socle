@@ -66,12 +66,12 @@ Tu débutes avec Claude Code ? Chaque terme de cette page est défini dans
 |---|---|---|
 | Claude Code 2.1.154 ou plus | `claude --version` | Mets à jour. En dessous, l'outil Workflow n'existe pas et la revue à trois relecteurs ne tourne pas, sans le dire |
 | GitHub CLI, connecté | `gh auth status` | `gh auth login` |
-| Node.js | `node --version` | Requis par le serveur de documentation `context7` du module Laravel |
+| Node.js | `node --version` | **Requis** : c'est lui qui note les essais d'une story pendant la livraison. Aussi requis par le serveur de documentation `context7` du module Laravel |
 | Python 3 | `python3 --version` | Requis par le module `dejavu`. Ses scripts n'utilisent que la bibliothèque standard, il n'y a rien à installer avec `pip` |
 | Un runtime de conteneurs | `docker compose version` | Docker Desktop, ou OrbStack sur macOS. Requis par le module `stack-laravel` |
 
-Node.js, Python et Docker sont chacun liés à un module optionnel. Ignore ceux
-dont tu n'activeras pas le module.
+Python et Docker sont chacun liés à un module optionnel : ignore ceux dont tu
+n'activeras pas le module. Node, lui, sert au cœur de la méthode.
 
 ### Démarrage rapide
 
@@ -240,6 +240,25 @@ story du périmètre n'est plus actionnable.
 cadrée découverte pendant la livraison coûte une branche déjà ouverte et un plan
 déjà écrit. Découverte pendant le cadrage, elle coûte une relecture.
 
+**Et quand un test ne veut pas passer ?** C'est le moment où un assistant coûte
+le plus cher : il patche, retente, repatche, oublie ce qu'il a déjà essayé. La
+méthode le borne à **deux tentatives par piste**.
+
+| Ce qui arrive | Ce que la méthode impose |
+|---|---|
+| Un test rouge résiste à la première correction | Nommer deux ou trois pistes, et pour chacune ce qui la réfuterait |
+| La même erreur revient une deuxième fois | Annuler les modifications, écrire pourquoi la piste était fausse, passer à la suivante |
+| Une troisième tentative sur la même piste | **Refusée par un script**, avant même de lancer les tests |
+
+Chaque tentative est notée sur trois choses mesurables — aucun secret commité,
+tests verts, analyse statique propre — et gardée dans un dossier local
+`.socle/`. Avant d'écrire une correction, l'assistant relit ce dossier : il ne
+peut pas réessayer une piste déjà morte, parce qu'elle y est écrite.
+
+À la clôture, le journal note **combien de tentatives** la story a demandé. Un
+chiffre élevé n'est pas un reproche : c'est le signal qu'une leçon mérite d'être
+écrite dans `DECISIONS.md` pendant qu'on s'en souvient.
+
 ### Ce qu'il y a dedans
 
 **Le cycle de livraison.** `/deliver-story` choisit la prochaine story
@@ -257,6 +276,16 @@ tautologie, la mise en scène absente, une course calée sur un `sleep` au lieu
 d'un signal, un garde doublé ailleurs, et quatre autres. Les huit ont été
 rencontrées en vrai, en deux jours. La question qui les résume : *que devrait
 voir ce test pour devenir rouge ?*
+
+**La boucle d'exploration bornée.** Deux tentatives par piste, puis on change de
+piste. Chaque tentative est notée par un script sans appel de modèle, gardée
+dans un dossier local, et relue avant la tentative suivante — un agent ne peut
+donc pas réessayer ce qu'il a déjà invalidé. La troisième tentative sur la même
+piste est refusée avant même que les tests se lancent, et c'est la seule
+économie de ce dépôt qui ne retire aucune capacité. La règle complète tient dans
+`.claude/rules/exploration-policy.md`, avec ce qui est formellement interdit :
+sauter un test, en modifier un pour qu'il passe, baisser un seuil d'analyse
+statique.
 
 **La revue à trois relecteurs.** Une fois les tests verts, trois sous-agents en
 lecture seule lisent le même diff en parallèle sans se lire entre eux :
@@ -295,7 +324,7 @@ demandes.
 
 | Module | Ce qu'il apporte | Quand l'activer |
 |---|---|---|
-| `stack-laravel` | Docker Compose avec PHP 8.4, PostgreSQL 16, Redis, Mailpit et Horizon, toutes les images épinglées par digest. GitHub Actions qui lance Pint, Larastan niveau 8, Pest sur PostgreSQL et un audit des dépendances. Un scanner de secrets, quatre sous-agents Laravel, et un premier epic pré-écrit | La découverte d'architecture aboutit à PHP et Laravel |
+| `stack-laravel` | Docker Compose avec PHP 8.4, PostgreSQL 16, Redis, Mailpit et Horizon, toutes les images épinglées par digest. GitHub Actions qui lance Pint, Larastan niveau 8, Pest sur PostgreSQL et un audit des dépendances. Quatre sous-agents Laravel, et un premier epic pré-écrit | La découverte d'architecture aboutit à PHP et Laravel |
 | `mobile-flutter` | Un dossier `mobile/`, des stories de toolchain qui partent `bloqué` parce que Xcode et Android Studio ne s'automatisent pas, et des niveaux de test de régression visuelle | Tu construis une app iOS, Android ou PWA |
 | `dejavu` | Le skill d'antériorité `/dejavu` embarqué dans ton dépôt et versionné avec lui. Quatre sources académiques, aucune clé d'API, Python en bibliothèque standard | Ton architecture porte un mécanisme non trivial. À ignorer si ton poste a déjà `/dejavu` en global |
 
@@ -303,10 +332,14 @@ Les colonnes « quand l'activer » disent **où la découverte aboutit**, pas ce
 tu choisis d'avance.
 
 Sans module de stack, tu as le cœur : la méthode, les skills, trois relecteurs en
-lecture seule et des squelettes de documentation. L'amorçage rédige alors
-`stack.md` et `testing-strategy.md` depuis la découverte, et génère un sous-agent
-`developer` — plus `dba` s'il y a une base relationnelle — depuis
-`.claude/templates/`.
+lecture seule, le scanner de secrets, le scorer d'essais et des squelettes de
+documentation. L'amorçage rédige alors `stack.md` et `testing-strategy.md` depuis
+la découverte, et génère un sous-agent `developer` — plus `dba` s'il y a une base
+relationnelle — depuis `.claude/templates/`.
+
+Le scanner de secrets (`.github/scan-secrets.sh`) est dans le cœur exprès : une
+clé commitée coûte la même révocation dans n'importe quelle stack. Il tourne à
+chaque tentative de livraison, avant les tests.
 
 ### Ce qu'il n'y a pas dedans, exprès
 
@@ -331,6 +364,7 @@ coût avant de démarrer une boucle.
 | Une revue à trois relecteurs | 3 sous-agents, un par relecteur, sur chaque story |
 | Une recherche `/dejavu` | Environ 18 à 26 appels d'agent (1 catégorisation, 12 à 20 lectures isolées en Haiku, notation, regroupement, jusqu'à 3 lectures de texte intégral, 1 convergence), plus du HTTP réel vers quatre APIs |
 | Vérifier les écosystèmes avec `codesearch.py` | Rien. C'est un script Python — aucun modèle dans la boucle |
+| Noter un essai, relire le cache, faire la rétrospective | Rien. C'est un script Node — il lance tes commandes de test, il n'en juge rien |
 | `/loop` | Tourne sans surveillance jusqu'à épuisement du backlog. Elle expire après sept jours |
 
 Chaque sous-agent déclare `model: sonnet` ; les lectures isolées d'antériorité
@@ -343,6 +377,11 @@ Une boucle qui tourne consomme des tokens pendant que tu regardes ailleurs, et
 elle relance `/deliver-story` même quand tu croyais avoir fini. Si une livraison
 démarre sans que tu aies rien tapé, c'est elle : vérifie avec `CronList` avant
 de conclure quoi que ce soit, et `CronDelete <id>` l'arrête plus tôt.
+
+C'est précisément pour cette boucle sans surveillance que les deux tentatives
+par piste existent. Le poste de dépense le plus lourd n'est pas un modèle trop
+cher sur un relecteur : c'est un agent qui repatche le même bloc quinze fois, en
+relisant tout le contexte à chaque passage.
 
 ### Vérifier que ça a marché
 
@@ -393,8 +432,9 @@ sous `.claude/`, `CLAUDE.md`, et le `.mcp.json` qu'un module fournit.
 **Ne se commite jamais**, et c'est déjà dans le `.gitignore` :
 `.claude/settings.local.json` (tes surcharges personnelles),
 `.claude/scheduled_tasks.json` et son verrou (l'état des boucles `/loop`, qui
-appartient à la session qui les a lancées), le bytecode Python, et les `*.bak`
-d'un amorçage interrompu.
+appartient à la session qui les a lancées), `.socle/` (le cache d'essais : le
+chemin d'une story, pas son résultat), le bytecode Python, et les `*.bak` d'un
+amorçage interrompu.
 
 **Ne vit pas dans le dépôt du tout** : tes préférences globales dans
 `~/.claude/`, les skills que tu as installés pour toi seul, le cache de `/dejavu`
@@ -428,6 +468,7 @@ l'élargir à l'avance — est dans
 | Backlog | Tout ce qui vit dans `docs/backlog/` : les epics, le journal des livraisons et le journal des décisions |
 | TDD | Développement piloté par les tests. Écrire le test qui échoue, puis le code qui le fait passer |
 | Contre-épreuve | Casser volontairement le code qu'un test protège, pour confirmer que le test devient rouge |
+| Strike | Une tentative dont l'erreur est identique à la précédente. Au deuxième, la piste est abandonnée et l'agent en change |
 | Merge squash | Fusionner une branche en un seul commit, pour qu'une story se lise comme un commit sur `main` |
 | Amorçage | Le run unique qui transforme ce template en ton projet |
 
@@ -443,6 +484,10 @@ Deux règles méritent d'être répétées ici. Ne merge jamais sur une CI rouge
 si un relecteur ne rend pas de rapport, c'est une couverture incomplète, pas un
 quitus.
 
+Un message qui ressemble à une panne mais n'en est pas : `⛔ … a 2 strikes —
+rien n'a été exécuté`. C'est le garde de la boucle d'exploration qui refuse une
+troisième tentative sur une piste morte. La sortie est écrite juste en dessous.
+
 ### Contribuer
 
 Les issues et les pull requests sont bienvenues. Deux choses à savoir avant
@@ -454,6 +499,8 @@ qu'aucune sauvegarde ne traîne, et que seuls les placeholders de rédaction
 restent. Lance le même contrôle en local avant d'ouvrir une PR :
 
 ```bash
+node --test .claude/skills/deliver-story/scripts/eval-run.test.mjs   # le scorer d'essais
+./.github/scan-secrets.sh                                           # aucun secret ici
 cp -R . /tmp/socle-check && cd /tmp/socle-check
 ./scripts/bootstrap.sh test-slug stack-laravel
 grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git   # seulement les placeholders de rédaction
@@ -524,12 +571,12 @@ Check these once per machine, before you start:
 |---|---|---|
 | Claude Code 2.1.154 or later | `claude --version` | Update. Below that version the Workflow tool doesn't exist, and the three-reader review silently doesn't run |
 | GitHub CLI, signed in | `gh auth status` | `gh auth login` |
-| Node.js | `node --version` | Needed by the `context7` documentation server in the Laravel module |
+| Node.js | `node --version` | **Required**: it scores a story's attempts during delivery. Also needed by the `context7` documentation server in the Laravel module |
 | Python 3 | `python3 --version` | Needed by the `dejavu` module. Its scripts use the standard library only, so there's nothing to install with `pip` |
 | A container runtime | `docker compose version` | Install Docker Desktop, or OrbStack on macOS. Needed by the `stack-laravel` module |
 
-Node.js, Python, and Docker are each tied to one optional module. Skip the ones
-whose module you don't activate.
+Python and Docker are each tied to one optional module, so skip the ones whose
+module you don't activate. Node is used by the method itself.
 
 ### Quickstart
 
@@ -695,6 +742,25 @@ Writing a story and delivering it are separate commands on purpose. A badly
 framed story discovered during delivery costs a branch that's already open and a
 plan that's already written. Discovered during framing, it costs a re-read.
 
+**And when a test won't go green?** That's where an assistant gets expensive: it
+patches, retries, re-patches, and forgets what it already tried. The method caps
+it at **two attempts per idea**.
+
+| What happens | What the method requires |
+|---|---|
+| A red test survives the first fix | Name two or three ideas, and for each one what would disprove it |
+| The same error comes back a second time | Roll the changes back, write down why the idea was wrong, move to the next one |
+| A third attempt on the same idea | **Refused by a script**, before the tests even run |
+
+Every attempt is scored on three measurable things — no secret committed, tests
+green, static analysis clean — and kept in a local `.socle/` folder. Before
+writing a fix, the assistant re-reads that folder: it can't retry a dead idea,
+because the idea is written there.
+
+At closing time, the journal records **how many attempts** the story took. A high
+number isn't a reproach: it's the signal that a lesson is worth writing into
+`DECISIONS.md` while it's still fresh.
+
 ### What's inside
 
 **The delivery cycle.** `/deliver-story` picks the next actionable story by
@@ -711,6 +777,15 @@ concrete ways a test can stay green while proving nothing: tautology, missing
 setup, a race timed with `sleep` instead of a signal, a guard that's duplicated
 elsewhere, and four more. All eight were met in practice, within two days. The
 question that summarizes them: *what would this test have to see to turn red?*
+
+**The bounded exploration loop.** Two attempts per idea, then the idea changes.
+Every attempt is scored by a script with no model call, kept in a local folder,
+and re-read before the next attempt — so an agent cannot retry what it has
+already disproved. The third attempt on the same idea is refused before the
+tests even start, and it's the only saving in this repo that removes no
+capability. The full rule lives in `.claude/rules/exploration-policy.md`, along
+with what's flatly forbidden: skipping a test, editing one so it passes,
+lowering a static-analysis threshold.
 
 **The three-reader review.** After the tests pass, three read-only subagents
 read the same diff in parallel without seeing each other's findings:
@@ -745,16 +820,21 @@ You choose modules during the interview. Nothing is copied unless you ask for it
 
 | Module | What it adds | Activate it when |
 |---|---|---|
-| `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. A secret scanner, four Laravel subagents, and a pre-written first epic | The architecture discovery lands on PHP and Laravel |
+| `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. Four Laravel subagents, and a pre-written first epic | The architecture discovery lands on PHP and Laravel |
 | `mobile-flutter` | A `mobile/` directory, toolchain stories that start out `blocked` because Xcode and Android Studio can't be automated, and visual regression test levels | You're building an iOS, Android, or PWA app |
 | `dejavu` | The `/dejavu` prior-art skill embedded in your repository and versioned with it. Four academic sources, no API keys, standard-library Python | Your architecture has a non-trivial mechanism. Skip it if your machine already has `/dejavu` installed globally |
 
 The module rows say *when the discovery lands there*, not what you pick up front.
 
 With no stack module you get the core: the method, the skills, three read-only
-reviewers, and documentation skeletons. The bootstrap then writes `stack.md` and
-`testing-strategy.md` from the discovery, and generates a `developer` subagent —
-plus `dba` when there's a relational database — from `.claude/templates/`.
+reviewers, the secret scanner, the attempt scorer, and documentation skeletons.
+The bootstrap then writes `stack.md` and `testing-strategy.md` from the
+discovery, and generates a `developer` subagent — plus `dba` when there's a
+relational database — from `.claude/templates/`.
+
+The secret scanner (`.github/scan-secrets.sh`) sits in the core on purpose: a
+committed key costs the same revocation in any stack. It runs on every delivery
+attempt, before the tests.
 
 ### What it leaves out, on purpose
 
@@ -779,6 +859,7 @@ you start a loop.
 | One three-reader review | 3 subagents, one per reader, on every story |
 | One `/dejavu` search | Roughly 18 to 26 agent-shaped calls (1 categorize, 12 to 20 isolated reads on Haiku, scoring, clustering, up to 3 full-text reads, 1 convergence), plus real HTTP to four APIs |
 | Checking ecosystems with `codesearch.py` | Nothing. It's a Python script — no model in the loop |
+| Scoring an attempt, re-reading the cache, running the retrospective | Nothing. It's a Node script — it runs your test commands, it judges nothing |
 | `/loop` | Runs unattended until the backlog is exhausted. It expires after seven days |
 
 Every subagent declares `model: sonnet`; the isolated prior-art reads run on
@@ -791,6 +872,11 @@ A loop that's running consumes tokens while you're looking elsewhere, and it
 re-launches `/deliver-story` even when you thought you were done. If a delivery
 starts without you typing anything, that's the loop: check `CronList` before
 concluding anything, and `CronDelete <id>` stops it early.
+
+The two-attempts-per-idea cap exists for exactly this unattended loop. The
+heaviest cost isn't an over-priced model on a reviewer: it's an agent
+re-patching the same block fifteen times, re-reading the whole context on each
+pass.
 
 ### Check that it worked
 
@@ -841,8 +927,9 @@ under `.claude/`, `CLAUDE.md`, and the `.mcp.json` a module provides.
 **Never committed**, and already in `.gitignore`:
 `.claude/settings.local.json` (your personal overrides),
 `.claude/scheduled_tasks.json` and its lock (the state of `/loop` runs, which
-belongs to the session that started them), Python bytecode, and the `*.bak` files
-an interrupted bootstrap leaves behind.
+belongs to the session that started them), `.socle/` (the attempt cache: a
+story's path, not its result), Python bytecode, and the `*.bak` files an
+interrupted bootstrap leaves behind.
 
 **Doesn't live in the repository at all**: your global preferences in
 `~/.claude/`, skills you installed for yourself, the `/dejavu` cache in
@@ -875,6 +962,7 @@ shouldn't widen it in advance — are in
 | Backlog | Everything in `docs/backlog/`: the epics, the delivery journal, and the decision log |
 | TDD | Test-driven development. Write the failing test, then the code that makes it pass |
 | Counter-proof | Deliberately breaking the code a test protects, to confirm the test turns red |
+| Strike | An attempt whose error is identical to the previous one. On the second, the idea is abandoned and the agent switches |
 | Squash merge | Merging a branch as a single commit, so one story reads as one commit on `main` |
 | Bootstrap | The one-time run that turns this template into your project |
 
@@ -888,6 +976,10 @@ never finds anything because it was never specialized.
 Two rules are worth repeating here. Never merge on a red CI. And if a reviewer
 returns no report, that's incomplete coverage, not a clean bill of health.
 
+One message looks like a failure and isn't: `⛔ … a 2 strikes — rien n'a été
+exécuté`. That's the exploration guard refusing a third attempt on a dead idea.
+The way out is printed right below it.
+
 ### Contributing
 
 Issues and pull requests are welcome. Two things to know before you open one.
@@ -898,6 +990,8 @@ survives, that no backup file is left behind, and that only the writing
 placeholders remain. Run the same check locally before opening a pull request:
 
 ```bash
+node --test .claude/skills/deliver-story/scripts/eval-run.test.mjs   # the attempt scorer
+./.github/scan-secrets.sh                                           # no secret in here
 cp -R . /tmp/socle-check && cd /tmp/socle-check
 ./scripts/bootstrap.sh test-slug stack-laravel
 grep -rn '{{[A-Z_]\+}}' . --exclude-dir=.git   # only the writing placeholders

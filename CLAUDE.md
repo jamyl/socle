@@ -14,6 +14,7 @@
 | Décisions prises seul, à valider en fin de cycle | `docs/backlog/DECISIONS.md` |
 | Antériorité (`/dejavu`) des décisions structurantes | `docs/engineering/prior-art.md` |
 | Quel modèle tourne où, et ce qu'un cycle coûte | `docs/engineering/models.md` |
+| Ce qu'on fait quand un test reste rouge | `.claude/rules/exploration-policy.md` |
 
 ## Environnement
 
@@ -69,6 +70,10 @@ journal. Les questions métier passent par l'agent `domain-expert`.
 Une question qu'on peut trancher seul **ne s'arrête pas** : on tranche sur la
 recommandation, on applique, et on écrit la ligne dans `docs/backlog/DECISIONS.md`
 avec l'alternative écartée et le coût du revirement.
+
+Un rouge qui **résiste** suit `.claude/rules/exploration-policy.md` : deux essais
+au plus par hypothèse, puis rollback propre, abandon écrit, et une hypothèse
+différente. Le compte est tenu par un script, qui refuse le troisième.
 
 La revue en fan-out n'est pas un gate : trois nœuds en lecture seule lisent le
 même diff sans se lire entre eux, et leurs findings se traitent **avant** la PR.

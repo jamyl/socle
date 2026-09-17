@@ -158,6 +158,32 @@ test('la signature ignore les numéros de ligne : deux échecs équivalents comp
   assert.equal(essai(dir, 'US-103', 2).strikes, 2)
 })
 
+test('un échec sans le mot « error » compte quand même comme un strike', () => {
+  // « service "app" is not running » ne contient aucun des mots-clés d'échec.
+  // Sans repli sur la sortie brute, la signature restait nulle, le strike ne
+  // montait pas, et le garde des deux essais ne se déclenchait jamais sur cette
+  // classe d'échec — la plus fréquente sur un environnement conteneurisé.
+  const dir = depot()
+  const muet = 'echo \'service "app" is not running\'; exit 1'
+  lancer(dir, ['attempt', 'US-114', '--hypothesis', 'H1', '--test-cmd', muet])
+  fs.writeFileSync(path.join(dir, 'source.txt'), 'micro-patch\n')
+  lancer(dir, ['attempt', 'US-114', '--hypothesis', 'H1', '--test-cmd', muet])
+  const a = essai(dir, 'US-114', 1)
+  const b = essai(dir, 'US-114', 2)
+  assert.notEqual(a.signature, null)
+  assert.equal(a.signature.hash, b.signature.hash)
+  assert.equal(b.strikes, 2)
+  assert.equal(lancer(dir, ['attempt', 'US-114', '--hypothesis', 'H1', '--test-cmd', muet]).code, 3)
+})
+
+test('une commande rouge totalement muette produit tout de même une signature', () => {
+  const dir = depot()
+  lancer(dir, ['attempt', 'US-115', '--hypothesis', 'H1', '--test-cmd', 'exit 7'])
+  lancer(dir, ['attempt', 'US-115', '--hypothesis', 'H1', '--test-cmd', 'exit 7'])
+  assert.notEqual(essai(dir, 'US-115', 1).signature, null)
+  assert.equal(essai(dir, 'US-115', 2).strikes, 2)
+})
+
 // --- 3. La régression qui compte : le 3e micro-patch est refusé.
 
 test('deux strikes puis refus du 3e essai, jusqu\'à un abandon écrit', () => {
@@ -279,6 +305,33 @@ test('les deux libellés de stack.md donnent la même commande', () => {
     assert.equal(essai(dir, 'US-110', 1).dims.tests.cmd, 'echo marqueur-unique',
       `libellé « ${label} » : commande non trouvée dans stack.md §5`)
   }
+})
+
+test('un tableau hors §5 ne fournit jamais de commande', () => {
+  // Régression : la « Vue d'ensemble » du module Laravel porte une ligne
+  // « | Analyse statique | Larastan | », qui matchait avant la section
+  // Commandes. Le scorer lançait `Larastan` et rapportait « command not
+  // found » comme une erreur d'analyse statique.
+  const dir = depot({ lintCmd: 'echo la-vraie-commande' })
+  const chemin = path.join(dir, 'docs/engineering/stack.md')
+  fs.writeFileSync(chemin,
+    '## 1. Vue d\'ensemble\n\n| Couche | Technologie |\n|---|---|\n' +
+    '| Analyse statique | Larastan |\n| Suite de tests | Pest |\n\n' +
+    fs.readFileSync(chemin, 'utf8'))
+  lancer(dir, ['attempt', 'US-112', '--hypothesis', 'H1'])
+  const e = essai(dir, 'US-112', 1)
+  assert.equal(e.dims.lint.cmd, 'echo la-vraie-commande')
+  assert.equal(e.dims.tests.cmd, 'true')
+})
+
+test('stack.md sans section Commandes : non mesuré, avec le motif qui dit quoi faire', () => {
+  const dir = depot()
+  fs.writeFileSync(path.join(dir, 'docs/engineering/stack.md'),
+    '## 1. Vue d\'ensemble\n\n| Couche | Technologie |\n|---|---|\n| Suite de tests | Pest |\n')
+  lancer(dir, ['attempt', 'US-113', '--hypothesis', 'H1'])
+  const e = essai(dir, 'US-113', 1)
+  assert.equal(e.dims.tests.statut, 'skipped')
+  assert.match(e.dims.tests.motif, /aucune section « Commandes »/)
 })
 
 test('stack.md absent : tout est non mesuré, rien n\'est inventé', () => {

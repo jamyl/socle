@@ -77,13 +77,32 @@ function trouverRacine (surcharge) {
 // accents décoratifs — le libellé du cœur est « Lancer la suite de tests »,
 // celui du module Laravel « Suite de tests ». Les deux doivent marcher.
 //
+// 🔑 On ne lit QUE la section « Commandes ». Chercher dans tout le fichier
+// paraissait plus tolérant et donnait une fausse commande : le tableau « Vue
+// d'ensemble » du module Laravel porte une ligne `| Analyse statique |
+// Larastan |`, qui matchait avant §5 — le scorer lançait alors `Larastan` et
+// rapportait « command not found » comme une erreur d'analyse statique. Défaut
+// réel, trouvé en lançant le scorer sur un projet amorcé.
+//
 // Une cellule vide ou « À COMPLÉTER » n'est PAS une commande : la dimension
 // devient `skipped` avec son motif. Deviner ici serait pire que ne rien faire,
 // parce que la sortie aurait l'air d'une mesure.
 
 const A_COMPLETER = /à compléter|a completer|todo/i
 
+function sectionCommandes (texte) {
+  const lignes = texte.split('\n')
+  const debut = lignes.findIndex((l) => /^#{2,4}\s.*commandes/i.test(l))
+  if (debut === -1) return null
+  const suite = lignes.slice(debut + 1)
+  const fin = suite.findIndex((l) => /^#{1,4}\s/.test(l))
+  return (fin === -1 ? suite : suite.slice(0, fin)).join('\n')
+}
+
 function commandeDepuisStack (texte, motif) {
+  if (texte === null) {
+    return { statut: 'skipped', motif: 'aucune section « Commandes » dans docs/engineering/stack.md' }
+  }
   if (!texte) return { statut: 'skipped', motif: 'docs/engineering/stack.md absent' }
   for (const ligne of texte.split('\n')) {
     if (!ligne.trim().startsWith('|')) continue
@@ -100,7 +119,8 @@ function commandeDepuisStack (texte, motif) {
 
 function resoudreCommandes (racine, opts) {
   const chemin = path.join(racine, 'docs/engineering/stack.md')
-  const texte = fs.existsSync(chemin) ? fs.readFileSync(chemin, 'utf8') : ''
+  const brut = fs.existsSync(chemin) ? fs.readFileSync(chemin, 'utf8') : ''
+  const texte = brut ? sectionCommandes(brut) : ''
 
   const tests = opts['test-cmd']
     ? { statut: 'ok', cmd: opts['test-cmd'] }
@@ -180,15 +200,29 @@ function noter (dims) {
 // deux échecs différents — et le garde des deux strikes ne déclencherait jamais.
 
 function signature (dims) {
-  const lignes = []
-  for (const nom of ['tests', 'lint']) {
-    const d = dims[nom]
-    if (d.statut !== 'rouge') continue
-    for (const l of d.sortie.split('\n')) {
+  const rouges = ['tests', 'lint'].filter((n) => dims[n].statut === 'rouge')
+  if (!rouges.length) return null
+
+  let lignes = []
+  for (const nom of rouges) {
+    for (const l of dims[nom].sortie.split('\n')) {
       if (/error|fail|exception|assert|refus/i.test(l)) lignes.push(l)
     }
   }
-  if (!lignes.length) return null
+  // 🔑 Repli sur la sortie brute. Tous les échecs ne disent pas « error » :
+  // « service "app" is not running » et « cannot find symbol » n'ont aucun de
+  // ces mots. Sans ce repli, ces échecs-là ne produisaient AUCUNE signature,
+  // donc aucun strike — et le garde ne se déclenchait jamais sur eux. Défaut
+  // trouvé en lançant le scorer sur un projet amorcé sans Docker démarré.
+  if (!lignes.length) {
+    lignes = rouges
+      .flatMap((nom) => dims[nom].sortie.split('\n'))
+      .filter((l) => l.trim())
+      .slice(-5)
+  }
+  // Une commande rouge qui n'écrit rien du tout : la signature reste stable,
+  // c'est son code de retour qui la porte.
+  if (!lignes.length) lignes = rouges.map((nom) => `${nom} code ${dims[nom].code}`)
   const normalisees = lignes
     .slice(0, 5)
     .map((l) => l.toLowerCase().replace(/\/[^\s:]+\//g, '/').replace(/\d+/g, '#').replace(/\s+/g, ' ').trim())

@@ -54,6 +54,11 @@ jobs:
           } > "$RUNNER_TEMP/w.mjs"
           node --check "$RUNNER_TEMP/w.mjs"
 
+      - name: Banc de tests du scorer d'essais
+        # Le chemin du fichier, pas celui du dossier : `node --test <dir>` le
+        # résout comme un module et échoue (Node 22 comme Node 26).
+        run: node --test .claude/skills/deliver-story/scripts/eval-run.test.mjs
+
       - name: YAML de ce workflow
         # backend.yml n'est PAS validé ici : il porte {{SLUG_SQL}} non quoté, donc
         # il n'est du YAML valide qu'après substitution. Il l'est dans le job
@@ -120,6 +125,20 @@ jobs:
           grep -rlI '^#!' . --exclude-dir=.git | while read -r f; do
             [ -x "$f" ] || { echo "::error::$f a un shebang mais pas le bit d'exécution"; exit 1; }
           done
+
+      - name: Ce dont tout projet hérite, module ou pas
+        run: |
+          cd "$RUNNER_TEMP/p"
+          for p in .github/scan-secrets.sh \
+                   .claude/skills/deliver-story/scripts/eval-run.mjs \
+                   .claude/rules/exploration-policy.md; do
+            [ -e "$p" ] || { echo "::error::$p manque au projet amorcé"; exit 1; }
+          done
+          [ -x .github/scan-secrets.sh ] \
+            || { echo '::error::scan-secrets.sh perd son bit d exécution à l amorçage'; exit 1; }
+          [ -x .claude/skills/deliver-story/scripts/eval-run.mjs ] \
+            || { echo '::error::eval-run.mjs perd son bit d exécution à l amorçage'; exit 1; }
+          ./.github/scan-secrets.sh
 
       - name: Seuls les placeholders de rédaction survivent
         run: |
