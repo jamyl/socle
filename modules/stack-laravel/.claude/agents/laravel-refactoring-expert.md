@@ -94,7 +94,8 @@ ajouter une seule exception. Liste complète : `docs/engineering/stack.md` §5.
 `CLAUDE.md` § « les règles qui coûtent le plus cher à violer » ·
 `docs/engineering/stack.md` §3 · `.claude/rules/code-style.md` ·
 `.claude/rules/testing.md` · `.claude/rules/docker-commands.md` ·
-`.claude/rules/git-operations.md` · `.claude/rules/mcp-stack.md`
+`.claude/rules/exploration-policy.md` · `.claude/rules/git-operations.md` ·
+`.claude/rules/mcp-stack.md`
 
 ## Ce que tu ne fais jamais
 

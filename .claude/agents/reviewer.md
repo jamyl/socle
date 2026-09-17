@@ -70,6 +70,8 @@ Gravités : `high` (bug, faille, perte de données — bloque la PR) ·
 ## Règles du dépôt
 
 Lis celles qui existent réellement — leur présence dépend des modules activés :
-`.claude/rules/git-operations.md`, `.claude/rules/mcp-stack.md`, et sous
+`.claude/rules/git-operations.md`, `.claude/rules/mcp-stack.md`,
+`.claude/rules/exploration-policy.md` §3 (un test désactivé, un seuil baissé ou
+une exclusion élargie dans le diff est un finding `high`), et sous
 `.claude/rules/` tout fichier de style ou de test fourni par le module de stack.
 Ne suppose aucune de ces règles : ouvre le fichier ou tais-toi.
