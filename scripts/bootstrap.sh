@@ -151,7 +151,9 @@ done
 rm -rf "$RACINE/modules"
 rm -f "$RACINE/CHANGELOG.md"
 rm -f "$RACINE/.github/workflows/template.yml"
-rmdir "$RACINE/.github/workflows" "$RACINE/.github" 2>/dev/null || true
+# Seul `workflows/` peut devenir vide : `.github/` garde scan-secrets.sh, qui est
+# un fichier du cœur — tout projet en hérite.
+rmdir "$RACINE/.github/workflows" 2>/dev/null || true
 rm -rf "$RACINE/.claude/skills/bootstrap-project"
 # Le skill d'adoption ne sert qu'à un projet qui avait déjà du code. Dans un
 # projet né du template, il décrirait une situation qui n'arrivera jamais — et un

@@ -114,6 +114,11 @@ while IFS= read -r rel; do
   copier "$rel" "$rel"
 done < <(cd "$SOURCE" && find docs -type f | sort)
 
+# Le scanner de secrets : c'est la dimension « secrets » du scorer d'essais, et
+# il est générique. Rien d'autre de `.github/` n'est copié — la CI d'un projet
+# qui tourne ne se remplace pas par celle d'un template.
+copier .github/scan-secrets.sh .github/scan-secrets.sh
+
 # Les deux fichiers qui portent du contexte projet : jamais écrasés, déposés à
 # côté sous `.socle.md` pour que le skill propose la fusion.
 for f in CLAUDE.md CONTRIBUTING.md; do
@@ -153,7 +158,7 @@ AJOUTS=""
 while IFS= read -r ligne; do
   case "$ligne" in ''|'#'*) continue ;; esac
   grep -qxF "$ligne" "$CIBLE/.gitignore" 2>/dev/null || AJOUTS="$AJOUTS$ligne"$'\n'
-done < <(grep -E '^(\.claude/|\*\.bak|__pycache__/|\*\.pyc)' "$SOURCE/.gitignore")
+done < <(grep -E '^(\.claude/|\.socle/|\*\.bak|__pycache__/|\*\.pyc)' "$SOURCE/.gitignore")
 
 if [ -n "$AJOUTS" ]; then
   { echo ""; echo "# --- socle : état local de session et artefacts d'outillage ---"; printf '%s' "$AJOUTS"; } >> "$CIBLE/.gitignore"

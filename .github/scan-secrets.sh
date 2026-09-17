@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# {{NOM_AFFICHE}} — refuse tout secret commité.
+# socle — refuse tout secret commité.
+#
+# Fichier du cœur : tout projet en hérite, avec ou sans module de stack. Il est
+# la dimension « secrets » de `eval-run.mjs`, et il a sa place en job CI.
 #
 # Scanne les fichiers SUIVIS par git uniquement. `.env` n'est pas suivi, donc
 # jamais scanné : c'est bien un secret *commité* que l'on cherche, pas un secret

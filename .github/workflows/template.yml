@@ -24,7 +24,11 @@ jobs:
           bash -n scripts/adopt.sh
           shellcheck -S warning scripts/bootstrap.sh
           shellcheck -S warning scripts/adopt.sh
-          shellcheck -S warning modules/stack-laravel/.github/scan-secrets.sh
+          shellcheck -S warning .github/scan-secrets.sh
+
+      - name: Aucun secret dans le template lui-même
+        # Le scanner est un fichier du cœur : il tourne d'abord sur ce dépôt.
+        run: ./.github/scan-secrets.sh
 
   static:
     name: Syntaxe des artefacts

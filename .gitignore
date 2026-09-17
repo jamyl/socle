@@ -49,6 +49,12 @@ Thumbs.db
 # nettoie ; cette ligne évite qu'un résidu porteur de placeholders soit commité.
 *.bak
 
+# Cache d'essais de `/deliver-story` : un fichier par tentative, écrit par
+# eval-run.mjs. C'est le chemin d'une story, pas son résultat — le résultat vit
+# dans la PR et dans JOURNAL.md. Il porte des sorties de commandes brutes, donc
+# potentiellement des chemins de machine et des extraits de journaux.
+.socle/
+
 # Bytecode Python. Les scripts du module `dejavu` tournent en place dans
 # .claude/skills/dejavu/scripts/ : l'interpréteur y écrit des __pycache__ propres
 # à sa version, qui seraient périmés pour quiconque clone le dépôt.
