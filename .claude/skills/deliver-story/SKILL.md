@@ -1,6 +1,7 @@
 ---
 name: deliver-story
 description: Livre la prochaine user story actionnable du backlog (docs/backlog/) en TDD, met à jour son statut et le journal de bord. Une story par exécution — conçu pour tourner en boucle via /loop.
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs *)
 ---
 
 # Livrer la prochaine story du backlog
@@ -46,6 +47,10 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
   sandbox, fakes et interfaces mockées uniquement.
 - Story estimée XL ou manifestement trop grosse pour une itération : découpe-la
   en sous-stories (US-XXXa, US-XXXb…) dans le fichier d'epic, livre la première.
+- **`.claude/rules/exploration-policy.md` s'applique dès qu'un rouge résiste** :
+  deux strikes puis rollback et autre hypothèse, pré-vol sur les essais passés,
+  aucun test contourné. Le garde est tenu par un script, pas par ta bonne
+  volonté.
 - **Story mal cadrée → `/cadrer-story` d'abord.** Un critère d'acceptation sans
   *Quand* ni *Alors*, ou qui nomme une bibliothèque plutôt qu'un comportement
   observable, n'est pas livrable tel quel : repasse la story par
@@ -57,19 +62,82 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
 - **Ouvre une branche AVANT d'écrire quoi que ce soit** :
   `git checkout -b us-XXX-<slug-court>` depuis un `main` à jour. Jamais de
   travail directement sur `main`.
-- Plan bref (3-5 lignes) en début d'itération, puis TDD : pour chaque critère
-  d'acceptation, test qui échoue → code → vert.
+- Plan bref (3-5 lignes) en début d'itération : **l'approche retenue et
+  l'alternative la plus proche**, en une ligne chacune. Puis TDD : pour chaque
+  critère d'acceptation, test qui échoue → code → vert.
 - **Un scénario = un test portant son titre.** Quand le critère porte un titre en
   gras suivi d'un *Étant donné / Quand / Alors* (gabarit de `/cadrer-story`), le
   test reprend ce titre mot pour mot : le lien entre le critère et sa preuve se
   lit alors sans interprétation.
 - Coche `[x]` chaque critère couvert dans le fichier d'epic, au fur et à mesure.
 
+### Quand un test reste rouge
+
+Un rouge qui devient vert à la première implémentation, c'est le cas nominal :
+rien de plus à faire. Cette sous-section ne concerne que le rouge **qui
+résiste** — celui où une boucle laissée à elle-même patche le même bloc jusqu'à
+épuisement du budget. La règle complète est dans
+`.claude/rules/exploration-policy.md`.
+
+**1. Pré-vol, avant d'écrire une seule ligne de correction.**
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs preflight US-XXX
+```
+
+Il imprime les hypothèses déjà mortes, pourquoi, et les signatures d'échec déjà
+vues. **Cite cette sortie dans ton plan de correction.** Sans cache, la mémoire
+d'une itération ne survit pas à la suivante et tu réessaieras ce qui a déjà
+échoué.
+
+**2. Nomme deux ou trois hypothèses**, et pour chacune **ce qui la réfuterait** :
+
+```
+H1 : la valeur lue vient du cache, périmée depuis l'écriture précédente
+     → réfutée si l'erreur survient aussi avec le cache vidé
+H2 : la transaction n'est pas encore commitée quand le job la lit
+     → réfutée si l'erreur survient aussi en exécution synchrone
+```
+
+Une hypothèse sans réfutation possible n'est pas une hypothèse, c'est une
+intuition : elle ne se testera jamais.
+
+**3. Implémente H1 seule**, puis mesure :
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs attempt US-XXX --hypothesis "H1 : …"
+```
+
+Le script exécute les commandes de `stack.md` §5, note les trois dimensions
+(secrets, tests, analyse statique), consigne l'essai dans `.socle/runs/` et
+imprime **une décision** :
+
+| Décision | Ce que tu fais |
+|---|---|
+| `continuer` | Le score a progressé. Un ajustement, puis `attempt` à nouveau |
+| `pivoter` | `git restore .`, puis `attempt --hypothesis "H1 : …" --abandon "pourquoi H1 était fausse"`, puis H2 |
+| `terminé` | Tout est vert. Reprends le cycle en §4 |
+
+**Jamais un troisième essai sur la même hypothèse.** Le script sort en code 3
+sans rien exécuter : le rollback et l'abandon écrit sont la seule sortie. Ce
+n'est pas une punition, c'est ce qui t'évite quinze essais sur une fausse piste.
+
+⚠️ Si le script signale « arbre de travail IDENTIQUE à l'essai n », tu as
+relancé sans rien changer. Ce n'est pas un essai, c'est une boucle.
+
 ## 4. Vérification
 
 - Exécute réellement les commandes de test, de formatage et d'analyse statique
   déclarées dans `docs/engineering/stack.md`, et rapporte leur **sortie réelle**.
   Jamais « devrait passer ».
+- **Un essai final consigné vaut cette exécution** :
+  `${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs attempt US-XXX --hypothesis "…"`
+  lance ces mêmes commandes, imprime leur sortie et la garde. Cite-la telle
+  quelle — ne relance pas la suite à la main pour produire une seconde sortie,
+  ce serait deux mesures dont une seule est tracée.
+- **Une dimension « non mesuré » n'est pas verte.** Si le script dit que la
+  commande de test est encore à compléter dans `stack.md` §5, la story n'est pas
+  livrable : la remplir est du travail, pas une formalité.
 - Story touchant un **domaine critique déclaré dans `CLAUDE.md`** (celui qui
   porte les règles les plus chères à violer) ou une migration de données : lance
   aussi `/security-review` et corrige les findings avant de clôturer.
@@ -147,9 +215,27 @@ rien.
 
 - Statut de la story → `fait` dans le fichier d'epic ; tout écart entre le livré
   et le prévu est noté sous la story.
+- **Rétrospective**, avant d'écrire la ligne de journal :
+
+  ```bash
+  ${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs retro US-XXX
+  ```
+
+  Elle donne le nombre d'essais, le ratio essais/réussite, les hypothèses
+  abandonnées avec la raison **que tu avais écrite**, et les impasses
+  rencontrées deux fois ou plus. Elle imprime aussi les deux lignes à coller,
+  déjà remplies de ce qu'elle sait.
+
+  Un ratio élevé n'est pas une faute — c'est le signal qu'une leçon mérite
+  d'être écrite pendant qu'on s'en souvient. **S'il y a eu une impasse**,
+  complète la ligne `DECISIONS.md` proposée : le coût du revirement ne se déduit
+  d'aucun fichier, et une décision sans ce coût n'est pas relisible.
 - Ajoute une ligne à `docs/backlog/JOURNAL.md` (crée le fichier au besoin) :
-  `- [YYYY-MM-DD HH:MM] US-XXX <titre> — fait|bloqué(motif) — tests : <commande> → <résultat> — suivante : US-YYY`
-  (date réelle via la commande `date`).
+  `- [YYYY-MM-DD HH:MM] US-XXX <titre> — fait|bloqué(motif) — tests : <commande> → <résultat> — essais : <N> — suivante : US-YYY`
+  (date réelle via la commande `date`, nombre d'essais donné par `retro`).
+- **`.socle/` ne se commite jamais** — il est dans le `.gitignore`. C'est le
+  chemin d'une story, pas son résultat : le résultat vit dans la PR et dans le
+  journal.
 - Commit atomique `US-XXX: <titre court>` sur la branche. Les correctifs issus
   de `/security-review` sont des commits séparés sur la même branche — le fil de
   la revue doit rester lisible dans la PR.
