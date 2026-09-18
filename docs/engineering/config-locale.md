@@ -23,6 +23,7 @@ Ces entrées sont déjà dans le `.gitignore` du template :
 |---|---|---|
 | `.claude/settings.local.json` | Tes surcharges personnelles de permissions | Tu peux vouloir autoriser chez toi ce que le projet laisse en confirmation. Ça ne regarde que ta machine |
 | `.claude/scheduled_tasks.json` et `.lock` | L'état des boucles `/loop` en cours | Une boucle appartient à la session qui l'a lancée. Commiter son état ferait croire à un autre poste qu'une boucle tourne |
+| `.socle/runs/` | Le cache d'essais de `/deliver-story` : un fichier par tentative | C'est le **chemin** d'une story, pas son résultat. Le résultat vit dans la PR et dans `JOURNAL.md`. Le cache porte des sorties de commandes brutes, donc des chemins de ta machine et des extraits de journaux |
 | `__pycache__/`, `*.pyc` | Bytecode Python | Propre à la version de l'interpréteur ; périmé pour quiconque clone |
 | `*.bak` | Sauvegardes d'un amorçage interrompu | Elles contiennent la version **avant** substitution, donc les placeholders |
 

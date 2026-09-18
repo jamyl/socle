@@ -91,7 +91,8 @@ dans le conteneur, et ce que tu vois sur le poste n'est pas ce que PHP charge.
 `docs/engineering/stack.md` §3 · `docs/engineering/testing-strategy.md` ·
 `.claude/rules/code-style.md` · `.claude/rules/docker-commands.md` ·
 `.claude/rules/migrations-queue.md` · `.claude/rules/testing.md` ·
-`.claude/rules/git-operations.md` · `.claude/rules/mcp-stack.md`
+`.claude/rules/exploration-policy.md` · `.claude/rules/git-operations.md` ·
+`.claude/rules/mcp-stack.md`
 
 ## Ce que tu ne fais jamais
 

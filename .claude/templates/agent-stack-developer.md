@@ -72,6 +72,8 @@ sur le poste ne prouve rien sur le projet.
   du domaine. Certains sont tenus par le schéma ou par un test, pas par ton code.
 - `docs/engineering/stack.md` §3 — les règles d'architecture.
 - `docs/engineering/testing-strategy.md` — le niveau de test exigé.
+- `.claude/rules/exploration-policy.md` — ce qu'on fait quand un rouge résiste :
+  deux strikes, pré-vol sur les essais passés, aucun test contourné.
 - `.claude/rules/git-operations.md` — le cycle branche/PR/merge.
 - `.claude/rules/mcp-stack.md` — la liste blanche d'outillage.
 

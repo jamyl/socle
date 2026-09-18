@@ -19,7 +19,7 @@ Ce que le socle n'apporte pas : ton domaine. Il te le **demande**.
 |---|---|---|
 | `gh` authentifié | `gh auth status` | `gh auth login` |
 | Claude Code **2.1.154+** | `claude --version` | mise à jour — en dessous, l'outil Workflow n'existe pas et la revue en fan-out ne tourne pas |
-| Node (pour `npx`) | `node --version` | requis par le MCP `context7` du module Laravel |
+| Node | `node --version` | **requis par la méthode** : `/deliver-story` note ses essais avec un script Node sans dépendance. Aussi requis par le MCP `context7` du module Laravel |
 | Python 3 | `python3 --version` | requis par le module `dejavu` — ses scripts sont en bibliothèque standard seule, il n'y a rien à installer avec `pip` |
 | Runtime de conteneurs | `docker compose version` | OrbStack (plus rapide que Docker Desktop sur macOS) ou Docker Desktop. Requis par le module `stack-laravel` **et** par son MCP `github` |
 | Skill `/dejavu` | `ls ~/.claude/skills/dejavu` | **Facultatif, et une seule fois** : soit le module `dejavu` à l'interview, soit `npx github:jamyl/dejavu install` en global. **Pas les deux** — deux skills du même nom |
@@ -267,3 +267,7 @@ depuis la découverte, et **génère** les agents `developer` et `dba` depuis
 | Un nœud de la revue reste muet | Agent absent ou mal nommé | Le workflow le signale. Couverture incomplète ≠ « rien à signaler » |
 | L'agent `developer` généré parle encore d'une stack en placeholder | Rédaction interrompue à l'étape 5bis | Même remède que les placeholders : relance la session et demande de finir. `grep -n '{{\|À REMPLIR' .claude/agents/*.md` doit être vide |
 | `domain-expert` ne trouve jamais rien | Ses invariants sont restés génériques | Rouvre `.claude/workflows/review-story.js` et `.claude/agents/domain-expert.md` : le bootstrap ne les a pas spécialisés |
+| `⛔ … a 2 strikes — rien n'a été exécuté` | **Ce n'est pas une panne** : le garde des deux essais a fait son travail | La piste est morte. `git restore .`, puis `eval-run.mjs attempt … --abandon "pourquoi c'était faux"`, puis une hypothèse différente |
+| Un essai dit `arbre de travail IDENTIQUE à l'essai n` | Le script a été relancé sans qu'aucun fichier ait changé | Ce n'est pas un essai. Modifie quelque chose, ou change de piste |
+| `secrets : non mesuré (.github/scan-secrets.sh absent)` | Le scanner a été supprimé ou n'a pas été copié | Reprends-le depuis le template. Une dimension non mesurée ne vaut pas verte, donc la story n'est pas livrable |
+| `tests : non mesuré (stack.md §5 … à compléter)` | `docs/engineering/stack.md` §5 n'a pas de commande de test | La remplir est du travail, pas une formalité : sans elle, aucun run n'est vérifiable |

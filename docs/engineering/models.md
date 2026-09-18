@@ -25,12 +25,25 @@ dépôt déclare le sien.
 | Une revue en fan-out | 3, un par nœud, sur chaque story |
 | Une recherche `/dejavu` | environ 18 à 26 : 1 catégorisation, 12 à 20 lectures isolées en `haiku`, 1 notation, 1 regroupement, jusqu'à 3 textes intégraux, 1 convergence |
 | `codesearch.py` seul | **zéro** — c'est un script Python, aucun modèle dans la boucle |
+| `eval-run.mjs` (essai, pré-vol, rétro) | **zéro** — du Node sans dépendance ; il exécute tes commandes de test, il n'en juge rien |
 | `/loop` | ce qui précède, autant de fois qu'il reste des stories, sans surveillance |
 
 C'est pour ça que la découverte d'architecture utilise `codesearch.py` sur le
 choix d'écosystème et réserve le run complet au mécanisme dur : la question
 « quel framework » ne vaut pas vingt lectures d'articles, et aucun article n'y
 répond.
+
+## Le poste de dépense qu'on ne voit pas
+
+Le plus gros gaspillage n'est pas un modèle trop cher sur un agent : c'est une
+boucle qui n'avance pas. Un rouge qui résiste, un agent qui repatche le même
+bloc, et chaque tentative relit le contexte, réécrit le fichier, relance la
+suite de tests. Quinze essais sur une fausse piste coûtent plus que la story.
+
+`.claude/rules/exploration-policy.md` plafonne à **deux** essais par hypothèse.
+Le compte est tenu par `eval-run.mjs`, qui refuse le troisième — et le refus ne
+coûte rien du tout, puisqu'il tombe avant l'exécution des tests. C'est la seule
+économie de ce dépôt qui ne dégrade aucune capacité.
 
 ## Quand monter un agent en `opus`
 

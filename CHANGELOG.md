@@ -9,6 +9,21 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Boucle d'exploration bornée** (`.claude/rules/exploration-policy.md`) : deux
+  essais au plus par hypothèse, pré-vol obligatoire sur les essais passés, et
+  interdiction de contourner un test. Le garde est tenu par
+  `.claude/skills/deliver-story/scripts/eval-run.mjs`, qui refuse en code 3 un
+  troisième essai sur une hypothèse morte — avant d'exécuter quoi que ce soit.
+- **Scorer d'essais** : `eval-run.mjs attempt` exécute les commandes de
+  `stack.md` §5, note trois dimensions (secrets, tests, analyse statique),
+  détecte les boucles par empreinte de l'arbre de travail et signature d'échec,
+  et consigne chaque essai dans `.socle/runs/<story>/`. `preflight` rend le
+  cache lisible, `retro` en tire le ratio essais/réussite et les lignes à coller
+  dans `JOURNAL.md` et `DECISIONS.md`. Zéro dépendance, zéro appel de modèle.
+- **Banc de tests du scorer** : 20 tests `node --test`, dont la régression des
+  deux strikes. Ils ont trouvé deux vrais défauts avant la première utilisation.
+- **`scan-secrets.sh` remonté dans le cœur** : tout projet en hérite, avec ou
+  sans module de stack, et la dimension « secrets » du scorer existe partout.
 - **Chemin d'adoption pour un projet existant** : `scripts/adopt.sh` copie la
   méthode sans jamais écraser (un `CLAUDE.socle.md` se dépose à côté d'un
   `CLAUDE.md` existant, `.gitignore` ne reçoit que ses lignes manquantes,
@@ -47,6 +62,12 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   « hypothèse ».
 - **README en français d'abord**, puis en anglais, et deux sections de plus par
   langue : l'adoption dans un projet existant, et la configuration locale.
+- **`/deliver-story` gagne sa boucle d'exploration** : §3 décrit ce qu'on fait
+  quand un rouge résiste, §4 cite l'essai consigné plutôt qu'une seconde
+  exécution à la main, §5 lance la rétrospective avant la ligne de journal — qui
+  porte désormais le nombre d'essais.
+- **Node devient un prérequis du cœur**, plus seulement du module Laravel : le
+  scorer d'essais en a besoin sur chaque story.
 
 ### Corrigé
 - Le contrôle final de l'amorçage criait au loup sur sa propre documentation : le

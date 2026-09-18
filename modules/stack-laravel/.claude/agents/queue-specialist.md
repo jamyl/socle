@@ -83,7 +83,8 @@ montre ce que le worker a vraiment fait. Liste complète :
 `CLAUDE.md` § « les règles qui coûtent le plus cher à violer » ·
 `.claude/rules/migrations-queue.md` · `.claude/rules/testing.md` ·
 `.claude/rules/code-style.md` · `.claude/rules/docker-commands.md` ·
-`.claude/rules/git-operations.md` · `.claude/rules/mcp-stack.md`
+`.claude/rules/exploration-policy.md` · `.claude/rules/git-operations.md` ·
+`.claude/rules/mcp-stack.md`
 
 ## Ce que tu ne fais jamais
 
