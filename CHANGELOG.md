@@ -44,10 +44,13 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   cinq combinaisons de modules, `shellcheck`, `compileall`, `node --check` sur le
   workflow de revue, contrôle des liens relatifs.
 - **`docs/engineering/models.md`** : quel modèle tourne où et ce qu'un cycle coûte.
-- **Vidéo de présentation** (`docs/assets/socle.mp4`, 24 s, sans commentaire
-  audio) en tête du README, avec son image d'affiche. Tout le texte à l'écran
-  est réel — extrait du README ou de la sortie de `eval-run.mjs`. L'amorçage la
-  supprime : elle documente le template, pas le projet engendré.
+- **Vidéo de présentation** en tête du README (24 s, sans commentaire audio) :
+  un GIF de 713 Ko qui joue en ligne, et le MP4 1080p avec le son en lien. Tout
+  le texte à l'écran est réel — extrait du README ou de la sortie de
+  `eval-run.mjs`. GitHub retire la balise `<video>` de tout README, chemin
+  relatif comme URL absolue : l'image animée est le seul format qui se lise sans
+  clic. L'amorçage supprime `docs/assets/` — la vidéo documente le template, pas
+  le projet engendré.
 
 ### Modifié
 - **Laravel devient une option**, plus le chemin attendu : `stack-laravel`

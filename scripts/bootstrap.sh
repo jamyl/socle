@@ -101,7 +101,7 @@ fichiers_texte() {
     -not -path "$RACINE/modules/*" \
     -not -path "$RACINE/scripts/*" \
     -not -name '*.png' -not -name '*.jpg' -not -name '*.pdf' -not -name '*.ico' \
-    -not -name '*.mp4'
+    -not -name '*.mp4' -not -name '*.gif'
 }
 
 n=0
