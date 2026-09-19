@@ -11,6 +11,14 @@ adopted by a project that already has code.*
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.154%2B-blue)](https://claude.com/claude-code)
 
+[![socle en 24 secondes — le problème, le cycle, et le script qui refuse un troisième essai](docs/assets/socle-poster.jpg)](docs/assets/socle.mp4)
+
+**24 secondes, sans commentaire audio** — le problème, le cycle de livraison, et
+le script qui refuse un troisième essai. Tout le texte à l'écran est réel :
+extrait du README ou de la sortie du scorer. *24 seconds, no narration — the
+problem, the delivery cycle, and the script that refuses a third attempt. Every
+line on screen is real, taken from this README or from the scorer's output.*
+
 **[Français](#français) · [English](#english)**
 
 ---
