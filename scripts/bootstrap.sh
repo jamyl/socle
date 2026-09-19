@@ -100,7 +100,8 @@ fichiers_texte() {
     -not -path "$RACINE/.git/*" \
     -not -path "$RACINE/modules/*" \
     -not -path "$RACINE/scripts/*" \
-    -not -name '*.png' -not -name '*.jpg' -not -name '*.pdf' -not -name '*.ico'
+    -not -name '*.png' -not -name '*.jpg' -not -name '*.pdf' -not -name '*.ico' \
+    -not -name '*.mp4'
 }
 
 n=0
@@ -160,6 +161,9 @@ rm -rf "$RACINE/.claude/skills/bootstrap-project"
 # skill qui décrit un cas impossible répond quand même si on l'invoque.
 rm -rf "$RACINE/.claude/skills/adopter-socle"
 rm -f "$RACINE/GETTING-STARTED.md"
+# La vidéo de présentation parle du template, pas du projet engendré : la laisser
+# imposerait 1,1 Mo de promo hors sujet à chaque dépôt créé depuis socle.
+rm -rf "$RACINE/docs/assets"
 # adopt.sh est le pendant de ce script pour un dépôt qui avait déjà du code : il
 # n'a rien à faire dans un projet né du template, et son garde « ce projet a déjà
 # /deliver-story » le ferait de toute façon refuser.
