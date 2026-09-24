@@ -42,6 +42,10 @@ non-zéro dès qu'un check échoue.
 `US-XXX: sujet` pour une story ; `fix:` / `chore:` / `docs:` sinon. Le **corps**
 porte le raisonnement : ce qui a été trouvé, ce qui a été écarté et pourquoi.
 
+Le **corps de PR** d'une story porte ses preuves : sortie de
+`eval-run.mjs retro` et verdict de la revue. Gabarit dans
+`.claude/skills/deliver-story/SKILL.md` §5 ; un hook refuse la PR sans eux.
+
 Les correctifs issus d'une revue sont des **commits séparés** sur la même
 branche — le fil de la revue doit rester lisible dans la PR.
 

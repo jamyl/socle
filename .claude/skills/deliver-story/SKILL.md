@@ -263,10 +263,30 @@ gh pr checks --watch --fail-fast    # la CI tourne AVANT que main soit touché
 gh pr merge --squash --delete-branch
 ```
 
-Le corps de la PR porte : les critères d'acceptation cochés, la commande de test
-et **sa sortie réelle**, les findings de `/security-review` et ce qu'ils ont
-changé, et tout écart avec le prévu. C'est la trace qui manque quand ces
-éléments ne vivent qu'en prose dans le journal.
+Le corps de la PR **porte ses preuves**, collées et jamais résumées. Shopify
+Helix livre chaque checkpoint avec ses preuves : tests verts, verdicts des
+relecteurs. Ici, sans elles, le relecteur humain doit croire l'agent sur
+parole, car `.socle/` ne quitte pas le poste :
+
+```markdown
+## Critères d'acceptation
+- [x] <titre du scénario> — tenu par `<nom du test>`
+
+## Essais
+<sortie de `eval-run.mjs retro US-XXX`, telle quelle>
+
+## Revue
+<dernier tour de `review-story` : `approuve: true`, les `low` restants,
+et ce que les tours précédents ont fait corriger>
+
+## /security-review
+<findings et ce qu'ils ont changé — ou « domaine critique non touché »>
+
+## Écarts avec le prévu
+```
+
+Le hook `guard-bash.mjs` refuse un `gh pr create` sur une branche de story dont
+le corps ne contient ni `rétrospective` ni `approuve`.
 
 **Ne merge JAMAIS sur une CI rouge.** Sur un repo privé en offre gratuite les
 rulesets GitHub sont indisponibles (`403 : Upgrade to GitHub Pro`), donc **rien
