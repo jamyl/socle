@@ -8,6 +8,9 @@ plus à faire. Ce fichier parle du cas où **le rouge résiste** — et où la b
 d'un agent, laissée à elle-même, patche le même bloc jusqu'à épuisement du
 budget sans jamais changer d'idée.
 
+> *« Un essai a le droit d'être faux. Il n'a pas le droit d'être livré tant
+> qu'il l'est. »* — Shopify Engineering, à propos de Helix.
+
 ## 1. Deux strikes, puis on change d'idée
 
 Un **strike** = un essai dont la signature d'échec est **la même** que celle de

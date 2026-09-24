@@ -129,6 +129,14 @@ jobs:
             [ -x "$f" ] || { echo "::error::$f a un shebang mais pas le bit d'exécution"; exit 1; }
           done
 
+      - name: Le README est celui du projet, pas celui du template
+        run: |
+          cd "$RUNNER_TEMP/p"
+          grep -q '{{PROJET}}' README.md \
+            || { echo '::error::README.md ne porte pas le trou {{PROJET}}'; exit 1; }
+          ! grep -n 'jamyl/socle\|docs/assets' README.md \
+            || { echo '::error::README.md cite encore le template'; exit 1; }
+
       - name: Ce dont tout projet hérite, module ou pas
         run: |
           cd "$RUNNER_TEMP/p"
@@ -175,3 +183,41 @@ jobs:
               ;;
           esac
           echo "agents : $(ls .claude/agents/ | tr '\n' ' ')"
+
+  adopt:
+    name: Adoption dans un projet existant
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Adopter la méthode dans un faux projet Node
+        run: |
+          P="$RUNNER_TEMP/existant"
+          mkdir -p "$P" && cd "$P"
+          git init -q -b main
+          git config user.email ci@example.invalid
+          git config user.name CI
+          echo '{"name":"existant"}' > package.json
+          echo '# Existant' > README.md
+          echo '# Contexte existant' > CLAUDE.md
+          echo 'node_modules/' > .gitignore
+          git add -A && git commit -qm base
+          "$GITHUB_WORKSPACE/scripts/adopt.sh"
+
+      - name: Rien d'écrasé, la méthode en place
+        run: |
+          cd "$RUNNER_TEMP/existant"
+          [ "$(git branch --show-current)" = adopter-socle ] || { echo '::error::branche adopter-socle absente'; exit 1; }
+          [ "$(cat README.md)" = '# Existant' ] || { echo '::error::README.md écrasé'; exit 1; }
+          [ "$(cat CLAUDE.md)" = '# Contexte existant' ] || { echo '::error::CLAUDE.md écrasé'; exit 1; }
+          grep -qxF 'node_modules/' .gitignore || { echo '::error::.gitignore réécrit'; exit 1; }
+          grep -qxF '.socle/' .gitignore || { echo '::error::.socle/ absent du .gitignore'; exit 1; }
+          [ ! -e .claude/settings.json ] || { echo '::error::settings.json posé par le script'; exit 1; }
+          [ ! -e .claude/skills/bootstrap-project ] || { echo '::error::skill d amorçage copié'; exit 1; }
+          for p in CLAUDE.socle.md .claude/skills/adopter-socle/SKILL.md \
+                   .claude/skills/deliver-story/scripts/eval-run.mjs \
+                   .claude/hooks/guard-bash.mjs .claude/agents/developer.md; do
+            [ -e "$p" ] || { echo "::error::$p manque après adoption"; exit 1; }
+          done
+          [ -x .github/scan-secrets.sh ] || { echo '::error::scan-secrets.sh absent ou non exécutable'; exit 1; }
+          [ -x .claude/hooks/guard-bash.mjs ] || { echo '::error::guard-bash.mjs perd son bit d exécution'; exit 1; }
