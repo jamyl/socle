@@ -313,6 +313,11 @@ Si un relecteur ne rend rien du tout, le workflow le signale. Une couverture
 incomplète n'est pas « rien à signaler », et confondre les deux est la façon
 dont une revue cesse discrètement d'être une revue.
 
+La revue est un **gate à deux tours**, idée reprise de Shopify Helix : chaque
+remarque grave se corrige, puis les trois relecteurs relisent le correctif. La
+PR ne s'ouvre qu'une fois le tour propre. Une remarque grave qui survit au
+deuxième tour arrête le cycle et revient vers toi.
+
 **L'antériorité avant l'architecture.** Le module `dejavu` cherche dans la
 recherche publiée la partie dure de ta conception, avant que tu la rebâtisses. Il
 fait lire un article par sous-agent isolé, pour qu'aucune source n'ancre les
@@ -372,7 +377,7 @@ coût avant de démarrer une boucle.
 
 | Action | Ce qu'elle dépense |
 |---|---|
-| Une revue à trois relecteurs | 3 sous-agents, un par relecteur, sur chaque story |
+| Une revue à trois relecteurs | 3 sous-agents par tour, un ou deux tours par story |
 | Une recherche `/dejavu` | Environ 18 à 26 appels d'agent (1 catégorisation, 12 à 20 lectures isolées en Haiku, notation, regroupement, jusqu'à 3 lectures de texte intégral, 1 convergence), plus du HTTP réel vers quatre APIs |
 | Vérifier les écosystèmes avec `codesearch.py` | Rien. C'est un script Python — aucun modèle dans la boucle |
 | Noter un essai, relire le cache, faire la rétrospective | Rien. C'est un script Node — il lance tes commandes de test, il n'en juge rien |
@@ -817,6 +822,11 @@ If one reader returns nothing at all, the workflow says so. Incomplete coverage
 is not the same as "nothing to report", and treating the two alike is how a
 review quietly stops being a review.
 
+The review is a **two-round gate**, an idea taken from Shopify Helix: every
+serious finding gets fixed, then the three readers read the fix. The PR opens
+only after a clean round. A serious finding that survives the second round stops
+the cycle and comes back to you.
+
 **Prior art before architecture.** The `dejavu` module searches published
 research for the hard part of your design before you rebuild it. It reads one
 paper per isolated subagent, so no source anchors another, then commits to a
@@ -872,7 +882,7 @@ you start a loop.
 
 | Action | What it spends |
 |---|---|
-| One three-reader review | 3 subagents, one per reader, on every story |
+| One three-reader review | 3 subagents per round, one or two rounds per story |
 | One `/dejavu` search | Roughly 18 to 26 agent-shaped calls (1 categorize, 12 to 20 isolated reads on Haiku, scoring, clustering, up to 3 full-text reads, 1 convergence), plus real HTTP to four APIs |
 | Checking ecosystems with `codesearch.py` | Nothing. It's a Python script — no model in the loop |
 | Scoring an attempt, re-reading the cache, running the retrospective | Nothing. It's a Node script — it runs your test commands, it judges nothing |

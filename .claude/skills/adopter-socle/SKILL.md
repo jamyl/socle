@@ -192,7 +192,9 @@ Dans cet ordre.
    existe.
 
 4. **`.claude/workflows/review-story.js`** — remplace `{{INVARIANTS}}` par les
-   règles du lot 2, une clause vérifiable par ligne.
+   règles du lot 2, **une chaîne par règle** dans le tableau `regles`
+   (une clause vérifiable chacune), comme les deux nœuds au-dessus. Contrôle :
+   autant d'éléments dans `regles` que de règles dans `CLAUDE.md`.
 
 5. **`.claude/agents/domain-expert.md`** — spécialise le squelette avec le
    domaine réel.

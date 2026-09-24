@@ -75,8 +75,10 @@ Un rouge qui **résiste** suit `.claude/rules/exploration-policy.md` : deux essa
 au plus par hypothèse, puis rollback propre, abandon écrit, et une hypothèse
 différente. Le compte est tenu par un script, qui refuse le troisième.
 
-La revue en fan-out n'est pas un gate : trois nœuds en lecture seule lisent le
-même diff sans se lire entre eux, et leurs findings se traitent **avant** la PR.
-Elle ne remplace ni les tests, ni `/security-review`.
+La revue en fan-out est un **gate à deux tours** : trois nœuds en lecture seule
+lisent le même diff sans se lire entre eux, chaque `high`/`medium` se corrige,
+puis le correctif est relu. La PR s'ouvre sur zéro `high` ; un `high` qui survit
+au deuxième tour arrête le cycle. Elle ne remplace ni les tests, ni
+`/security-review`.
 
 **Ne jamais rapporter un test qui n'a pas été réellement exécuté.**
