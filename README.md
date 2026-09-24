@@ -296,7 +296,8 @@ piste est refusée avant même que les tests se lancent, et c'est la seule
 économie de ce dépôt qui ne retire aucune capacité. La règle complète tient dans
 `.claude/rules/exploration-policy.md`, avec ce qui est formellement interdit :
 sauter un test, en modifier un pour qu'il passe, baisser un seuil d'analyse
-statique.
+statique. Shopify Engineering le résume à propos de Helix : *« un essai a le
+droit d'être faux ; il n'a pas le droit d'être livré tant qu'il l'est »*.
 
 **La revue à trois relecteurs.** Une fois les tests verts, trois sous-agents en
 lecture seule lisent le même diff en parallèle sans se lire entre eux :
@@ -806,7 +807,9 @@ already disproved. The third attempt on the same idea is refused before the
 tests even start, and it's the only saving in this repo that removes no
 capability. The full rule lives in `.claude/rules/exploration-policy.md`, along
 with what's flatly forbidden: skipping a test, editing one so it passes,
-lowering a static-analysis threshold.
+lowering a static-analysis threshold. Shopify Engineering puts it this way about
+Helix: *"An attempt is allowed to be wrong. It is not allowed to ship until it
+isn't."*
 
 **The three-reader review.** After the tests pass, three read-only subagents
 read the same diff in parallel without seeing each other's findings:

@@ -168,6 +168,20 @@ rm -rf "$RACINE/docs/assets"
 # n'a rien à faire dans un projet né du template, et son garde « ce projet a déjà
 # /deliver-story » le ferait de toute façon refuser.
 rm -f "$RACINE/scripts/adopt.sh"
+# Le README du template présente socle, avec une vidéo que la ligne précédente
+# vient de supprimer. Un projet engendré s'ouvre sur le sien : deux trous de
+# rédaction que /bootstrap-project remplit comme les autres.
+cat > "$RACINE/README.md" <<'EOF'
+# {{PROJET}}
+
+{{BUT}}
+
+## Travailler sur ce dépôt
+
+La méthode, les sources de vérité et les règles du domaine sont dans
+[`CLAUDE.md`](CLAUDE.md). Le cycle d'une contribution est dans
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
+EOF
 rm -f "$0"
 rmdir "$RACINE/scripts" 2>/dev/null || true
 
