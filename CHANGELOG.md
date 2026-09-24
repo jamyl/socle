@@ -92,6 +92,11 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   scorer d'essais en a besoin sur chaque story.
 
 ### Corrigé
+- Un projet engendré s'ouvrait sur le README de socle, avec un lien vers une
+  vidéo que l'amorçage venait de supprimer. `bootstrap.sh` écrit désormais un
+  README minimal à deux trous, `{{PROJET}}` et `{{BUT}}`, et la CI le vérifie.
+- `adopt.sh` n'était exercé par aucune CI : un job `adopt` l'exécute sur un faux
+  projet Node et vérifie que rien n'est écrasé.
 - `{{INVARIANTS}}` était un seul élément du tableau `regles` : un amorçage qui y
   collait toutes les règles donnait au nœud `domain-expert` une seule puce
   illisible. Les skills d'amorçage demandent désormais une chaîne par règle, et
