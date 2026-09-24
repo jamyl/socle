@@ -156,9 +156,23 @@ Trois nœuds **en lecture seule** lisent le même diff sans se lire entre eux �
 `reviewer` (conventions), `security-scanner` (vulns), `domain-expert`
 (invariants métier) — et leurs findings sont dédupliqués en code.
 
-Ce n'est **pas** un gate : il ne remplace ni les tests, ni `/security-review`,
-qui restent souverains. Il sert à attraper avant la PR ce que la suite de tests
-ne voit pas. Si un nœud ne rend pas de rapport, le workflow le signale : la
+C'est un **gate à deux tours**, comme la gate de revue de Shopify Helix : un
+finding se corrige, puis on relit le correctif.
+
+1. **Tour 1.** Corrige chaque finding `high` et `medium` — un commit séparé par
+   correctif (`.claude/rules/git-operations.md`) —, puis relance la suite de
+   tests avec `eval-run.mjs attempt`.
+2. **Tour 2.** Ré-exporte le diff et relance `review-story` dessus. Un correctif
+   de revue est du code écrit vite : c'est celui qu'il faut relire.
+3. **La PR s'ouvre** sur un tour qui rend `approuve: true` — **zéro `high`** et
+   **aucun nœud muet**, calculé en code par le workflow.
+   Les `low` restants vont dans le corps de la PR, en suivi.
+4. **Encore un `high` après le tour 2 : arrêt.** Rapport à l'humain, pas de
+   troisième tour. Un défaut qui survit à deux corrections est un problème de
+   conception, pas de correctif — même logique que les deux strikes.
+
+Le gate ne remplace ni les tests, ni `/security-review`, qui restent
+souverains. Si un nœud ne rend pas de rapport, le workflow le signale : la
 couverture est incomplète, ne le lis pas comme « rien à signaler ».
 
 Quand un run déraille, attribue l'échec à **un** nœud (son prompt, ses outils,

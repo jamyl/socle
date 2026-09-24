@@ -278,7 +278,9 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
    réellement installé. ⚠️ **Ce tableau est une liste blanche** : n'y mets rien
    que le projet n'a pas.
 4. **`.claude/workflows/review-story.js`** — remplace `{{INVARIANTS}}` par les
-   règles du lot 4, une par ligne, formulées comme des clauses vérifiables.
+   règles du lot 4, **une chaîne par règle** dans le tableau `regles`
+   (une clause vérifiable chacune), comme les deux nœuds au-dessus. Contrôle :
+   autant d'éléments dans `regles` que de règles dans `CLAUDE.md`.
 5. **`.claude/agents/domain-expert.md`** — spécialise le squelette : le domaine,
    son vocabulaire, ses invariants, ses pièges de conformité.
 

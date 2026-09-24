@@ -63,6 +63,8 @@ const NOEUDS = [
     // « aucun code hors de X n'écrit dans Y » se vérifie, « le code doit être
     // propre » ne se vérifie pas. C'est ce nœud qui attrape ce que ni les
     // conventions ni les vulns ne voient.
+    // UNE CHAÎNE PAR RÈGLE, comme les deux nœuds ci-dessus — pas toutes les
+    // règles dans une seule chaîne : le nœud reçoit une puce par élément.
     regles: [
       '{{INVARIANTS}}',
     ],
@@ -101,4 +103,8 @@ if (muets.length) log(`⚠️ nœud(s) sans rapport, couverture incomplète : ${
 
 log(`${findings.length} finding(s) après dédup — ${rapports.filter(Boolean).length}/${NOEUDS.length} nœuds ont répondu`)
 
-return { branch, diffPath, noeudsMuets: muets, findings }
+// Le verdict du gate, calculé en code : zéro `high`, aucun nœud muet.
+const approuve = muets.length === 0 && !findings.some((f) => f.severity === 'high')
+log(approuve ? '✅ tour approuvé' : '⛔ tour refusé : corrige, puis relance la revue sur le nouveau diff')
+
+return { branch, diffPath, approuve, noeudsMuets: muets, findings }

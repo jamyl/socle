@@ -70,9 +70,9 @@ retiré.
 - **`security-scanner` et `reviewer` ne remplacent pas `/security-review`.** Sur
   le projet d'origine, c'est `/security-review` qui a trouvé une faille
   exploitable à *chaque* story du domaine critique, après passage des agents.
-- **La revue en fan-out ne remplace ni les tests, ni `/security-review`.** Ce
-  n'est pas un gate : elle attrape avant la PR ce que la suite de tests ne voit
-  pas.
+- **La revue en fan-out ne remplace ni les tests, ni `/security-review`.** C'est
+  un gate à deux tours sur ce que la suite de tests ne voit pas : correction,
+  puis relecture du correctif, avant la PR.
 - **Un rapport vide n'est pas un quitus.** Et un nœud qui ne rend pas de rapport
   n'est pas un nœud sans finding : `review-story` les distingue et le signale.
 

@@ -16,6 +16,10 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   consigné. Idée reprise de Shopify Helix : une revue est une gate, pas un
   conseil. Le bloc `deny` que la documentation décrivait est enfin commité, et le
   plugin `dart-flutter`, hors liste blanche, retiré de `settings.json`.
+- **La revue devient un gate à deux tours** : chaque `high`/`medium` se
+  corrige, puis `review-story` relit le correctif et rend `approuve` (zéro
+  `high`, aucun nœud muet), calculé en code. Un `high` qui survit au deuxième
+  tour arrête le cycle au lieu d'ouvrir la PR. Idée reprise de Shopify Helix.
 - **Boucle d'exploration bornée** (`.claude/rules/exploration-policy.md`) : deux
   essais au plus par hypothèse, pré-vol obligatoire sur les essais passés, et
   interdiction de contourner un test. Le garde est tenu par
@@ -84,6 +88,10 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   scorer d'essais en a besoin sur chaque story.
 
 ### Corrigé
+- `{{INVARIANTS}}` était un seul élément du tableau `regles` : un amorçage qui y
+  collait toutes les règles donnait au nœud `domain-expert` une seule puce
+  illisible. Les skills d'amorçage demandent désormais une chaîne par règle, et
+  le compte à vérifier.
 - Le contrôle final de l'amorçage criait au loup sur sa propre documentation : le
   README, `GETTING-STARTED.md` et le skill citaient un exemple de placeholder en
   toutes lettres, que le motif attrapait comme un oubli.
