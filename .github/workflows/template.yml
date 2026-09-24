@@ -59,6 +59,9 @@ jobs:
         # résout comme un module et échoue (Node 22 comme Node 26).
         run: node --test .claude/skills/deliver-story/scripts/eval-run.test.mjs
 
+      - name: Banc de tests des hooks
+        run: node --test .claude/hooks/hooks.test.mjs
+
       - name: YAML de ce workflow
         # backend.yml n'est PAS validé ici : il porte {{SLUG_SQL}} non quoté, donc
         # il n'est du YAML valide qu'après substitution. Il l'est dans le job
@@ -131,7 +134,9 @@ jobs:
           cd "$RUNNER_TEMP/p"
           for p in .github/scan-secrets.sh \
                    .claude/skills/deliver-story/scripts/eval-run.mjs \
-                   .claude/rules/exploration-policy.md; do
+                   .claude/rules/exploration-policy.md \
+                   .claude/hooks/guard-bash.mjs \
+                   .claude/hooks/stop-gate.mjs; do
             [ -e "$p" ] || { echo "::error::$p manque au projet amorcé"; exit 1; }
           done
           [ -x .github/scan-secrets.sh ] \

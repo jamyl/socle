@@ -60,6 +60,15 @@ en offre gratuite elle est indisponible (`403 : Upgrade to GitHub Pro`) — dans
 cas l'interdit ne tient que par la méthode, et c'est une raison de plus pour ne
 pas pré-approuver `git push` en bloc.
 
+Deux hooks tiennent déjà les interdits les plus coûteux : push vers `main`, push
+forcé, `--no-verify`, merge d'une story sans essai vert. Pour une boucle `/loop`
+sans surveillance, active aussi le garde d'arrêt — l'agent ne s'arrête plus sur
+un rouge sans l'avoir consigné :
+
+```bash
+export SOCLE_STOP_GATE=1   # dans ton profil shell, puis rouvre le terminal
+```
+
 Ce qui se commite et ce qui reste sur ton poste — `settings.local.json`, l'état
 des boucles `/loop`, le cache de `/dejavu`, les variables d'environnement — est
 détaillé dans

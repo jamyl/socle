@@ -462,6 +462,11 @@ préfixes littéraux, et les formes équivalentes d'un même push sont innombrab
 Les trois règles `deny` du template attrapent les fautes d'inattention, rien de
 plus. Ce qui en est un : la protection de branche côté GitHub.
 
+Deux hooks de `.claude/hooks/` vont plus loin que la liste : ils lisent la
+commande entière et refusent un push vers `main` sous toutes ses formes, un push
+forcé, `--no-verify`, et le merge d'une story dont le dernier essai n'est pas
+vert. Ils rattrapent l'agent qui oublie une règle, pas celui qui la contourne.
+
 Le détail — ce qui manque exprès à la liste `allow`, et pourquoi il ne faut pas
 l'élargir à l'avance — est dans
 [`docs/engineering/config-locale.md`](docs/engineering/config-locale.md).
@@ -955,6 +960,11 @@ before your `export`, so it doesn't see it. Reopen the terminal after editing.
 the equivalent forms of the same push are countless. The template's three `deny`
 rules catch slips of attention, nothing more. What is a control: branch
 protection on the GitHub side.
+
+Two hooks in `.claude/hooks/` go further than the list: they read the whole
+command and refuse a push to `main` in any form, a force push, `--no-verify`,
+and merging a story whose last attempt isn't green. They catch an agent that
+forgets a rule, not one that works around it.
 
 The details — what's deliberately missing from the `allow` list, and why you
 shouldn't widen it in advance — are in

@@ -250,7 +250,8 @@ Puis un rapport court :
 - **Ce que `adopt.sh` avait sauté** et que tu as rapproché — ou pas.
 - **Les stories de E01**, avec les `bloqué` et ce qui les débloque.
 - **Ce qui est attendu de l'utilisateur** : `.claude/settings.json` à relire
-  (voir `docs/engineering/config-locale.md`), prérequis manquants.
+  (voir `docs/engineering/config-locale.md`) — les blocs `deny` et `hooks` du
+  template s'y recopient à la main —, prérequis manquants.
 - **La commande suivante** : `/deliver-story`.
 
 ### Puis, toujours : « comment tu peux le vérifier toi-même »
