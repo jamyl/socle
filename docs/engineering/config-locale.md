@@ -73,7 +73,7 @@ pas pré-approuver `git push` en bloc.
 
 | Hook | Quand | Ce qu'il refuse |
 |---|---|---|
-| `guard-bash.mjs` | avant chaque commande `Bash` | un push vers `main` (toutes les formes que la liste `deny` rate : `HEAD:main`, `-u origin main`, `git push` seul depuis `main`), un push forcé, `--no-verify`, et `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai de `eval-run.mjs` n'est pas vert |
+| `guard-bash.mjs` | avant chaque commande `Bash` | un push vers `main` (toutes les formes que la liste `deny` rate : `HEAD:main`, `-u origin main`, `git push` seul depuis `main`), un push forcé, `--no-verify`, et `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai de `eval-run.mjs` n'est pas vert, et `gh pr create` sur une story dont le corps ne porte pas la rétrospective ni le verdict de revue |
 | `stop-gate.mjs` | quand l'agent veut s'arrêter — **seulement si `SOCLE_STOP_GATE=1`** | l'arrêt sur une branche de story avec un dernier essai rouge ou un diff non commité. Une relance par arrêt, pas plus |
 
 Un refus sort en code 2 : Claude Code annule la commande et montre la raison à

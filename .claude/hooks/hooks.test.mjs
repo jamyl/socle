@@ -102,6 +102,33 @@ test('gh pr merge accepté sur un dernier essai vert, et hors branche de story',
   assert.equal(bash(depot('docs-x'), 'gh pr merge --squash').code, 0)
 })
 
+test('heredoc : un message qui cite une commande refusée ne déclenche rien', () => {
+  const dir = depot('us-101-x')
+  const msg = "git commit -F - <<'EOF'\nUS-101: x\n\nOn ne fait jamais git push origin main ni gh pr merge ici.\nEOF"
+  assert.equal(bash(dir, msg).code, 0)
+  assert.equal(bash(dir, `${msg}\ngit push origin main`).code, 2)
+})
+
+// --- guard-bash : preuves dans la PR
+
+test('gh pr create sur une story refusé sans rétrospective ni verdict de revue', () => {
+  const dir = depot('us-101-x')
+  assert.equal(bash(dir, 'gh pr create --title t --body "rien"').code, 2)
+  const r = bash(dir, 'gh pr create --title t --body "US-101 — rétrospective"')
+  assert.equal(r.code, 2)
+  assert.match(r.err, /approuve/)
+  assert.equal(bash(dir, `gh pr create --title t --body "$(cat <<'EOF'\nUS-101 — rétrospective\nrevue : approuve: true\nEOF\n)"`).code, 0)
+  assert.equal(bash(depot('docs-x'), 'gh pr create --title t --body "rien"').code, 0)
+})
+
+test('gh pr create --body-file : le fichier est lu', () => {
+  const dir = depot('us-101-x')
+  fs.writeFileSync(path.join(dir, 'corps.md'), 'US-101 — rétrospective\napprouve: true\n')
+  assert.equal(bash(dir, 'gh pr create --title t --body-file corps.md').code, 0)
+  fs.writeFileSync(path.join(dir, 'vide.md'), 'rien\n')
+  assert.equal(bash(dir, 'gh pr create --title t --body-file vide.md').code, 2)
+})
+
 // --- stop-gate
 
 const stop = (dir, entree = {}, env = { SOCLE_STOP_GATE: '1' }) => hook('stop-gate.mjs', dir, entree, env)

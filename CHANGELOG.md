@@ -16,6 +16,10 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   consigné. Idée reprise de Shopify Helix : une revue est une gate, pas un
   conseil. Le bloc `deny` que la documentation décrivait est enfin commité, et le
   plugin `dart-flutter`, hors liste blanche, retiré de `settings.json`.
+- **Chaque PR de story porte ses preuves** : sortie de `eval-run.mjs retro`,
+  verdict de revue, scénario → test. `guard-bash.mjs` refuse un `gh pr create`
+  sans eux. Le hook ignore aussi le corps des heredocs, qui citaient les
+  commandes mêmes qu'il refuse.
 - **La revue devient un gate à deux tours** : chaque `high`/`medium` se
   corrige, puis `review-story` relit le correctif et rend `approuve` (zéro
   `high`, aucun nœud muet), calculé en code. Un `high` qui survit au deuxième

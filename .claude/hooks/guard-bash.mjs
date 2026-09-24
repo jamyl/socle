@@ -7,7 +7,10 @@
 //   1. aucun push vers `main`, aucun push forcé ;
 //   2. aucun `--no-verify` ;
 //   3. aucun `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai
-//      consigné par `eval-run.mjs` n'est pas `pass`.
+//      consigné par `eval-run.mjs` n'est pas `pass` ;
+//   4. aucun `gh pr create` sur une telle branche sans ses preuves dans le
+//      corps : la rétrospective de `eval-run.mjs` et le verdict `approuve` de
+//      la revue (`.claude/skills/deliver-story/SKILL.md` §5).
 //
 // Code 2 = refus : Claude Code annule la commande et montre stderr à l'agent.
 //
@@ -17,13 +20,19 @@
 // rattrape l'agent qui oublie, pas celui qui triche — voir
 // `docs/engineering/config-locale.md`.
 
+import fs from 'node:fs'
+import path from 'node:path'
 import { dernierEssai, lireEntree, refuser, storyDeBranche } from './etat-story.mjs'
 
-const { entree, racine, branche } = lireEntree()
+const { entree, cwd, racine, branche } = lireEntree()
+const brut = entree.tool_input?.command ?? ''
 
 // Les chaînes entre guillemets ne portent ni séparateur ni option : un message
 // de commit qui contient « -n » ou « ; » ne doit rien déclencher.
-const segments = (entree.tool_input?.command ?? '')
+// Le corps d'un heredoc non plus : c'est du texte (message de commit, corps de
+// PR), et il cite volontiers les commandes mêmes que ce hook refuse.
+const segments = brut
+  .replace(/<<-?\s*(['"]?)(\w+)\1[^\n]*\n[\s\S]*?\n\s*\2\s*(?=\n|$)/g, 'H')
   .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, 'Q')
   .split(/&&|\|\||[;|\n]/)
   .map((s) => s.trim().split(/\s+/).filter(Boolean))
@@ -72,6 +81,17 @@ for (const mots of segments) {
   }
 
   const g = mots.indexOf('gh')
+  if (g >= 0 && mots[g + 1] === 'pr' && mots[g + 2] === 'create' && storyDeBranche(branche)) {
+    let corps = brut
+    const fichier = /--body-file[= ]+['"]?([^\s'"]+)/.exec(brut)?.[1]
+    if (fichier && fs.existsSync(path.resolve(cwd, fichier))) corps += fs.readFileSync(path.resolve(cwd, fichier), 'utf8')
+    const manque = [['rétrospective', 'la sortie de eval-run.mjs retro'], ['approuve', 'le verdict approuve de review-story']]
+      .filter(([m]) => !corps.includes(m)).map(([, quoi]) => quoi)
+    if (manque.length) {
+      refuser(`⛔ PR refusée : le corps ne porte pas ${manque.join(' ni ')}.\n` +
+        '   Gabarit : .claude/skills/deliver-story/SKILL.md §5. La preuve vit dans la PR, pas dans .socle/.')
+    }
+  }
   if (g >= 0 && mots[g + 1] === 'pr' && mots[g + 2] === 'merge') {
     const story = storyDeBranche(branche)
     if (!story) continue
