@@ -12,6 +12,7 @@
 | Backlog (epics `E0X`, stories `US-XYZ`) | `docs/backlog/README.md` |
 | Journal des livraisons | `docs/backlog/JOURNAL.md` |
 | Décisions prises seul, à valider en fin de cycle | `docs/backlog/DECISIONS.md` |
+| Ce qu'on ne refait plus — lu avant chaque story | `docs/backlog/LEARNINGS.md` |
 | Antériorité (`/dejavu`) des décisions structurantes | `docs/engineering/prior-art.md` |
 | Quel modèle tourne où, et ce qu'un cycle coûte | `docs/engineering/models.md` |
 | Ce qu'on fait quand un test reste rouge | `.claude/rules/exploration-policy.md` |

@@ -13,7 +13,9 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
 ## 1. Sélection de la story
 
 1. Lis `docs/backlog/JOURNAL.md` (s'il existe) : contexte des itérations passées,
-   story annoncée comme suivante, blocages connus.
+   story annoncée comme suivante, blocages connus. Puis
+   `docs/backlog/LEARNINGS.md` : ce qu'on ne refait plus. Une leçon qui touche
+   la story choisie **se cite dans le plan**, comme le pré-vol.
 2. La **source unique d'ordonnancement est le graphe des dépendances** (« Dépend
    de » de chaque story), pas une liste figée. Balaie **tous** les epics dans
    l'ordre indicatif de la roadmap `docs/backlog/README.md` et prends la
@@ -243,7 +245,9 @@ rien.
   Un ratio élevé n'est pas une faute — c'est le signal qu'une leçon mérite
   d'être écrite pendant qu'on s'en souvient. **S'il y a eu une impasse**,
   complète la ligne `DECISIONS.md` proposée : le coût du revirement ne se déduit
-  d'aucun fichier, et une décision sans ce coût n'est pas relisible.
+  d'aucun fichier, et une décision sans ce coût n'est pas relisible. Complète
+  aussi la ligne `LEARNINGS.md` qu'elle propose : c'est elle que la story
+  suivante lira.
 - Ajoute une ligne à `docs/backlog/JOURNAL.md` (crée le fichier au besoin) :
   `- [YYYY-MM-DD HH:MM] US-XXX <titre> — fait|bloqué(motif) — tests : <commande> → <résultat> — essais : <N> — suivante : US-YYY`
   (date réelle via la commande `date`, nombre d'essais donné par `retro`).

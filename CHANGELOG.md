@@ -16,6 +16,10 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   consigné. Idée reprise de Shopify Helix : une revue est une gate, pas un
   conseil. Le bloc `deny` que la documentation décrivait est enfin commité, et le
   plugin `dart-flutter`, hors liste blanche, retiré de `settings.json`.
+- **`docs/backlog/LEARNINGS.md`** : ce qu'on ne refait plus, lu avant chaque
+  story par `/deliver-story` et les agents de stack. `eval-run.mjs retro`
+  propose la ligne quand une piste a été abandonnée. Idée reprise de Shopify
+  Helix : le retour humain devient une mémoire pour la suite.
 - **Chaque PR de story porte ses preuves** : sortie de `eval-run.mjs retro`,
   verdict de revue, scénario → test. `guard-bash.mjs` refuse un `gh pr create`
   sans eux. Le hook ignore aussi le corps des heredocs, qui citaient les

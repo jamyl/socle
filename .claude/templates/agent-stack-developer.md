@@ -76,6 +76,8 @@ sur le poste ne prouve rien sur le projet.
   deux strikes, pré-vol sur les essais passés, aucun test contourné.
 - `.claude/rules/git-operations.md` — le cycle branche/PR/merge.
 - `.claude/rules/mcp-stack.md` — la liste blanche d'outillage.
+- `docs/backlog/LEARNINGS.md` — ce qu'on ne refait plus. **Lis-le avant d'écrire
+  la première ligne.**
 
 ## Ce que tu ne fais jamais
 
