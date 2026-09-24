@@ -278,6 +278,8 @@ test('la rétro donne le ratio, la leçon écrite, et les lignes à coller', () 
   assert.match(out, /essais : 4, ratio : 4\.0/)      // la ligne de JOURNAL.md
   assert.match(out, /DECISIONS\.md/)                  // une impasse a été rencontrée
   assert.match(out, /H2/)                             // ce qui a marché
+  assert.match(out, /LEARNINGS\.md/)                  // la leçon, pour les stories suivantes
+  assert.match(out, /piste morte : H1 — H1 supposait un cache.* — source : retro US-107/)
 })
 
 test('aucune impasse : la rétro ne fabrique pas de décision', () => {
@@ -287,6 +289,7 @@ test('aucune impasse : la rétro ne fabrique pas de décision', () => {
   assert.match(out, /ratio essais\/réussite : 1\.0/)
   assert.match(out, /Aucune impasse/)
   assert.doesNotMatch(out, /\| D<n> \|/)
+  assert.doesNotMatch(out, /LEARNINGS\.md/)
 })
 
 test('aucun essai vert : le ratio le dit au lieu de diviser par zéro', () => {

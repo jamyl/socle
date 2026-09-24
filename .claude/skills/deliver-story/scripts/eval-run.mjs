@@ -489,7 +489,10 @@ function retro (racine, story) {
       `| D<n> | <date> | ${story} | <la question tranchée> | ` +
       `${dernierVert?.hypothesis ?? '<ce qui a marché>'} | ${ecartee} | <À COMPLÉTER> |\n` +
       '\nRelis-la avant de l\'écrire : le coût du revirement ne se déduit d\'aucun\n' +
-      'fichier, et une décision sans ce coût n\'est pas relisible.\n')
+      'fichier, et une décision sans ce coût n\'est pas relisible.\n' +
+      '\n--- et la leçon, pour docs/backlog/LEARNINGS.md (lue avant chaque story) ---\n' +
+      `- [<date>] <À COMPLÉTER : ce qu'il ne faut plus faire, vérifiable sur un diff> ` +
+      `— piste morte : ${ecartee} — source : retro ${story}\n`)
   } else {
     process.stdout.write('\nAucune impasse : rien à écrire dans DECISIONS.md.\n')
   }

@@ -92,7 +92,8 @@ dans le conteneur, et ce que tu vois sur le poste n'est pas ce que PHP charge.
 `.claude/rules/code-style.md` · `.claude/rules/docker-commands.md` ·
 `.claude/rules/migrations-queue.md` · `.claude/rules/testing.md` ·
 `.claude/rules/exploration-policy.md` · `.claude/rules/git-operations.md` ·
-`.claude/rules/mcp-stack.md`
+`.claude/rules/mcp-stack.md` · `docs/backlog/LEARNINGS.md` — ce qu'on ne refait
+plus, **à lire avant la première ligne**
 
 ## Ce que tu ne fais jamais
 
