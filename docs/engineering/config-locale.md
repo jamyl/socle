@@ -67,11 +67,30 @@ en offre gratuite elle est indisponible (`403 : Upgrade to GitHub Pro`) — dans
 cas l'interdit ne tient que par la méthode, et c'est une raison de plus pour ne
 pas pré-approuver `git push` en bloc.
 
+## Les hooks, et ce qu'ils tiennent
+
+`settings.json` déclare deux hooks, dans `.claude/hooks/` :
+
+| Hook | Quand | Ce qu'il refuse |
+|---|---|---|
+| `guard-bash.mjs` | avant chaque commande `Bash` | un push vers `main` (toutes les formes que la liste `deny` rate : `HEAD:main`, `-u origin main`, `git push` seul depuis `main`), un push forcé, `--no-verify`, et `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai de `eval-run.mjs` n'est pas vert |
+| `stop-gate.mjs` | quand l'agent veut s'arrêter — **seulement si `SOCLE_STOP_GATE=1`** | l'arrêt sur une branche de story avec un dernier essai rouge ou un diff non commité. Une relance par arrêt, pas plus |
+
+Un refus sort en code 2 : Claude Code annule la commande et montre la raison à
+l'agent. Le banc de tests : `node --test .claude/hooks/hooks.test.mjs`.
+
+🔑 **Un hook n'est pas non plus un contrôle de sécurité.** Il lit la commande
+telle qu'elle est écrite : un script intermédiaire, une refspec entre guillemets
+ou un `gh pr merge <n>` lancé depuis une autre branche passent. Il rattrape
+l'agent qui **oublie** une règle au 40e tour — le cas courant — pas celui qui la
+contourne. La protection de branche GitHub reste la seule barrière.
+
 ## Sur un projet qui adopte la méthode
 
 `scripts/adopt.sh` **ne touche jamais** `.claude/settings.json` : une liste de
 permissions se relit à la main. Compare la tienne avec celle du template et
-reprends ce qui manque — en particulier le bloc `deny`.
+reprends ce qui manque — en particulier le bloc `deny` et le bloc `hooks`. Les
+scripts des hooks, eux, sont copiés avec le reste de `.claude/`.
 
 Si ton `settings.json` déclare un plugin ou un MCP, vérifie qu'il est bien
 installé **et** qu'il figure dans le tableau d'outillage de `CLAUDE.md`. Ce

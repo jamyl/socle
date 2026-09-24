@@ -9,6 +9,13 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Hooks qui tiennent les interdits** (`.claude/hooks/`) : `guard-bash.mjs`
+  refuse un push vers `main` sous toutes ses formes, un push forcé,
+  `--no-verify`, et `gh pr merge` sur une story dont le dernier essai n'est pas
+  vert ; `stop-gate.mjs`, opt-in, empêche l'agent de s'arrêter sur un rouge non
+  consigné. Idée reprise de Shopify Helix : une revue est une gate, pas un
+  conseil. Le bloc `deny` que la documentation décrivait est enfin commité, et le
+  plugin `dart-flutter`, hors liste blanche, retiré de `settings.json`.
 - **Boucle d'exploration bornée** (`.claude/rules/exploration-policy.md`) : deux
   essais au plus par hypothèse, pré-vol obligatoire sur les essais passés, et
   interdiction de contourner un test. Le garde est tenu par
