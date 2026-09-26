@@ -9,6 +9,15 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Skills de direction de design** (module `frontend-web`), vendorisés et figés
+  avec leur licence : `frontend-design` d'Anthropic (automatique), et
+  `/design-taste-frontend` et `/redesign-existing-projects` de taste-skill
+  (manuels — le premier pèse ~22 000 tokens). Un en-tête commun fait primer
+  `DESIGN.md`, les tokens et la stack verrouillée, et interdit paquet ou
+  ressource externe sans story : taste-skill poussait à installer des design
+  systems et à charger des images depuis des services tiers. Présentés comme
+  des conseils — aucun n'a de mesure publiée de son effet. `frontend.md` §6 dit
+  comment partir d'une référence, sans copier l'identité d'une marque.
 - **Revue d'interface** (module `frontend-web`) : `review-story` gagne un
   quatrième nœud, `ui-reviewer`, sur les diffs qui touchent le front
   (`ui: true`). Ses règles sont les Web Interface Guidelines de Vercel, **figées**

@@ -5,8 +5,8 @@
 > ce fichier dit **pourquoi** et **quand**, le JSON dit **combien**. Quand l'un
 > bouge, l'autre bouge.
 >
-> À REMPLIR au bootstrap, depuis une maquette, une référence ou une
-> interview. Un DESIGN.md vague donne
+> À REMPLIR au bootstrap, depuis une maquette, une référence
+> (`docs/engineering/frontend.md` §6) ou une interview. Un DESIGN.md vague donne
 > une interface générique : chaque section finit par une règle vérifiable.
 
 ## 1. Atmosphère
