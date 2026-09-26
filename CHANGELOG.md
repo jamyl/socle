@@ -9,6 +9,12 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Revue d'interface** (module `frontend-web`) : `review-story` gagne un
+  quatrième nœud, `ui-reviewer`, sur les diffs qui touchent le front
+  (`ui: true`). Ses règles sont les Web Interface Guidelines de Vercel, **figées**
+  au commit `e3d624b` avec leur licence : le skill amont les téléchargeait à
+  chaque exécution, donc rien hors ligne et une consigne distante que personne
+  ne relit. Sans le module, le nœud est muet et le tour refusé.
 - **Module `frontend-web`** : des gates UI indépendantes du framework, rangées
   par ce qui est prouvé. Accessibilité par axe-core (zéro violation `serious`),
   captures de référence au pixel près (N7 enfin outillé), budgets Core Web Vitals

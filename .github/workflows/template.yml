@@ -193,7 +193,8 @@ jobs:
           case " $MODULES " in
             *" frontend-web "*)
               for f in DESIGN.md design/tokens.json design/tokens.css e2e/routes.json \
-                       e2e/package-lock.json docs/engineering/frontend.md .github/workflows/frontend.yml; do
+                       e2e/package-lock.json docs/engineering/frontend.md .github/workflows/frontend.yml \
+                       .claude/agents/ui-reviewer.md .claude/rules/web-interface-guidelines.md; do
                 [ -e "$f" ] || { echo "::error::$f manque avec frontend-web"; exit 1; }
               done
               node design/build-tokens.mjs --check

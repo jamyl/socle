@@ -1,9 +1,9 @@
 export const meta = {
   name: 'review-story',
   description: 'Revue pré-commit en fan-out lecture seule sur le diff d\'une story (qualité, vulns, invariants métier)',
-  whenToUse: 'Étape revue de /deliver-story, après tests verts et avant /security-review. args = {diffPath, branch}',
+  whenToUse: 'Étape revue de /deliver-story, après tests verts et avant /security-review. args = {diffPath, branch, ui?}',
   phases: [
-    { title: 'Revue', detail: 'reviewer + security-scanner + domain-expert en parallèle sur le même diff' },
+    { title: 'Revue', detail: 'reviewer + security-scanner + domain-expert (+ ui-reviewer si ui) en parallèle sur le même diff' },
   ],
 }
 
@@ -71,11 +71,26 @@ const NOEUDS = [
   },
 ]
 
+// Module frontend-web : un 4e nœud quand le diff touche l'interface, signalé
+// par `args.ui`. Sans le module, l'agent `ui-reviewer` n'existe pas : le nœud
+// meurt, il est compté muet, et le tour est refusé. Échec fermé, voulu — une
+// revue d'interface demandée et absente ne se transforme pas en approbation.
+if (args?.ui) {
+  NOEUDS.push({
+    label: 'ui-reviewer',
+    agentType: 'ui-reviewer',
+    lire: '.claude/rules/web-interface-guidelines.md',
+    regles: [
+      'chaque règle de .claude/rules/web-interface-guidelines.md, citée telle qu\'écrite dans le champ invariant',
+    ],
+  })
+}
+
 phase('Revue')
 
 const rapports = await parallel(NOEUDS.map((n) => () =>
   agent(
-    `${contrat}\n\nTu vérifies exactement ces règles, et rien d'autre :\n${n.regles.map((r) => `- ${r}`).join('\n')}`,
+    `${contrat}${n.lire ? `\n\nSeule lecture permise hors du diff : ${n.lire}.` : ''}\n\nTu vérifies exactement ces règles, et rien d'autre :\n${n.regles.map((r) => `- ${r}`).join('\n')}`,
     { label: n.label, agentType: n.agentType, phase: 'Revue', schema: FINDINGS },
   // ⚠️ `agent()` RÉSOUT à `null` quand le nœud meurt — il ne lève pas. Un
   // `r?.findings ?? []` transformait ce `null` en rapport vide : le nœud mort
