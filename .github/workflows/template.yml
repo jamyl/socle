@@ -62,12 +62,18 @@ jobs:
       - name: Banc de tests des hooks
         run: node --test .claude/hooks/hooks.test.mjs
 
+      - name: Générateur de tokens du module frontend-web
+        run: |
+          node --test modules/frontend-web/design/build-tokens.test.mjs
+          node modules/frontend-web/design/build-tokens.mjs --check
+
       - name: YAML de ce workflow
         # backend.yml n'est PAS validé ici : il porte {{SLUG_SQL}} non quoté, donc
         # il n'est du YAML valide qu'après substitution. Il l'est dans le job
         # `bootstrap`, sur un projet amorcé.
         run: |
           python3 -c "import yaml; yaml.safe_load(open('.github/workflows/template.yml')); print('yaml ok')"
+          python3 -c "import yaml; yaml.safe_load(open('modules/frontend-web/.github/workflows/frontend.yml')); print('frontend.yml: yaml ok')"
 
       - name: Liens relatifs des documents d'accueil
         run: |
@@ -99,6 +105,8 @@ jobs:
           - { nom: 'mobile-flutter', modules: 'mobile-flutter' }
           - { nom: 'dejavu', modules: 'dejavu' }
           - { nom: 'les trois', modules: 'stack-laravel mobile-flutter dejavu' }
+          - { nom: 'frontend-web', modules: 'frontend-web' }
+          - { nom: 'stack-laravel frontend-web', modules: 'stack-laravel frontend-web' }
     steps:
       - uses: actions/checkout@v4
 
@@ -180,6 +188,15 @@ jobs:
                 || { echo '::error::aucun agent de stack genere'; exit 1; }
               grep -q '^model: sonnet' .claude/agents/developer.md \
                 || { echo '::error::agent genere sans model: sonnet'; exit 1; }
+              ;;
+          esac
+          case " $MODULES " in
+            *" frontend-web "*)
+              for f in DESIGN.md design/tokens.json design/tokens.css e2e/routes.json \
+                       e2e/package-lock.json docs/engineering/frontend.md .github/workflows/frontend.yml; do
+                [ -e "$f" ] || { echo "::error::$f manque avec frontend-web"; exit 1; }
+              done
+              node design/build-tokens.mjs --check
               ;;
           esac
           echo "agents : $(ls .claude/agents/ | tr '\n' ' ')"

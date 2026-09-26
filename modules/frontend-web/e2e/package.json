@@ -1,0 +1,21 @@
+{
+  "name": "gates-ui",
+  "private": true,
+  "type": "module",
+  "description": "Gates UI du module frontend-web : accessibilité, régression visuelle, performance, tokens. Indépendant du framework de l'app.",
+  "scripts": {
+    "gates": "npm run tokens:check && npm run lint:styles && npm run test:ui",
+    "tokens": "node ../design/build-tokens.mjs",
+    "tokens:check": "node ../design/build-tokens.mjs --check",
+    "lint:styles": "stylelint --allow-empty-input \"${STYLE_GLOB:-../**/*.{css,scss}}\"",
+    "test:ui": "playwright test",
+    "perf": "lhci autorun"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@lhci/cli": "0.15.1",
+    "@playwright/test": "1.63.0",
+    "stylelint": "17.15.0",
+    "stylelint-declaration-strict-value": "1.12.1"
+  }
+}

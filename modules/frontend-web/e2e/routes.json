@@ -1,0 +1,6 @@
+{
+  "preparation": "",
+  "serveur": "",
+  "baseURL": "http://localhost:3000",
+  "routes": ["/"]
+}

@@ -1,0 +1,91 @@
+name: Frontend
+
+# Les gates UI du module frontend-web : tokens, styles, accessibilité, captures
+# (N7), performance. Indépendantes du framework : elles visent l'app lancée par
+# `serveur` dans e2e/routes.json, après `preparation`.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  garde:
+    name: Frontend branché ?
+    runs-on: ubuntu-latest
+    outputs:
+      actif: ${{ steps.garde.outputs.actif }}
+    steps:
+      - uses: actions/checkout@v4
+      # Tant que `serveur` est vide, il n'y a pas d'app à contrôler : sans ce
+      # garde, la CI serait rouge avant la première page. Comme backend.yml, le
+      # prédicat se lit AUSSI sur la branche de base : une PR qui vide `serveur`
+      # ne peut pas sauter les gates qu'elle devait passer.
+      - name: Lire serveur (base et PR)
+        id: garde
+        env:
+          BASE: ${{ github.base_ref || github.ref_name }}
+        run: |
+          lire() { node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).serveur?"1":"0")}catch{process.stdout.write("0")}})'; }
+          git fetch --depth=1 origin "$BASE"
+          base=$(git show "FETCH_HEAD:e2e/routes.json" 2>/dev/null | lire || echo 0)
+          tete=$(lire < e2e/routes.json 2>/dev/null || echo 0)
+          if [ "$base" = 1 ] && [ "$tete" = 0 ]; then
+            echo "::error::e2e/routes.json a un serveur sur $BASE et plus ici — les gates UI ne se sautent pas en le vidant"
+            exit 1
+          fi
+          if [ "$base" = 1 ] || [ "$tete" = 1 ]; then
+            echo 'actif=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'actif=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::e2e/routes.json sans serveur — gates UI ignorées tant qu'"'"'aucune app n'"'"'est branchée'
+          fi
+
+  ui:
+    name: Tokens, styles, accessibilité, captures
+    needs: garde
+    if: needs.garde.outputs.actif == 'true'
+    runs-on: ubuntu-latest
+    # L'image officielle, à la version exacte de @playwright/test : les captures
+    # de référence se génèrent dans la même (docs/engineering/frontend.md §4).
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci --no-audit --no-fund
+      - name: Préparer l'app
+        run: |
+          prep=$(node -p 'require("./routes.json").preparation || ""')
+          [ -z "$prep" ] || (cd .. && sh -c "$prep")
+      - run: npm run gates
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-ui
+          path: e2e/test-results/
+
+  perf:
+    name: Budgets Core Web Vitals (Lighthouse)
+    needs: garde
+    if: needs.garde.outputs.actif == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Préparer l'app
+        run: |
+          prep=$(node -p 'require("./routes.json").preparation || ""')
+          [ -z "$prep" ] || (cd .. && sh -c "$prep")
+      - run: npm run perf
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-lighthouse
+          path: e2e/.lighthouseci/

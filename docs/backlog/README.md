@@ -61,6 +61,7 @@ prouverait rien de plus.
 **En tant que** <rôle>, **je veux** <capacité> **afin de** <bénéfice>.
 **Priorité** P0 · **Estimation** S · **Statut** à faire
 **Dépend de** : US-ABC
+**Référence visuelle** : docs/maquettes/dossier.png   ← optionnel, story d'interface seulement
 
 Critères d'acceptation :
 - [ ] **Le type est obligatoire à la création**
@@ -71,6 +72,10 @@ Critères d'acceptation :
 
 Le titre en gras **est** le nom du test : un scénario, un test. La case à cocher
 reste une case à cocher, `/deliver-story` la coche `[x]` en livrant.
+
+`Référence visuelle` (maquette, capture, URL) déclenche la boucle visuelle de
+`/deliver-story` §4 : capture de l'écran livré, comparaison, écarts corrigés.
+Sans elle, l'étape est sautée — une story sans interface n'a rien à comparer.
 
 ## Checklist d'entrée au backlog
 

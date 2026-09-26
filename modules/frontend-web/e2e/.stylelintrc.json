@@ -1,0 +1,13 @@
+{
+  "plugins": ["stylelint-declaration-strict-value"],
+  "ignoreFiles": ["**/node_modules/**", "**/vendor/**", "**/dist/**", "**/build/**", "../design/tokens.css"],
+  "rules": {
+    "scale-unlimited/declaration-strict-value": [
+      ["/color$/", "fill", "stroke", "font-family", "/^(margin|padding|gap|row-gap|column-gap)/", "border-radius", "box-shadow"],
+      {
+        "ignoreValues": ["0", "auto", "none", "inherit", "initial", "unset", "transparent", "currentColor"],
+        "message": "« ${property}: ${value} » est une valeur en dur : utilise un token de design/tokens.css (var(--…))."
+      }
+    ]
+  }
+}
