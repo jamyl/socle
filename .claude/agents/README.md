@@ -15,6 +15,11 @@ Ce sont exactement les trois nœuds de la revue en fan-out
 (`.claude/workflows/review-story.js`). Il n'y a pas d'agent de plus au cœur : un
 agent qu'aucun workflow n'invoque est un prompt que personne ne relit.
 
+Le module `frontend-web` en ajoute un quatrième, `ui-reviewer` : **lecture
+seule**, aucun accès sortant, invoqué par `review-story` seulement quand
+`/deliver-story` passe `ui: true`. Ses règles sont une copie figée des Web
+Interface Guidelines de Vercel, pas un téléchargement.
+
 ## Aucun des trois ne peut écrire
 
 Les outils des **trois agents du socle** sont limités à la lecture — pas

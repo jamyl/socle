@@ -168,6 +168,12 @@ Trois nœuds **en lecture seule** lisent le même diff sans se lire entre eux �
 `reviewer` (conventions), `security-scanner` (vulns), `domain-expert`
 (invariants métier) — et leurs findings sont dédupliqués en code.
 
+**Diff d'interface, module `frontend-web` présent** (`e2e/routes.json` existe, et
+le diff touche du HTML, du CSS, un composant ou un template) : ajoute
+`ui: true`. Un quatrième nœud, `ui-reviewer`, relit le diff contre
+`.claude/rules/web-interface-guidelines.md`. Sans le module, ne passe pas
+`ui: true` : le nœud serait muet et le tour refusé.
+
 C'est un **gate à deux tours**, comme la gate de revue de Shopify Helix : un
 finding se corrige, puis on relit le correctif.
 
