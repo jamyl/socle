@@ -343,7 +343,7 @@ demandes.
 |---|---|---|
 | `stack-laravel` | Docker Compose avec PHP 8.4, PostgreSQL 16, Redis, Mailpit et Horizon, toutes les images épinglées par digest. GitHub Actions qui lance Pint, Larastan niveau 8, Pest sur PostgreSQL et un audit des dépendances. Quatre sous-agents Laravel, et un premier epic pré-écrit | La découverte d'architecture aboutit à PHP et Laravel |
 | `mobile-flutter` | Un dossier `mobile/`, des stories de toolchain qui partent `bloqué` parce que Xcode et Android Studio ne s'automatisent pas, et des niveaux de test de régression visuelle | Tu construis une app iOS, Android ou PWA |
-| `frontend-web` | Des gates qui bloquent une interface cassée, quel que soit le framework : accessibilité automatique, captures comparées au pixel, budgets de vitesse, et aucune couleur ni marge en dur hors des tokens de design | Ton produit a une interface web publique |
+| `frontend-web` | Des gates qui bloquent une interface cassée, quel que soit le framework : accessibilité automatique, captures comparées au pixel, budgets de vitesse, et aucune couleur ni marge en dur hors des tokens de design. Plus un 4e relecteur d'interface et trois skills de direction de design, figés avec leur licence | Ton produit a une interface web publique |
 | `dejavu` | Le skill d'antériorité `/dejavu` embarqué dans ton dépôt et versionné avec lui. Quatre sources académiques, aucune clé d'API, Python en bibliothèque standard | Ton architecture porte un mécanisme non trivial. À ignorer si ton poste a déjà `/dejavu` en global |
 
 Les colonnes « quand l'activer » disent **où la découverte aboutit**, pas ce que
@@ -852,7 +852,7 @@ You choose modules during the interview. Nothing is copied unless you ask for it
 |---|---|---|
 | `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. Four Laravel subagents, and a pre-written first epic | The architecture discovery lands on PHP and Laravel |
 | `mobile-flutter` | A `mobile/` directory, toolchain stories that start out `blocked` because Xcode and Android Studio can't be automated, and visual regression test levels | You're building an iOS, Android, or PWA app |
-| `frontend-web` | Gates that block a broken interface, whatever the framework: automated accessibility, pixel-compared screenshots, speed budgets, and no color or spacing hard-coded outside the design tokens | Your product has a public web interface |
+| `frontend-web` | Gates that block a broken interface, whatever the framework: automated accessibility, pixel-compared screenshots, speed budgets, and no color or spacing hard-coded outside the design tokens. Plus a fourth interface reviewer and three design-direction skills, pinned with their licenses | Your product has a public web interface |
 | `dejavu` | The `/dejavu` prior-art skill embedded in your repository and versioned with it. Four academic sources, no API keys, standard-library Python | Your architecture has a non-trivial mechanism. Skip it if your machine already has `/dejavu` installed globally |
 
 The module rows say *when the discovery lands there*, not what you pick up front.

@@ -86,3 +86,38 @@ cd e2e && npm run tokens
 
 `npm run gates` refuse un `tokens.css` qui ne correspond plus au JSON.
 `DESIGN.md` à la racine dit l'intention de chaque token.
+
+## 6. Partir d'une référence
+
+Une interface sans référence finit générique. Trois points de départ, du plus
+sûr au moins sûr :
+
+1. **Une maquette du projet** (image, export Figma) : Claude lit l'image, en tire
+   `DESIGN.md` et `design/tokens.json`, puis le code. La story porte la maquette
+   en `Référence visuelle` : la boucle visuelle de `/deliver-story` §4 compare
+   l'écran livré à elle.
+2. **Une capture d'un produit que tu admires** : même chemin, mais tu en
+   retiens des **principes** (densité, hiérarchie, rythme), pas une copie.
+3. **Un `DESIGN.md` public** — [awesome-design-md](https://github.com/VoltAgent/awesome-design-md)
+   en rassemble, extraits de sites réels (Vercel, Linear, Stripe…). **Inspiration
+   seulement** : ces fichiers décrivent l'identité visuelle d'une marque tierce,
+   et la reproduire n'est pas un choix de design, c'est un risque juridique.
+   Rien de ce dépôt n'est copié ici.
+
+## 7. Les skills de direction — des conseils, pas des gates
+
+Trois skills vendorisés dans `.claude/skills/`, chacun figé à un commit avec sa
+licence. Aucun n'a de mesure publiée de son effet : ils orientent la génération,
+ils ne prouvent rien. Les gates §1 restent le seul verdict.
+
+| Skill | Source | Déclenchement | Quand |
+|---|---|---|---|
+| `frontend-design` | Anthropic, Apache-2.0 | automatique, sur toute construction d'interface | par défaut : choisir une direction avant de coder, deux passes, critique sur capture |
+| `/design-taste-frontend` | taste-skill v2, MIT | **manuel** | une direction affirmée (landing, portfolio) ; trois réglages : variance, mouvement, densité. ~22 000 tokens par appel |
+| `/redesign-existing-projects` | taste-skill, MIT | **manuel** | refondre un écran existant : audit d'abord, puis corrections |
+
+Les trois portent en tête le même garde : `DESIGN.md`, les tokens et `stack.md`
+passent avant eux ; aucun paquet installé ni ressource externe sans story.
+
+⚠️ Si le poste a déjà un `frontend-design` en global (plugin officiel), deux
+skills portent le même nom. Garde l'un des deux.
