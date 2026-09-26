@@ -46,6 +46,7 @@
 | `context7` | MCP — fourni par le module `stack-laravel`, absent sans lui | Doc **à jour** d'une lib plutôt que de deviner une API |
 | `github` | MCP **lecture seule** — fourni par le module `stack-laravel`, absent sans lui | Lire commits, PR, branches, contenu de fichiers |
 | `playwright` | MCP — **non fourni par le template**, à configurer si le projet a une UI | Vérifier toute UI dans le navigateur — les tests verts ne suffisent pas |
+| gates UI (`e2e/`) | scripts — fournis par le module `frontend-web`, absents sans lui | `cd e2e && npm run gates` : tokens, styles, accessibilité, captures. `npm run perf` : Lighthouse. Voir `docs/engineering/frontend.md` |
 | `domain-expert` | agent projet | Toute question métier avant de modéliser un flux critique |
 | `.claude/agents/*` | sous-agents, tous en `model: sonnet`. Les **trois du socle** sont en lecture seule ; les agents de stack — d'un module ou générés à l'amorçage — **écrivent**. Vérifier leur `tools:` | Ils **ne connaissent pas** le backlog, le journal, ni les règles ci-dessus : leur travail passe par les mêmes tests et la même revue que le tien |
 

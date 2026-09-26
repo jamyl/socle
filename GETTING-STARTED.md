@@ -244,12 +244,13 @@ expire après 7 jours ; `CronList` puis `CronDelete <id>` l'arrête plus tôt.
 
 ---
 
-## Les trois modules
+## Les quatre modules
 
 | Module | Ce qu'il apporte | Quand l'activer |
 |---|---|---|
 | `stack-laravel` | Docker Compose (PHP 8.4, PostgreSQL 16, Redis, Mailpit, Horizon — images pinnées par digest), CI GitHub Actions (Pint, Larastan 8, Pest sur PostgreSQL, `composer audit`), scanner de secrets, `.mcp.json` (laravel-boost, context7, github lecture seule), 4 sous-agents Laravel, `stack.md` et `testing-strategy.md` remplis, `E01-fondations.md` pré-écrit | Backend PHP/Laravel |
 | `mobile-flutter` | Dossier `mobile/`, stories E01 de toolchain (déjà `bloqué` : Xcode et Android Studio ne s'automatisent pas), niveaux de test N7/N8, notes du plugin `dart-flutter` | La découverte retient une app native iOS/Android |
+| `frontend-web` | Gates UI indépendantes du framework : accessibilité (axe), captures de référence (N7), budgets Core Web Vitals (Lighthouse CI), tokens de design DTCG contrôlés par stylelint. Plus `DESIGN.md`, `docs/engineering/frontend.md` et `.github/workflows/frontend.yml` | La découverte retient une interface web publique ou produit |
 | `dejavu` | Le skill `/dejavu` embarqué dans `.claude/skills/`, donc **versionné avec le projet** : arXiv, OpenAlex, Crossref, Europe PMC, scripts Python en bibliothèque standard seule, aucune clé d'API. Plus `docs/engineering/dejavu.md` (prérequis, coût, mise à jour) | Architecture non triviale — cohérence, concurrence, cache, protocole, scale-out. **Pas si le poste l'a déjà** en global |
 
 Aucun module de stack → le cœur seul : méthode, skills, trois relecteurs,

@@ -5,7 +5,8 @@
 > désigne comme portant les règles les plus chères à violer.
 >
 > 🔧 Version agnostique. Le module `stack-laravel` la remplace par une version
-> outillée (Pint, Larastan, Pest) ; `mobile-flutter` ajoute N7 et N8.
+> outillée (Pint, Larastan, Pest) ; `mobile-flutter` ajoute N7 et N8 ;
+> `frontend-web` outille N7 pour le web (`docs/engineering/frontend.md`).
 
 ## 1. Les niveaux
 

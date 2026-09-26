@@ -73,13 +73,17 @@ deux appels. Propose des options fermées ; « Autre » est ajouté automatiquem
   hors-ligne d'abord avec synchronisation · application native · PWA · rien de
   tout ça. *Discrimine* les briques à vérifier ; la synchronisation hors-ligne est
   un mécanisme dur ; le natif appelle le module `mobile-flutter`.
+- **Interface web** : aucune · écrans d'administration seulement · interface
+  publique ou produit. *Discrimine* le module `frontend-web` : « aucune » ou
+  « administration seulement » ne l'appellent pas.
 - **Délai avant la première release** : quelques semaines · un trimestre · sans
   contrainte. *Discrimine* le poids des compétences existantes et le choix entre
   un framework « batteries incluses » et une stack composée.
 
 > `stack-laravel` **n'est pas une question posée ici.** Il se déduit de la
 > découverte en §2.4 et se confirme en §3. Même chose pour `mobile-flutter`, qui
-> découle de la réponse « application native ».
+> découle de la réponse « application native », et pour `frontend-web`, qui
+> découle de « interface publique ou produit ».
 
 **Lot 4 — les règles qui coûtent le plus cher à violer** (`{{REGLES}}`)
 
@@ -196,14 +200,15 @@ implémentation maintenue ». Une case vide est un argument, pas un trou.
   l'hébergement, du délai ou d'une case vide du tableau §2.3.
 - **Le mapping module** : PHP/Laravel ⇒ module **`stack-laravel`**. Toute autre
   stack ⇒ **« cœur + agents générés »** (§5 étape 5bis). Application native ⇒
-  **`mobile-flutter`** en plus.
+  **`mobile-flutter`** en plus. Interface web publique ou produit ⇒
+  **`frontend-web`** en plus, quelle que soit la stack.
 
 ## 3. Proposer l'architecture, et attendre
 
 Présente en **moins d'une page** :
 
 1. **Stack retenue** (versions) et **module** : `stack-laravel`, ou « cœur +
-   agents générés », plus `mobile-flutter` le cas échéant. Si la stack était
+   agents générés », plus `mobile-flutter` et `frontend-web` le cas échéant. Si la stack était
    imposée au lot 3a, écris « imposée — non rediscutée ».
 2. **L'alternative écartée** et la phrase qui l'écarte.
 3. **Les briques vérifiées** : le tableau de §2.3.
@@ -224,7 +229,7 @@ part sur un malentendu ou ne part pas.
 Une fois validé :
 
 ```bash
-./scripts/bootstrap.sh "<slug>" [stack-laravel] [mobile-flutter] [dejavu]
+./scripts/bootstrap.sh "<slug>" [stack-laravel] [mobile-flutter] [frontend-web] [dejavu]
 ```
 
 Le script fait **uniquement du mécanique** : substitution des placeholders, copie
@@ -270,7 +275,8 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
    bandeau « 🔧 Version agnostique » et nomme les outils : N1 le formateur,
    l'analyseur statique et l'audit de dépendances ; N2 le runner et son dossier ;
    N3 le runner et le **moteur de base réel**. Garde N5 si le produit a plusieurs
-   consommateurs. N7 et N8 : « module `mobile-flutter` » ou « sans objet ». Le
+   consommateurs. N7 et N8 : « module `mobile-flutter` », « module `frontend-web` »
+   ou « sans objet ». Le
    reste du fichier est agnostique et ne bouge pas.
 
 3. **`CLAUDE.md`** — la section « règles qui coûtent le plus cher à violer » avec
@@ -297,6 +303,18 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
      pire qu'un agent manquant.
 
    Contrôle : `grep -n '{{\|À REMPLIR' .claude/agents/*.md` ne doit rien rendre.
+
+5ter. **L'interface**, seulement si `frontend-web` est activé.
+   - **`DESIGN.md`** : chaque section depuis la maquette, la référence ou
+     l'interview. Une section sans règle vérifiable reste `À REMPLIR`.
+   - **`design/tokens.json`** : les valeurs de `DESIGN.md`, puis
+     `cd e2e && npm run tokens` pour régénérer `tokens.css`.
+   - **`e2e/routes.json`** : `preparation`, `serveur` et `baseURL` si le scaffold
+     existe ; sinon vides, et la story de scaffold les remplit. Tant que
+     `serveur` est vide, la CI saute les gates UI.
+   - **`stack.md` §5** : la commande « Lancer la suite de tests » **inclut**
+     `(cd e2e && npm run gates)` — c'est ce qui fait compter les gates UI par
+     `eval-run.mjs`.
 
 6. **`docs/backlog/README.md`** — la roadmap et la liste des epics prévus.
 7. **`docs/backlog/E01-fondations.md`** — l'epic qui rend le projet démarrable.

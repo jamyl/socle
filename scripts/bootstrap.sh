@@ -8,11 +8,11 @@
 # La rédaction (vision, stack, règles, backlog) est le travail de Claude Code
 # via /bootstrap-project — c'est lui qui appelle ce script, pas l'inverse.
 #
-# Usage : ./scripts/bootstrap.sh <slug> [stack-laravel] [mobile-flutter] [dejavu]
+# Usage : ./scripts/bootstrap.sh <slug> [stack-laravel] [mobile-flutter] [frontend-web] [dejavu]
 
 set -euo pipefail
 
-MODULES_DISPONIBLES="stack-laravel mobile-flutter dejavu"
+MODULES_DISPONIBLES="stack-laravel mobile-flutter frontend-web dejavu"
 
 usage() {
   cat >&2 <<EOF
@@ -25,6 +25,7 @@ Usage : ./scripts/bootstrap.sh <slug> [module...]
 Exemples :
   ./scripts/bootstrap.sh ma-boutique stack-laravel
   ./scripts/bootstrap.sh ma-boutique stack-laravel mobile-flutter dejavu
+  ./scripts/bootstrap.sh ma-vitrine frontend-web
   ./scripts/bootstrap.sh mon-outil
 
 Sans module de stack (aucun « stack-* »), les gabarits d'agents de

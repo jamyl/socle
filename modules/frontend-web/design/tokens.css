@@ -1,0 +1,12 @@
+/* Généré depuis design/tokens.json — ne pas éditer à la main. */
+:root {
+  --color-fond: #ffffff;
+  --color-texte: #1c1c1f;
+  --color-accent: #1f59cc;
+  --color-lien: var(--color-accent);
+  --espace-1: 4px;
+  --espace-2: 8px;
+  --espace-3: 16px;
+  --espace-4: 32px;
+  --police-texte: system-ui, sans-serif;
+}

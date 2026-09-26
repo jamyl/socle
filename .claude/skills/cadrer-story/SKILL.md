@@ -111,6 +111,7 @@ Une story qui échoue à **Small** ou **Testable** se redécoupe **avant** d'êt
 **En tant que** <rôle>, **je veux** <capacité> **afin de** <bénéfice>.
 **Priorité** P0 · **Estimation** S · **Statut** à faire
 **Dépend de** : US-ABC
+**Référence visuelle** : docs/maquettes/dossier.png
 
 Critères d'acceptation :
 - [ ] **Le type est obligatoire à la création**
@@ -125,6 +126,10 @@ Critères d'acceptation :
 > **[D7] Le type reste modifiable après la création.** Le requis ne parlait que
 > de la création. Consigné le JJ/MM dans DECISIONS.md.
 ```
+
+`Référence visuelle` ne s'écrit que si le requis fournit une maquette, une
+capture ou une URL d'exemple : elle déclenche la boucle visuelle de
+`/deliver-story` §4. Sans référence, la ligne disparaît — n'en invente pas.
 
 Règles d'écriture des critères — *BDD, Given/When/Then ; Specification by Example
 (Adzic)* :

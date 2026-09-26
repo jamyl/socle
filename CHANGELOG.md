@@ -9,6 +9,16 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Module `frontend-web`** : des gates UI indépendantes du framework, rangées
+  par ce qui est prouvé. Accessibilité par axe-core (zéro violation `serious`),
+  captures de référence au pixel près (N7 enfin outillé), budgets Core Web Vitals
+  par Lighthouse CI, et tokens de design au format DTCG 2025.10 que stylelint
+  fait respecter. `e2e/routes.json` est la source unique des pages contrôlées ;
+  la CI saute les gates tant qu'aucune app n'est branchée, et refuse qu'une PR
+  les saute en débranchant l'app. `DESIGN.md` porte l'intention, `/deliver-story`
+  gagne une boucle visuelle sur les stories qui ont une `Référence visuelle`.
+  Mise en place : à 1 % de tolérance, la capture laissait passer un bouton vidé
+  de son texte — la tolérance est à zéro.
 - **Hooks qui tiennent les interdits** (`.claude/hooks/`) : `guard-bash.mjs`
   refuse un push vers `main` sous toutes ses formes, un push forcé,
   `--no-verify`, et `gh pr merge` sur une story dont le dernier essai n'est pas

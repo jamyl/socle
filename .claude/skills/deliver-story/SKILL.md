@@ -144,6 +144,16 @@ relancé sans rien changer. Ce n'est pas un essai, c'est une boucle.
   porte les règles les plus chères à violer) ou une migration de données : lance
   aussi `/security-review` et corrige les findings avant de clôturer.
 - Tests verts = condition absolue du passage à `fait`.
+- **Story avec `Référence visuelle`** (module `frontend-web`) : la boucle
+  visuelle, après les tests verts. Capture Playwright de l'écran livré, dans
+  l'état décrit par la story ; lecture de la capture **et** de la référence ;
+  liste de chaque écart avec sa position et sa sévérité ; correction ;
+  nouvelle capture. On s'arrête quand plus aucun écart corrigeable en code ne
+  reste — pas quand « ça ressemble ». Si les deux images ne montrent pas le même
+  état (données, onglet, taille d'écran), la comparaison ne vaut rien : refais la
+  capture avant de juger. Les gates `npm run gates` ne remplacent pas cette
+  étape : elles voient un pixel qui bouge, pas un écran qui ne ressemble pas à
+  la maquette.
 
 ### Revue en fan-out (avant `/security-review`)
 
@@ -285,6 +295,10 @@ et ce que les tours précédents ont fait corriger>
 
 ## /security-review
 <findings et ce qu'ils ont changé — ou « domaine critique non touché »>
+
+## Boucle visuelle
+<story avec `Référence visuelle` seulement : chemin de la capture finale,
+écarts trouvés et corrigés, écarts assumés — sinon supprimer la section>
 
 ## Écarts avec le prévu
 ```
