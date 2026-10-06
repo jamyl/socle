@@ -225,8 +225,9 @@ Dans cet ordre.
    stories au gabarit `docs/backlog/README.md`, statut `à faire`, et
    **`bloqué (motif)`** pour tout ce qui attend une action humaine.
 
-9. **`docs/backlog/JOURNAL.md`** et **`docs/backlog/DECISIONS.md`** — leur
-   `{{PROJET}}`. Le journal commence vide : les livraisons passées ne s'y
+9. **`docs/backlog/JOURNAL.md`**, **`docs/backlog/DECISIONS.md`** et
+   **`docs/product/glossaire.md`** — leur `{{PROJET}}`. Le glossaire reçoit les
+   mots métier que le code emploie déjà, tels qu'il les emploie. Le journal commence vide : les livraisons passées ne s'y
    réécrivent pas, `git log` les porte déjà.
 
 **Ne réécris aucune spécification du code existant.** Le backlog part de

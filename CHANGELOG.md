@@ -9,6 +9,21 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Nœud `spec` dans `review-story`** : l'agent `reviewer`, une seconde fois,
+  relit le diff contre les critères de la story — un critère sans test ou un test
+  qui ne vérifie pas son « Alors » est `high`, un comportement non demandé
+  `medium`. Jusqu'ici, l'agent qui livrait cochait lui-même ses critères.
+  `story` et `epic` deviennent des arguments requis. Idée reprise de
+  `mattpocock/skills` (axe Spec de `code-review`) ; superpowers sépare les deux
+  axes de la même façon.
+- **`docs/product/glossaire.md`** : un mot par notion métier, alimenté par
+  `/cadrer-story`, lu avant chaque story et par `domain-expert` ; `reviewer`
+  vérifie que le code prend ses mots. Les définitions de `/cadrer-story`
+  restaient dans sa réponse et se perdaient à la story suivante.
+- **Un rouge qui résiste se réduit d'abord à une commande** (`/deliver-story`
+  §3) : la plus petite qui échoue sur le symptôme exact, avant toute hypothèse,
+  et les logs de débogage marqués pour être retirés d'un `grep`. Idée reprise de
+  `diagnosing-bugs` de `mattpocock/skills`.
 - **Skills de direction de design** (module `frontend-web`), vendorisés et figés
   avec leur licence : `frontend-design` d'Anthropic (automatique), et
   `/design-taste-frontend` et `/redesign-existing-projects` de taste-skill

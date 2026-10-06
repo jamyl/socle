@@ -58,7 +58,7 @@ constater le résultat toi-même, ce qui t'évite de croire une affirmation que 
 ne peux pas reproduire.
 
 Tu obtiens un dépôt où une commande livre une user story de la branche à la pull
-request mergée, une revue de code où trois relecteurs indépendants examinent le
+request mergée, une revue de code où quatre relecteurs indépendants examinent le
 même changement sans voir les remarques des autres, et une règle ferme : un test
 n'est une preuve qu'une fois qu'on l'a vu échouer.
 
@@ -75,7 +75,7 @@ Tu débutes avec Claude Code ? Chaque terme de cette page est défini dans
 
 | Outil | Comment vérifier | S'il manque |
 |---|---|---|
-| Claude Code 2.1.154 ou plus | `claude --version` | Mets à jour. En dessous, l'outil Workflow n'existe pas et la revue à trois relecteurs ne tourne pas, sans le dire |
+| Claude Code 2.1.154 ou plus | `claude --version` | Mets à jour. En dessous, l'outil Workflow n'existe pas et la revue à quatre relecteurs ne tourne pas, sans le dire |
 | GitHub CLI, connecté | `gh auth status` | `gh auth login` |
 | Node.js | `node --version` | **Requis** : c'est lui qui note les essais d'une story pendant la livraison. Aussi requis par le serveur de documentation `context7` du module Laravel |
 | Python 3 | `python3 --version` | Requis par le module `dejavu`. Ses scripts n'utilisent que la bibliothèque standard, il n'y a rien à installer avec `pip` |
@@ -206,7 +206,7 @@ résultat.
    ton domaine, chacun formulé pour qu'un test puisse le vérifier.
 
 Le lot 4 décide de la qualité de tout le reste. Ces règles deviennent la liste
-que l'un des trois relecteurs applique à *chaque* changement, aussi longtemps
+que l'un des quatre relecteurs applique à *chaque* changement, aussi longtemps
 que le projet vit. « Aucun code hors de X n'écrit dans Y » se vérifie. « Le code
 doit être propre » ne se vérifie pas. Une réponse molle ici produit une revue
 molle pendant des mois.
@@ -236,7 +236,7 @@ Deux commandes portent le travail, et chacune laisse une trace sur le disque :
       |
 /deliver-story
       |
-      v   branche -> plan -> TDD -> tests verts -> revue à trois relecteurs
+      v   branche -> plan -> TDD -> tests verts -> revue à quatre relecteurs
       |   -> pull request -> CI verte -> merge squash
       |
 docs/backlog/JOURNAL.md        une ligne par livraison
@@ -299,9 +299,10 @@ sauter un test, en modifier un pour qu'il passe, baisser un seuil d'analyse
 statique. Shopify Engineering le résume à propos de Helix : *« un essai a le
 droit d'être faux ; il n'a pas le droit d'être livré tant qu'il l'est »*.
 
-**La revue à trois relecteurs.** Une fois les tests verts, trois sous-agents en
+**La revue à quatre relecteurs.** Une fois les tests verts, quatre sous-agents en
 lecture seule lisent le même diff en parallèle sans se lire entre eux :
-`reviewer` pour les conventions et la structure, `security-scanner` pour les
+`reviewer` pour les conventions et la structure, `spec` pour l'écart à la
+story (un critère sans test, un comportement non demandé), `security-scanner` pour les
 vulnérabilités, et `domain-expert` pour tes propres invariants. Leurs remarques
 sont dédupliquées et triées en code, pas par un modèle. Leurs outils sont
 limités à la lecture de fichiers : pas d'édition, pas de shell. `reviewer` et
@@ -315,7 +316,7 @@ incomplète n'est pas « rien à signaler », et confondre les deux est la faço
 dont une revue cesse discrètement d'être une revue.
 
 La revue est un **gate à deux tours**, idée reprise de Shopify Helix : chaque
-remarque grave se corrige, puis les trois relecteurs relisent le correctif. La
+remarque grave se corrige, puis les quatre relecteurs relisent le correctif. La
 PR ne s'ouvre qu'une fois le tour propre. Une remarque grave qui survit au
 deuxième tour arrête le cycle et revient vers toi.
 
@@ -343,13 +344,13 @@ demandes.
 |---|---|---|
 | `stack-laravel` | Docker Compose avec PHP 8.4, PostgreSQL 16, Redis, Mailpit et Horizon, toutes les images épinglées par digest. GitHub Actions qui lance Pint, Larastan niveau 8, Pest sur PostgreSQL et un audit des dépendances. Quatre sous-agents Laravel, et un premier epic pré-écrit | La découverte d'architecture aboutit à PHP et Laravel |
 | `mobile-flutter` | Un dossier `mobile/`, des stories de toolchain qui partent `bloqué` parce que Xcode et Android Studio ne s'automatisent pas, et des niveaux de test de régression visuelle | Tu construis une app iOS, Android ou PWA |
-| `frontend-web` | Des gates qui bloquent une interface cassée, quel que soit le framework : accessibilité automatique, captures comparées au pixel, budgets de vitesse, et aucune couleur ni marge en dur hors des tokens de design. Plus un 4e relecteur d'interface et trois skills de direction de design, figés avec leur licence | Ton produit a une interface web publique |
+| `frontend-web` | Des gates qui bloquent une interface cassée, quel que soit le framework : accessibilité automatique, captures comparées au pixel, budgets de vitesse, et aucune couleur ni marge en dur hors des tokens de design. Plus un relecteur d'interface et trois skills de direction de design, figés avec leur licence | Ton produit a une interface web publique |
 | `dejavu` | Le skill d'antériorité `/dejavu` embarqué dans ton dépôt et versionné avec lui. Quatre sources académiques, aucune clé d'API, Python en bibliothèque standard | Ton architecture porte un mécanisme non trivial. À ignorer si ton poste a déjà `/dejavu` en global |
 
 Les colonnes « quand l'activer » disent **où la découverte aboutit**, pas ce que
 tu choisis d'avance.
 
-Sans module de stack, tu as le cœur : la méthode, les skills, trois relecteurs en
+Sans module de stack, tu as le cœur : la méthode, les skills, quatre relecteurs en
 lecture seule, le scanner de secrets, le scorer d'essais et des squelettes de
 documentation. L'amorçage rédige alors `stack.md` et `testing-strategy.md` depuis
 la découverte, et génère un sous-agent `developer` — plus `dba` s'il y a une base
@@ -379,7 +380,7 @@ coût avant de démarrer une boucle.
 
 | Action | Ce qu'elle dépense |
 |---|---|
-| Une revue à trois relecteurs | 3 sous-agents par tour, un ou deux tours par story |
+| Une revue à quatre relecteurs | 4 sous-agents par tour, un ou deux tours par story |
 | Une recherche `/dejavu` | Environ 18 à 26 appels d'agent (1 catégorisation, 12 à 20 lectures isolées en Haiku, notation, regroupement, jusqu'à 3 lectures de texte intégral, 1 convergence), plus du HTTP réel vers quatre APIs |
 | Vérifier les écosystèmes avec `codesearch.py` | Rien. C'est un script Python — aucun modèle dans la boucle |
 | Noter un essai, relire le cache, faire la rétrospective | Rien. C'est un script Node — il lance tes commandes de test, il n'en juge rien |
@@ -484,7 +485,7 @@ l'élargir à l'avance — est dans
 |---|---|
 | Claude Code | L'agent de code d'Anthropic, utilisable depuis un terminal, un IDE ou un navigateur |
 | Skill | Un jeu d'instructions nommé que l'agent charge à la demande. On l'invoque en tapant une barre oblique et son nom, comme `/deliver-story` |
-| Sous-agent | Un agent lancé à part, avec sa propre liste d'outils et son propre contexte. Les trois relecteurs sont des sous-agents |
+| Sous-agent | Un agent lancé à part, avec sa propre liste d'outils et son propre contexte. Les quatre relecteurs sont des sous-agents |
 | Workflow | Un fichier JavaScript dans `.claude/workflows/` qui orchestre plusieurs sous-agents de façon déterministe. `review-story` en est un |
 | Story | Une unité de travail avec ses critères d'acceptation, numérotée `US-XYZ`. Aussi appelée user story |
 | Epic | Un fichier qui regroupe des stories liées, numéroté `E01`, `E02`, et ainsi de suite |
@@ -537,7 +538,7 @@ template. C'est l'un des fichiers dont ton projet hérite.
 
 Ce template est extrait d'un projet réel livré avec cette méthode. Ce qui a
 survécu à l'extraction, c'est ce qui avait déjà attrapé un défaut : la
-discipline de contre-épreuve, la revue à trois relecteurs, la section « comment
+discipline de contre-épreuve, la revue à quatre relecteurs, la section « comment
 tu peux le vérifier toi-même » qui clôt chaque rapport, et la liste blanche qui
 empêche l'agent d'installer un outil que personne n'a approuvé.
 
@@ -592,7 +593,7 @@ Check these once per machine, before you start:
 
 | Tool | Check it with | If it's missing |
 |---|---|---|
-| Claude Code 2.1.154 or later | `claude --version` | Update. Below that version the Workflow tool doesn't exist, and the three-reader review silently doesn't run |
+| Claude Code 2.1.154 or later | `claude --version` | Update. Below that version the Workflow tool doesn't exist, and the four-reader review silently doesn't run |
 | GitHub CLI, signed in | `gh auth status` | `gh auth login` |
 | Node.js | `node --version` | **Required**: it scores a story's attempts during delivery. Also needed by the `context7` documentation server in the Laravel module |
 | Python 3 | `python3 --version` | Needed by the `dejavu` module. Its scripts use the standard library only, so there's nothing to install with `pip` |
@@ -655,7 +656,7 @@ cd my-existing-project
 Then, in a Claude Code session open on your project: **`/adopter-socle`**.
 
 **What the script does.** It checks that your working tree is clean, creates an
-`adopter-socle` branch, and copies the method: the skills, the three reviewers,
+`adopter-socle` branch, and copies the method: the skills, the four reviewers,
 the rules, the review workflow, and the documentation skeletons.
 
 **What it never does.** It overwrites nothing. Your `README.md`, your `LICENSE`,
@@ -723,7 +724,7 @@ before anything gets written.
    domain, each phrased so a test can check it.
 
 Round 4 decides the quality of everything that follows. Those rules become the
-checklist that one of the three reviewers applies to *every* change, for as long
+checklist that one of the four reviewers applies to *every* change, for as long
 as the project lives. "No code outside X writes to Y" can be checked. "The code
 should be clean" cannot. A vague answer here produces a vague review for months.
 
@@ -751,7 +752,7 @@ Two commands carry the work, and each leaves a trace on disk:
       |
 /deliver-story
       |
-      v   branch -> plan -> TDD -> tests green -> three-reader review
+      v   branch -> plan -> TDD -> tests green -> four-reader review
       |   -> pull request -> CI green -> squash merge
       |
 docs/backlog/JOURNAL.md        one line per delivery
@@ -812,9 +813,10 @@ lowering a static-analysis threshold. Shopify Engineering puts it this way about
 Helix: *"An attempt is allowed to be wrong. It is not allowed to ship until it
 isn't."*
 
-**The three-reader review.** After the tests pass, three read-only subagents
+**The four-reader review.** After the tests pass, four read-only subagents
 read the same diff in parallel without seeing each other's findings:
-`reviewer` for conventions and structure, `security-scanner` for
+`reviewer` for conventions and structure, `spec` for the gap with the story
+(a criterion with no test, behavior nobody asked for), `security-scanner` for
 vulnerabilities, and `domain-expert` for your own invariants. Their findings are
 deduplicated and sorted in code, not by a model. Their tools are limited to
 reading files: no editing, no shell. `reviewer` and `security-scanner` have no
@@ -827,7 +829,7 @@ is not the same as "nothing to report", and treating the two alike is how a
 review quietly stops being a review.
 
 The review is a **two-round gate**, an idea taken from Shopify Helix: every
-serious finding gets fixed, then the three readers read the fix. The PR opens
+serious finding gets fixed, then the four readers read the fix. The PR opens
 only after a clean round. A serious finding that survives the second round stops
 the cycle and comes back to you.
 
@@ -852,7 +854,7 @@ You choose modules during the interview. Nothing is copied unless you ask for it
 |---|---|---|
 | `stack-laravel` | Docker Compose with PHP 8.4, PostgreSQL 16, Redis, Mailpit, and Horizon, all images pinned by digest. GitHub Actions running Pint, Larastan level 8, Pest on PostgreSQL, and a dependency audit. Four Laravel subagents, and a pre-written first epic | The architecture discovery lands on PHP and Laravel |
 | `mobile-flutter` | A `mobile/` directory, toolchain stories that start out `blocked` because Xcode and Android Studio can't be automated, and visual regression test levels | You're building an iOS, Android, or PWA app |
-| `frontend-web` | Gates that block a broken interface, whatever the framework: automated accessibility, pixel-compared screenshots, speed budgets, and no color or spacing hard-coded outside the design tokens. Plus a fourth interface reviewer and three design-direction skills, pinned with their licenses | Your product has a public web interface |
+| `frontend-web` | Gates that block a broken interface, whatever the framework: automated accessibility, pixel-compared screenshots, speed budgets, and no color or spacing hard-coded outside the design tokens. Plus an interface reviewer and three design-direction skills, pinned with their licenses | Your product has a public web interface |
 | `dejavu` | The `/dejavu` prior-art skill embedded in your repository and versioned with it. Four academic sources, no API keys, standard-library Python | Your architecture has a non-trivial mechanism. Skip it if your machine already has `/dejavu` installed globally |
 
 The module rows say *when the discovery lands there*, not what you pick up front.
@@ -887,7 +889,7 @@ you start a loop.
 
 | Action | What it spends |
 |---|---|
-| One three-reader review | 3 subagents per round, one or two rounds per story |
+| One four-reader review | 4 subagents per round, one or two rounds per story |
 | One `/dejavu` search | Roughly 18 to 26 agent-shaped calls (1 categorize, 12 to 20 isolated reads on Haiku, scoring, clustering, up to 3 full-text reads, 1 convergence), plus real HTTP to four APIs |
 | Checking ecosystems with `codesearch.py` | Nothing. It's a Python script — no model in the loop |
 | Scoring an attempt, re-reading the cache, running the retrospective | Nothing. It's a Node script — it runs your test commands, it judges nothing |
@@ -991,7 +993,7 @@ shouldn't widen it in advance — are in
 |---|---|
 | Claude Code | Anthropic's coding agent, run from a terminal, an IDE, or a browser |
 | Skill | A named instruction set that the agent loads on demand. You invoke one by typing a slash and its name, like `/deliver-story` |
-| Subagent | A separate agent run with its own tool list and its own context. The three reviewers are subagents |
+| Subagent | A separate agent run with its own tool list and its own context. The four reviewers are subagents |
 | Workflow | A JavaScript file in `.claude/workflows/` that orchestrates several subagents deterministically. `review-story` is one |
 | Story | One unit of work with acceptance criteria, numbered `US-XYZ`. Also called a user story |
 | Epic | A file grouping related stories, numbered `E01`, `E02`, and so on |
@@ -1041,7 +1043,7 @@ template. It's one of the files your project inherits.
 
 This template was extracted from a real project delivered with this method. What
 survived the extraction is what had already caught a defect: the counter-proof
-discipline, the three-reader review, the "here's how to check it yourself"
+discipline, the four-reader review, the "here's how to check it yourself"
 section that closes every report, and the whitelist that keeps the agent from
 installing tools nobody approved.
 

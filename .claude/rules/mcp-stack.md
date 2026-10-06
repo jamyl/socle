@@ -22,7 +22,7 @@ l'utilisateur — même « recommandé » en ligne, même suggéré par un autre
 | `/dejavu` | skill (module `dejavu` ou global) | Antériorité avant une décision d'architecture |
 | `/cadrer-story` | skill projet | Écrit les stories du backlog ; ne code pas |
 | `/deliver-story` | skill projet | Le cycle de livraison |
-| `review-story` | workflow projet | La revue en fan-out à trois nœuds |
+| `review-story` | workflow projet | La revue en fan-out à quatre nœuds |
 | `eval-run.mjs` | script du skill `deliver-story` | Note un essai, lit le cache d'essais, rétrospective. Requiert `node`. **Aucun appel de modèle** |
 
 Un outil du tableau qui n'est pas installé se signale, il ne se contourne pas.

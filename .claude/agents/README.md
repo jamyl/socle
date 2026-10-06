@@ -11,8 +11,9 @@ Ce fichier dit ce qu'ils ne savent pas — le lire avant de croire l'un d'eux.
 | `security-scanner` | Vulnérabilités | **lecture seule**, aucun accès sortant |
 | `domain-expert` | Invariants métier — **à spécialiser au bootstrap** | **lecture seule** + recherche web |
 
-Ce sont exactement les trois nœuds de la revue en fan-out
-(`.claude/workflows/review-story.js`). Il n'y a pas d'agent de plus au cœur : un
+Ce sont exactement les agents de la revue en fan-out
+(`.claude/workflows/review-story.js`) — `reviewer` y tient deux nœuds :
+les conventions, et `spec`, l'écart du diff aux critères de la story. Il n'y a pas d'agent de plus au cœur : un
 agent qu'aucun workflow n'invoque est un prompt que personne ne relit.
 
 Le module `frontend-web` en ajoute un quatrième, `ui-reviewer` : **lecture

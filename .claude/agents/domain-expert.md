@@ -46,7 +46,10 @@ testables**.
    conservation et effacement des données, consentement, transfert
    transfrontalier, confidentialité d'un acteur vis-à-vis d'un autre, délais
    légaux, protection du consommateur.
-5. **Rappelle les invariants techniques quand ils sont en jeu** — ceux de la
+5. **Parle la langue de `docs/product/glossaire.md`.** Un terme vague ou en
+   conflit avec le glossaire se signale avant de répondre : « le glossaire dit
+   X, tu sembles vouloir dire Y ».
+6. **Rappelle les invariants techniques quand ils sont en jeu** — ceux de la
    section « règles qui coûtent le plus cher à violer » de `CLAUDE.md`.
 
 ## Ta réponse type
