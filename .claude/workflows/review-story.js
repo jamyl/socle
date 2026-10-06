@@ -1,9 +1,9 @@
 export const meta = {
   name: 'review-story',
   description: 'Revue pré-commit en fan-out lecture seule sur le diff d\'une story (qualité, vulns, invariants métier)',
-  whenToUse: 'Étape revue de /deliver-story, après tests verts et avant /security-review. args = {diffPath, branch, ui?}',
+  whenToUse: 'Étape revue de /deliver-story, après tests verts et avant /security-review. args = {diffPath, branch, story, epic, ui?}',
   phases: [
-    { title: 'Revue', detail: 'reviewer + security-scanner + domain-expert (+ ui-reviewer si ui) en parallèle sur le même diff' },
+    { title: 'Revue', detail: 'reviewer + spec + security-scanner + domain-expert (+ ui-reviewer si ui) en parallèle sur le même diff' },
   ],
 }
 
@@ -31,6 +31,9 @@ const FINDINGS = {
 const diffPath = args?.diffPath
 const branch = args?.branch ?? '(branche non précisée)'
 if (!diffPath) throw new Error('args.diffPath est requis — écrire le diff avec: git diff main...HEAD > <path>')
+const story = args?.story
+const epic = args?.epic
+if (!story || !epic) throw new Error('args.story et args.epic sont requis — l\'identifiant US-XXX et le fichier d\'epic qui porte ses critères')
 
 const contrat = `Lis UNIQUEMENT le fichier de diff ${diffPath} (branche ${branch}). N'ouvre aucun autre fichier du repo sauf pour lever une ambiguïté sur une ligne du diff. Ne modifie rien. Rapporte seulement ce que le diff démontre : pas d'hypothèse sur du code non montré. Si le diff ne viole rien de ta liste, renvoie une liste vide — un rapport vide est une réponse valide.`
 
@@ -38,11 +41,27 @@ const NOEUDS = [
   {
     label: 'reviewer',
     agentType: 'reviewer',
+    lire: 'docs/product/glossaire.md',
     regles: [
       'logique métier hors des contrôleurs (validation -> action/service -> présentation)',
       'états modélisés par des types énumérés + transitions explicites, pas de chaînes libres',
       'pas de logique métier dans la couche de présentation ni dans un écran d\'administration',
       'style et conventions du code existant',
+      'classes, tables, routes et tests nommés avec les mots de docs/product/glossaire.md',
+    ],
+  },
+  // L'axe « spec » : le code fait-il ce que la story demande ? Séparé de
+  // `reviewer`, qui juge le code ; ici on juge l'écart à la demande. Sans ce
+  // nœud, l'agent qui livre coche lui-même ses critères. Même agent, autre
+  // consigne. Idée reprise de mattpocock/skills (code-review, axe Spec).
+  {
+    label: 'spec',
+    agentType: 'reviewer',
+    lire: epic,
+    regles: [
+      `chaque critère d'acceptation de ${story} est tenu par un test du diff — sinon high, avec le titre du critère dans invariant`,
+      `un test censé tenir un critère qui ne vérifie pas son « Alors » — high`,
+      `un comportement du diff que ${story} ne demande pas — medium`,
     ],
   },
   {
@@ -71,7 +90,7 @@ const NOEUDS = [
   },
 ]
 
-// Module frontend-web : un 4e nœud quand le diff touche l'interface, signalé
+// Module frontend-web : un 5e nœud quand le diff touche l'interface, signalé
 // par `args.ui`. Sans le module, l'agent `ui-reviewer` n'existe pas : le nœud
 // meurt, il est compté muet, et le tour est refusé. Échec fermé, voulu — une
 // revue d'interface demandée et absente ne se transforme pas en approbation.

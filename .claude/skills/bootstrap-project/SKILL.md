@@ -326,9 +326,10 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
    et CI du projet** (la CI du template a été supprimée, celle du projet naît
    ici), secrets et environnements, garde-fou qui empêche la suite de tests
    d'atteindre la base de développement.
-8. **`docs/backlog/JOURNAL.md`**, **`docs/backlog/DECISIONS.md`** et
-   **`CONTRIBUTING.md`** — trois fichiers courts qui portent chacun un
-   `{{PROJET}}` dans leur première ligne. Faciles à oublier parce qu'on ne les
+8. **`docs/backlog/JOURNAL.md`**, **`docs/backlog/DECISIONS.md`**,
+   **`docs/product/glossaire.md`** et **`CONTRIBUTING.md`** — quatre fichiers
+   courts qui portent chacun un `{{PROJET}}` dans leur première ligne. Le
+   glossaire reçoit en plus les mots métier de l'interview, une ligne chacun. Faciles à oublier parce qu'on ne les
    rouvre jamais ; le contrôle final les attrape.
 
 **N'écris que E01.** Les epics suivants s'écrivent quand le produit est clair —

@@ -56,9 +56,14 @@ Produis une fiche, dans ta réponse et non dans un fichier :
 |---|---|
 | Énoncé reformulé | Une phrase, sans jargon, sans nom de classe |
 | Origine | D'où vient le requis, avec sa date |
-| Glossaire | Chaque mot métier nouveau, une définition chacun |
+| Glossaire | Chaque mot métier nouveau, une définition chacun — **ajouté** à `docs/product/glossaire.md` |
 | Questions ouvertes | Tout ce que le requis ne dit pas |
 | Décisions | Chaque question ouverte, tranchée |
+
+Le glossaire est le seul champ qui quitte la fiche : sans fichier, le mot
+défini ici est oublié à la story suivante. Lis `docs/product/glossaire.md`
+**avant** de rédiger. Un mot du requis qui contredit une ligne existante est une
+question ouverte comme les autres.
 
 **Une question ouverte ne se pose pas : elle se tranche.** Chaque question devient
 une décision `D<n>` — le numéro suivant du journal — appliquée, et **une ligne

@@ -22,7 +22,7 @@ dépôt déclare le sien.
 
 | Action | Appels d'agent |
 |---|---|
-| Une revue en fan-out | 3, un par nœud, sur chaque story |
+| Une revue en fan-out | 4, un par nœud, sur chaque story |
 | Une recherche `/dejavu` | environ 18 à 26 : 1 catégorisation, 12 à 20 lectures isolées en `haiku`, 1 notation, 1 regroupement, jusqu'à 3 textes intégraux, 1 convergence |
 | `codesearch.py` seul | **zéro** — c'est un script Python, aucun modèle dans la boucle |
 | `eval-run.mjs` (essai, pré-vol, rétro) | **zéro** — du Node sans dépendance ; il exécute tes commandes de test, il n'en juge rien |

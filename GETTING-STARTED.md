@@ -6,7 +6,7 @@
 ## Ce que tu obtiens
 
 Un projet où la **méthode est déjà là** : une story se livre en une commande
-(`/deliver-story`), passe par TDD, une revue en fan-out à trois nœuds, une CI
+(`/deliver-story`), passe par TDD, une revue en fan-out à quatre nœuds, une CI
 verte et une PR mergée en squash.
 
 Ce que le socle n'apporte pas : ton domaine. Il te le **demande**.
@@ -253,7 +253,7 @@ expire après 7 jours ; `CronList` puis `CronDelete <id>` l'arrête plus tôt.
 | `frontend-web` | Gates UI indépendantes du framework : accessibilité (axe), captures de référence (N7), budgets Core Web Vitals (Lighthouse CI), tokens de design DTCG contrôlés par stylelint. Plus `DESIGN.md`, `docs/engineering/frontend.md`, `.github/workflows/frontend.yml`, le relecteur `ui-reviewer` et les skills `frontend-design`, `/design-taste-frontend`, `/redesign-existing-projects` | La découverte retient une interface web publique ou produit |
 | `dejavu` | Le skill `/dejavu` embarqué dans `.claude/skills/`, donc **versionné avec le projet** : arXiv, OpenAlex, Crossref, Europe PMC, scripts Python en bibliothèque standard seule, aucune clé d'API. Plus `docs/engineering/dejavu.md` (prérequis, coût, mise à jour) | Architecture non triviale — cohérence, concurrence, cache, protocole, scale-out. **Pas si le poste l'a déjà** en global |
 
-Aucun module de stack → le cœur seul : méthode, skills, trois relecteurs,
+Aucun module de stack → le cœur seul : méthode, skills, quatre relecteurs,
 squelettes de docs. L'amorçage rédige alors `stack.md` et `testing-strategy.md`
 depuis la découverte, et **génère** les agents `developer` et `dba` depuis
 `.claude/templates/agent-stack-*.md`.

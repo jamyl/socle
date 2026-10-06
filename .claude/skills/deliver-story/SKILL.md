@@ -15,7 +15,9 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
 1. Lis `docs/backlog/JOURNAL.md` (s'il existe) : contexte des itérations passées,
    story annoncée comme suivante, blocages connus. Puis
    `docs/backlog/LEARNINGS.md` : ce qu'on ne refait plus. Une leçon qui touche
-   la story choisie **se cite dans le plan**, comme le pré-vol.
+   la story choisie **se cite dans le plan**, comme le pré-vol. Puis
+   `docs/product/glossaire.md` : classes, tables, routes et tests prennent ses
+   mots tels quels.
 2. La **source unique d'ordonnancement est le graphe des dépendances** (« Dépend
    de » de chaque story), pas une liste figée. Balaie **tous** les epics dans
    l'ordre indicatif de la roadmap `docs/backlog/README.md` et prends la
@@ -92,7 +94,19 @@ vues. **Cite cette sortie dans ton plan de correction.** Sans cache, la mémoire
 d'une itération ne survit pas à la suivante et tu réessaieras ce qui a déjà
 échoué.
 
-**2. Nomme deux ou trois hypothèses**, et pour chacune **ce qui la réfuterait** :
+**2. Réduis le rouge à une commande, avant toute hypothèse.** La plus petite
+commande qui échoue sur **ce symptôme exact** — pas sur une erreur voisine —, en
+quelques secondes, avec le même verdict à chaque exécution. Un test d'intégration
+qui casse loin de la cause se double d'un test plus étroit. Puis retire un
+élément à la fois (entrée, appel, configuration) tant que la commande reste
+rouge : ce qui reste est la cause à expliquer. Lance-la une fois et garde sa
+sortie : c'est elle que chaque hypothèse devra faire passer au vert. Sans cette
+commande, une hypothèse se réfute contre le mauvais bug.
+
+Un log de débogage porte un préfixe unique (`[DEBUG-a4f2]`) : un seul `grep` les
+retire tous avant le commit.
+
+**3. Nomme deux ou trois hypothèses**, et pour chacune **ce qui la réfuterait** :
 
 ```
 H1 : la valeur lue vient du cache, périmée depuis l'écriture précédente
@@ -104,7 +118,7 @@ H2 : la transaction n'est pas encore commitée quand le job la lit
 Une hypothèse sans réfutation possible n'est pas une hypothèse, c'est une
 intuition : elle ne se testera jamais.
 
-**3. Implémente H1 seule**, puis mesure :
+**4. Implémente H1 seule**, puis mesure :
 
 ```bash
 ${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs attempt US-XXX --hypothesis "H1 : …"
@@ -163,14 +177,17 @@ Une fois les tests verts, exporte le diff et lance la revue parallèle :
 git diff main...HEAD > /tmp/us-XXX.diff
 ```
 
-puis le workflow `review-story` avec `{diffPath: "/tmp/us-XXX.diff", branch: "<branche>"}`.
-Trois nœuds **en lecture seule** lisent le même diff sans se lire entre eux —
-`reviewer` (conventions), `security-scanner` (vulns), `domain-expert`
-(invariants métier) — et leurs findings sont dédupliqués en code.
+puis le workflow `review-story` avec
+`{diffPath: "/tmp/us-XXX.diff", branch: "<branche>", story: "US-XXX", epic: "docs/backlog/<fichier d'epic>"}`.
+Quatre nœuds **en lecture seule** lisent le même diff sans se lire entre eux —
+`reviewer` (conventions), `spec` (chaque critère de la story tenu par un test,
+rien de non demandé), `security-scanner` (vulns), `domain-expert` (invariants
+métier) — et leurs findings sont dédupliqués en code. `spec` est ce qui empêche
+de cocher soi-même ses propres critères.
 
 **Diff d'interface, module `frontend-web` présent** (`e2e/routes.json` existe, et
 le diff touche du HTML, du CSS, un composant ou un template) : ajoute
-`ui: true`. Un quatrième nœud, `ui-reviewer`, relit le diff contre
+`ui: true`. Un cinquième nœud, `ui-reviewer`, relit le diff contre
 `.claude/rules/web-interface-guidelines.md`. Sans le module, ne passe pas
 `ui: true` : le nœud serait muet et le tour refusé.
 

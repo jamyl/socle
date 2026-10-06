@@ -10,7 +10,7 @@
 > consigne que personne n'a relue. Une mise à jour est un commit qui change le
 > SHA ci-dessus, relu en PR.
 >
-> Lu par l'agent `ui-reviewer`, 4e nœud de `review-story` sur les diffs
+> Lu par l'agent `ui-reviewer`, 5e nœud de `review-story` sur les diffs
 > d'interface.
 
 ### Accessibility
