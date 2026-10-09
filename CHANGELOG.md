@@ -9,6 +9,13 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Le conseiller (advisor) documenté** (`docs/engineering/models.md`) : Sonnet en
+  session, Opus en conseiller, et dans `/deliver-story` trois moments où le
+  consulter (plan figé, deuxième strike, avant la PR). Le texte dit aussi ses
+  prérequis, qui le coupent sans le signaler, et le piège d'une surcharge
+  d'alias qui fait tourner tous les `model: sonnet` sur Opus. Écarté, faute de
+  source ou parce que c'est faux : un drapeau `--subagents` (il n'existe pas),
+  un routeur tiers (Jev), et Haiku sur les relecteurs, qui tiennent un gate.
 - **Nœud `spec` dans `review-story`** : l'agent `reviewer`, une seconde fois,
   relit le diff contre les critères de la story — un critère sans test ou un test
   qui ne vérifie pas son « Alors » est `high`, un comportement non demandé

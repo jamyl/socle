@@ -69,6 +69,10 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
 - Plan bref (3-5 lignes) en début d'itération : **l'approche retenue et
   l'alternative la plus proche**, en une ligne chacune. Puis TDD : pour chaque
   critère d'acceptation, test qui échoue → code → vert.
+- **Conseiller configuré** (`/advisor`, voir `docs/engineering/models.md`) :
+  consulte-le à trois moments, pas plus. D'abord quand le plan est figé, ensuite au
+  deuxième strike d'une hypothèse, enfin avant d'ouvrir la PR. Sans conseiller,
+  ignore cette ligne.
 - **Un scénario = un test portant son titre.** Quand le critère porte un titre en
   gras suivi d'un *Étant donné / Quand / Alors* (gabarit de `/cadrer-story`), le
   test reprend ce titre mot pour mot : le lien entre le critère et sa preuve se

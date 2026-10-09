@@ -56,3 +56,43 @@ copié dans les autres.
 Ne monte jamais `reviewer` ni `security-scanner` : ce qu'ils rateraient est
 précisément ce que `/security-review` est là pour attraper, et lui tourne déjà
 au modèle de session.
+
+## Le conseiller (advisor) : Opus aux moments qui comptent
+
+Le [conseiller](https://code.claude.com/docs/en/advisor) est un outil expérimental
+de Claude Code. Un modèle plus fort, consulté à quelques moments clés, lit **toute
+la conversation** et rend un avis. Le modèle de session continue de travailler.
+Anthropic l'a mesuré sur SWE-bench Multilingual
+([blog du 2026-04-09](https://claude.com/blog/the-advisor-strategy)) : avec Sonnet 4.6 en
+modèle principal et Opus en conseiller, +2,7 points et −11,9 % de coût par tâche.
+
+**La paire pour `/deliver-story` : Sonnet en session, Opus en conseiller.**
+
+```
+/advisor opus          # ou "advisorModel": "opus" dans ~/.claude/settings.json
+```
+
+Le réglage va **sur ton poste**, pas dans le `.claude/settings.json` du projet.
+Il fixe un coût, et ce choix revient à chaque personne.
+
+Ce qu'il faut savoir avant de compter dessus :
+
+- **Claude décide quand l'appeler.** Aucun réglage ne force un appel. Socle
+  demande trois consultations dans `/deliver-story` : quand le plan est figé, au
+  deuxième strike, et avant d'ouvrir la PR. Ce sont des consignes, pas un gate.
+- **Il exige l'API Anthropic**, ainsi que la récupération des feature flags.
+  `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` ou `DISABLE_TELEMETRY=1` le
+  laissent éteint, sans message d'erreur.
+- **Les sous-agents en héritent.** Un relecteur `sonnet` peut lui aussi
+  consulter Opus, et c'est autant de lectures complètes de sa conversation. Suis
+  la dépense d'une revue avec `/usage`.
+- ⚠️ **Une surcharge d'alias change tout le tableau ci-dessus.** Avec
+  `ANTHROPIC_DEFAULT_SONNET_MODEL=claude-opus-5-5`, chaque `model: sonnet` du
+  socle tourne sur Opus, et un conseiller Opus n'apporte plus rien. Vérifie le
+  bloc `env` de tes réglages avant de lire une facture.
+
+**Pourquoi les relecteurs ne passent pas en `haiku`.** Ils tiennent un gate : un
+`high` qu'ils laissent passer coûte plus que ce qu'ils économisent. Haiku reste là
+où la tâche est une extraction, c'est-à-dire les lectures isolées de `/dejavu`.
+`CLAUDE_CODE_SUBAGENT_MODEL` ne change rien ici : le `model:` déclaré par un agent
+passe avant cette variable.
