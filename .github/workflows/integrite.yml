@@ -1,0 +1,115 @@
+name: Intégrité
+
+# La garde des tests : rien de supprimé, sauté ni affaibli sans un humain.
+#
+# Toute la logique est écrite ICI, pas dans un script appelé. Un script hors de
+# `.github/workflows/` resterait modifiable par l'agent. Avec un compte agent dont
+# le jeton n'a pas la portée `workflow` (docs/engineering/config-locale.md),
+# GitHub refuse tout push qui touche ce fichier : la règle ne change qu'avec le
+# propriétaire.
+#
+# Les motifs propres à une stack vivent dans `.github/integrite.d/<module>.conf`,
+# et ils sont lus sur la BASE de la PR : une PR ne peut pas assouplir la règle
+# qu'elle subit. Modifier ces fichiers est lui-même une raison de demander un
+# humain (règle 5, via `coeur.conf`).
+#
+# Une garde rouge n'est pas une accusation. Modifier une assertion est parfois
+# légitime, quand la story change le comportement attendu : c'est alors le
+# propriétaire qui merge.
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  garde:
+    name: Garde des tests (rien de supprimé, sauté ni affaibli)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Aucune valeur venue de la PR n'est interpolée avec ${{ }} dans le script :
+      # elles passent par `env:`, sinon un nom de branche devient du shell.
+      - name: Comparer la PR à sa base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -uo pipefail
+          set -f   # les motifs de chemins vont à git, pas au glob du shell
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          HEAD="$HEAD_SHA"
+
+          # Le dépôt gabarit socle porte ce workflow sans être un projet. Le
+          # marqueur se lit sur la BASE : une PR qui l'ajoute n'en profite pas.
+          if git cat-file -e "$BASE:.github/workflows/template.yml" 2>/dev/null; then
+            echo "::notice::Dépôt gabarit : la garde s'applique aux projets engendrés, pas ici."
+            exit 0
+          fi
+
+          lister_conf() { git ls-tree --name-only "$BASE" .github/integrite.d/ | grep '\.conf$' || true; }
+          lire_conf() { git show "$BASE:$1"; }
+          valeur() { lire_conf "$1" | grep -E "^$2=" | head -1 | cut -d= -f2-; }
+
+          confs=$(lister_conf)
+          if [ -z "$confs" ]; then
+            echo "::error title=Humain requis::aucune règle de garde sur la base (.github/integrite.d/*.conf)"
+            exit 1
+          fi
+
+          raisons=()
+          for f in $confs; do
+            nom=$(basename "$f" .conf)
+            tests=$(valeur "$f" TESTS)
+            fichiers=$(valeur "$f" FICHIERS_TESTS)
+            contournement=$(valeur "$f" CONTOURNEMENT)
+            assertion=$(valeur "$f" ASSERTION)
+            motif_test=$(valeur "$f" TEST)
+            regles=$(valeur "$f" REGLES)
+
+            if [ -n "$tests" ]; then
+              # 1. Aucun fichier de test supprimé.
+              supprimes=$(git diff --diff-filter=D --name-only "$BASE" "$HEAD" -- $tests)
+              [ -n "$supprimes" ] && raisons+=("[$nom] fichier(s) de test supprimé(s) : $(echo $supprimes)")
+
+              # 2. Aucun contournement ajouté.
+              if [ -n "$contournement" ]; then
+                ajouts=$(git diff -U0 "$BASE" "$HEAD" -- $tests | grep -E '^\+[^+]' | grep -E -- "$contournement" || true)
+                [ -n "$ajouts" ] && raisons+=("[$nom] contournement ajouté : $(echo "$ajouts" | head -3 | tr '\n' ' ')")
+              fi
+
+              # 3. Une assertion existante ne se modifie ni ne se retire.
+              if [ -n "$assertion" ]; then
+                retraits=$(git diff -U0 "$BASE" "$HEAD" -- $tests | grep -E '^-[^-]' | grep -E -- "$assertion" || true)
+                [ -n "$retraits" ] && raisons+=("[$nom] assertion(s) existante(s) modifiée(s) ou retirée(s) : $(echo "$retraits" | wc -l | tr -d ' ')")
+              fi
+
+              # 4. Le nombre de tests ne baisse pas.
+              if [ -n "$motif_test" ] && [ -n "$fichiers" ]; then
+                compte() { git grep -hcE -- "$motif_test" "$1" -- $fichiers 2>/dev/null | awk '{s+=$1} END {print s+0}'; }
+                avant=$(compte "$BASE"); apres=$(compte "$HEAD")
+                echo "[$nom] tests : $avant → $apres"
+                [ "$apres" -lt "$avant" ] && raisons+=("[$nom] nombre de tests en baisse : $avant → $apres")
+              fi
+            fi
+
+            # 5. Les fichiers qui fixent les règles ne bougent pas.
+            if [ -n "$regles" ]; then
+              proteges=$(git diff --name-only "$BASE" "$HEAD" -- $regles)
+              [ -n "$proteges" ] && raisons+=("[$nom] fichier(s) de règles modifié(s) : $(echo $proteges)")
+            fi
+          done
+
+          if [ ${#raisons[@]} -gt 0 ]; then
+            echo "::error title=Humain requis::$(printf '%s ; ' "${raisons[@]}")"
+            printf ' - %s\n' "${raisons[@]}"
+            exit 1
+          fi
+          echo "Garde des tests : rien de supprimé, sauté ni affaibli."
