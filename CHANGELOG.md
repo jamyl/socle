@@ -9,6 +9,11 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Compte GitHub séparé pour l'agent** (`config-locale.md`,
+  `.claude/settings.local.json.example`) : un dossier `gh` à part, les helpers
+  d'identifiants de `github.com` remplacés par `gh auth git-credential`, et
+  l'auteur des commits au nom du bot. Le jeton n'a pas la portée `workflow`,
+  donc l'agent ne peut pas modifier les règles de la CI.
 - **Mutation par PR** (module `stack-laravel`, job `mutation` de `backend.yml`) :
   `pest --mutate` sur les classes modifiées des dossiers du domaine critique.
   Les dossiers et le seuil sont lus sur la base de la PR. Le seuil part de la
