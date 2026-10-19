@@ -17,6 +17,7 @@
 | Antériorité (`/dejavu`) des décisions structurantes | `docs/engineering/prior-art.md` |
 | Quel modèle tourne où, et ce qu'un cycle coûte | `docs/engineering/models.md` |
 | Ce qu'on fait quand un test reste rouge | `.claude/rules/exploration-policy.md` |
+| Qui fait, qui vérifie, qui merge — et ce que l'agent ne peut pas contourner | `docs/engineering/fiabilite-des-agents.md` |
 
 ## Environnement
 

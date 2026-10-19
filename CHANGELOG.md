@@ -9,6 +9,12 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **`docs/engineering/fiabilite-des-agents.md`** : le schéma auteur → CI →
+  revue → merge → alarme, une ligne par pièce avec ce qui empêche l'agent de la
+  contourner, et les limites assumées. Module `stack-laravel` :
+  `.claude/rules/rls-livewire.md` réunit quatre pièges de la RLS PostgreSQL
+  avec Livewire, tous vécus sur un projet réel. Ce sont des règles écrites,
+  sans code : le module ne livre pas de RLS.
 - **Compte GitHub séparé pour l'agent** (`config-locale.md`,
   `.claude/settings.local.json.example`) : un dossier `gh` à part, les helpers
   d'identifiants de `github.com` remplacés par `gh auth git-credential`, et
