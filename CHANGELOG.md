@@ -9,6 +9,12 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Mutation par PR** (module `stack-laravel`, job `mutation` de `backend.yml`) :
+  `pest --mutate` sur les classes modifiées des dossiers du domaine critique.
+  Les dossiers et le seuil sont lus sur la base de la PR. Le seuil part de la
+  première mesure et ne se baisse jamais. Rien n'est muté quand aucun dossier
+  sensible n'est touché. Remplace l'Infection nocturne de N6, que rien
+  n'exécutait.
 - **Verdict de merge** : `review-story` rend `MERGE` ou `HUMAIN`, calculé en
   code sur une grille (une case par invariant du domaine, plus `tests` et
   `secrets`). `eval-run.mjs verdict` attache ce verdict au commit relu, et

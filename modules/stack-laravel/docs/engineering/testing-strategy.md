@@ -51,10 +51,18 @@ des tests feature sont validées contre elle ; un client généré est régéné
 diffé — un écart non commité casse le build. C'est le seul mécanisme « sans
 écart » qui tienne dans le temps.
 
-### N6 — Mutation testing (nightly)
-Infection sur le **domaine critique uniquement**, MSI ≥ 90 %. Un test qui passe
-ne suffit pas : il faut prouver qu'il **échouerait** si le code était faux. Trop
-lent par push.
+### N6 — Mutation testing (chaque PR, classes sensibles modifiées)
+`pest --mutate` sur les classes **modifiées** des dossiers du domaine critique
+(job `mutation` de `backend.yml`). Un test qui passe ne suffit pas : il faut
+prouver qu'il **échouerait** si le code était faux. Ne muter que ce qui a changé
+garde le job court. Il ne tourne pas sur une PR qui ne touche aucun dossier
+sensible.
+
+Les dossiers et le seuil vivent dans `.github/integrite.d/stack-laravel.conf`
+(`MUTATION_DOSSIERS`, `MUTATION_SEUIL`), et la CI les lit sur la base de la PR.
+**Le seuil part de la première mesure et ne se baisse jamais.** Il se relève
+quand le score monte. Le modifier est une décision humaine : la garde des tests
+refuse une PR qui touche ce fichier.
 
 ### N7 — Rendu & régression visuelle (à chaque push)
 *Fourni par le module `mobile-flutter`.* Sans lui, ce niveau ne s'applique pas.
