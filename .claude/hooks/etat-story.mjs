@@ -2,7 +2,7 @@
 //
 // Aucune source nouvelle : la branche courante (`us-XXX-<slug>`, voir
 // `.claude/rules/git-operations.md`) et le dernier essai que `eval-run.mjs`
-// a consigné dans `.socle/runs/<US-XXX>/`.
+// a consigné dans `.socle/runs/<US-XXX>/`, avec le verdict de la revue.
 
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -23,6 +23,11 @@ export function dernierEssai (racine, story) {
   if (!fs.existsSync(dir)) return null
   const f = fs.readdirSync(dir).filter((x) => /^attempt-\d+\.json$/.test(x)).sort().pop()
   return f ? JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')) : null
+}
+
+export function lireVerdict (racine, story) {
+  const f = path.join(racine, '.socle/runs', story, 'verdict.json')
+  return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null
 }
 
 export function lireEntree () {

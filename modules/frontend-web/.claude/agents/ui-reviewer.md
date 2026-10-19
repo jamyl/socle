@@ -1,7 +1,7 @@
 ---
 name: ui-reviewer
 description: "Revue d'interface en lecture seule — accessibilité, focus, formulaires, mouvement, performance, contenu, contre les Web Interface Guidelines figées. Quatrième nœud de review-story, sur les diffs qui touchent le front. Ne corrige rien, ne remplace ni axe ni la boucle visuelle.\n\nTrigger — EN: UI review, accessibility review, interface guidelines, frontend audit.\nTrigger — FR: revue d'interface, revue UI, accessibilité, audit front.\n\n<example>\nuser: 'Relis le diff de l'écran de connexion'\nassistant: 'Using ui-reviewer: le diff contre les Web Interface Guidelines, en lecture seule.'\n</example>"
-model: sonnet
+model: claude-sonnet-5-5
 color: cyan
 tools:
   - Read

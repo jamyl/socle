@@ -15,6 +15,7 @@
 //   eval-run.mjs attempt   <US-XXX> [--hypothesis "…"] [--abandon "…"]
 //   eval-run.mjs preflight <US-XXX>
 //   eval-run.mjs retro     <US-XXX>
+//   eval-run.mjs verdict   <US-XXX> --verdict MERGE|HUMAIN
 //
 // Codes de sortie de `attempt` : 0 = tout vert · 1 = au moins une dimension
 // rouge · 2 = usage · 3 = REFUSÉ, l'hypothèse a déjà deux strikes.
@@ -28,6 +29,7 @@ const USAGE = `Usage :
   eval-run.mjs attempt   <US-XXX> [--hypothesis "H1 : …"] [--abandon "pourquoi c'était faux"]
   eval-run.mjs preflight <US-XXX>
   eval-run.mjs retro     <US-XXX>
+  eval-run.mjs verdict   <US-XXX> --verdict MERGE|HUMAIN
 
 Surcharges de commande (les tests du script, et un projet sans stack.md rempli) :
   --test-cmd <c>  --lint-cmd <c>  --secrets-cmd <c>
@@ -44,7 +46,7 @@ function lireArgs (argv) {
     const a = argv[i]
     if (a.startsWith('--')) {
       const cle = a.slice(2)
-      const permises = ['hypothesis', 'abandon', 'test-cmd', 'lint-cmd', 'secrets-cmd', 'racine']
+      const permises = ['hypothesis', 'abandon', 'verdict', 'test-cmd', 'lint-cmd', 'secrets-cmd', 'racine']
       if (!permises.includes(cle)) sortir(2, `✗ option inconnue : « ${a} »\n\n${USAGE}`)
       if (i + 1 >= argv.length) sortir(2, `✗ ${a} attend une valeur.\n\n${USAGE}`)
       opts[cle] = argv[++i]
@@ -498,6 +500,28 @@ function retro (racine, story) {
   }
 }
 
+// --- verdict : le dernier tour de review-story, attaché au commit qu'il a relu.
+// --- `guard-bash.mjs` refuse `gh pr merge` si ce fichier manque, vaut HUMAIN,
+// --- ou porte un autre HEAD : un commit poussé après la revue n'a pas été relu.
+
+function verdict (racine, story, opts) {
+  const v = opts.verdict
+  if (v !== 'MERGE' && v !== 'HUMAIN') sortir(2, `✗ --verdict attend MERGE ou HUMAIN.\n\n${USAGE}`)
+  const sale = spawnSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: racine, encoding: 'utf8' })
+  if (sale.stdout.trim()) sortir(2, '✗ arbre de travail modifié : la revue a lu des commits, commite avant de consigner son verdict.')
+  const r = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: racine, encoding: 'utf8' })
+  if (r.status !== 0) sortir(2, '✗ aucun commit : rien à relire.')
+  const tete = r.stdout.trim()
+  const fichier = path.join(dossierStory(racine, story), 'verdict.json')
+  const avant = fs.existsSync(fichier) ? JSON.parse(fs.readFileSync(fichier, 'utf8')) : null
+  // Une seconde revue sur le même commit, pour obtenir un autre verdict, est
+  // exactement le contournement que la règle interdit.
+  if (avant?.head === tete) sortir(3, `⛔ REFUSÉ : un verdict ${avant.verdict} existe déjà pour ${tete.slice(0, 7)}. Pas de seconde revue pour un autre verdict sur le même commit.`)
+  fs.mkdirSync(path.dirname(fichier), { recursive: true })
+  fs.writeFileSync(fichier, JSON.stringify({ head: tete, verdict: v, date: new Date().toISOString() }, null, 2) + '\n')
+  process.stdout.write(`VERDICT: ${v} — ${story} @ ${tete.slice(0, 7)}\n`)
+}
+
 // --- Point d'entrée
 
 const { opts, positionnels } = lireArgs(process.argv.slice(2))
@@ -508,5 +532,6 @@ switch (sousCommande) {
   case 'attempt': attempt(racine, valider(storyArg), opts); break
   case 'preflight': preflight(racine, valider(storyArg)); break
   case 'retro': retro(racine, valider(storyArg)); break
+  case 'verdict': verdict(racine, valider(storyArg), opts); break
   default: sortir(2, sousCommande ? `✗ sous-commande inconnue : « ${sousCommande} »\n\n${USAGE}` : USAGE)
 }

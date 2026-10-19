@@ -356,3 +356,31 @@ test('story mal formée et sous-commande inconnue sortent en 2', () => {
   assert.equal(lancer(dir, ['danser', 'US-101']).code, 2)
   assert.equal(lancer(dir, ['attempt', 'US-101', '--inventé', 'x']).code, 2)
 })
+
+// --- verdict : attaché au commit relu, une seule fois par commit.
+
+test('verdict : consigné sur HEAD, refusé une seconde fois sur le même commit, accepté après un nouveau commit', () => {
+  const dir = depot()
+  let r = lancer(dir, ['verdict', 'US-101', '--verdict', 'MERGE'])
+  assert.equal(r.code, 0, r.out)
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: dir, encoding: 'utf8' }).stdout.trim()
+  const v = JSON.parse(fs.readFileSync(path.join(dir, '.socle/runs/US-101/verdict.json'), 'utf8'))
+  assert.equal(v.head, head)
+  assert.equal(v.verdict, 'MERGE')
+  r = lancer(dir, ['verdict', 'US-101', '--verdict', 'HUMAIN'])
+  assert.equal(r.code, 3, r.out)
+  assert.match(r.out, /existe déjà/)
+  fs.writeFileSync(path.join(dir, 'source.txt'), 'modifié\n')
+  spawnSync('git', ['-c', 'user.email=t@t.invalid', '-c', 'user.name=T', 'commit', '-qam', 'correctif'], { cwd: dir })
+  r = lancer(dir, ['verdict', 'US-101', '--verdict', 'HUMAIN'])
+  assert.equal(r.code, 0, r.out)
+})
+
+test('verdict : refusé sur un arbre modifié, et sur une valeur inconnue', () => {
+  const dir = depot()
+  assert.equal(lancer(dir, ['verdict', 'US-101', '--verdict', 'PEUT-ÊTRE']).code, 2)
+  fs.writeFileSync(path.join(dir, 'source.txt'), 'non commité\n')
+  const r = lancer(dir, ['verdict', 'US-101', '--verdict', 'MERGE'])
+  assert.equal(r.code, 2)
+  assert.match(r.out, /commite/)
+})

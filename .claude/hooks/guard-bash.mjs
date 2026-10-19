@@ -7,7 +7,8 @@
 //   1. aucun push vers `main`, aucun push forcé ;
 //   2. aucun `--no-verify` ;
 //   3. aucun `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai
-//      consigné par `eval-run.mjs` n'est pas `pass` ;
+//      consigné par `eval-run.mjs` n'est pas `pass`, ou dont le verdict de
+//      revue (`eval-run.mjs verdict`) n'est pas MERGE pour le HEAD courant ;
 //   4. aucun `gh pr create` sur une telle branche sans ses preuves dans le
 //      corps : la rétrospective de `eval-run.mjs` et le verdict `approuve` de
 //      la revue (`.claude/skills/deliver-story/SKILL.md` §5).
@@ -22,7 +23,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { dernierEssai, lireEntree, refuser, storyDeBranche } from './etat-story.mjs'
+import { dernierEssai, git, lireEntree, lireVerdict, refuser, storyDeBranche } from './etat-story.mjs'
 
 const { entree, cwd, racine, branche } = lireEntree()
 const brut = entree.tool_input?.command ?? ''
@@ -101,5 +102,16 @@ for (const mots of segments) {
         `   Lance la preuve avant le merge :\n` +
         `     .claude/skills/deliver-story/scripts/eval-run.mjs attempt ${story} --hypothesis "…"`)
     }
+    const v = lireVerdict(racine, story)
+    const tete = git(racine, ['rev-parse', 'HEAD'])
+    if (!v) refuser(`⛔ merge refusé : aucun verdict de revue consigné pour ${story}.\n` +
+      `   .claude/skills/deliver-story/scripts/eval-run.mjs verdict ${story} --verdict <MERGE|HUMAIN>`)
+    // Après la revue, la clôture ne commite que la tenue du backlog (statut,
+    // journal) : ce n'est pas du code à relire. Tout autre fichier, si.
+    const depuis = v.head === tete ? '' : git(racine, ['diff', '--name-only', v.head, 'HEAD'])
+    const nonRelus = depuis === null ? ['(commit du verdict introuvable)'] : depuis.split('\n').filter((f) => f && !f.startsWith('docs/backlog/'))
+    if (nonRelus.length) refuser(`⛔ merge refusé : le verdict porte sur ${v.head.slice(0, 7)}, HEAD est ${tete?.slice(0, 7)}.\n` +
+      `   Pas relu depuis : ${nonRelus.join(', ')}. Relance review-story sur le nouveau diff.`)
+    if (v.verdict !== 'MERGE') refuser(`⛔ merge refusé : verdict ${v.verdict}. La PR attend le propriétaire.`)
   }
 }

@@ -37,7 +37,9 @@ déclare `WebSearch` et `WebFetch`, parce qu'il doit pouvoir vérifier un texte
 réglementaire — c'est le seul nœud de la revue qui peut sortir, à savoir avant de
 lui confier un diff qu'on n'a pas écrit.
 
-Tous déclarent `model: sonnet`. La politique complète et ce qu'un cycle coûte
+Les relecteurs déclarent `model: claude-sonnet-5-5`, l'ID complet : une surcharge
+de l'alias `sonnet` ne doit pas leur donner le modèle de l'auteur. Les agents de
+stack déclarent `model: sonnet`. La politique complète et ce qu'un cycle coûte
 sont dans `docs/engineering/models.md`.
 
 ⚠️ **Cela ne vaut pas pour les agents de stack.** Qu'ils viennent d'un module ou

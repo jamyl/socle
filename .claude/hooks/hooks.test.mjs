@@ -34,6 +34,13 @@ function essai (dir, story, n, pass) {
   fs.writeFileSync(path.join(d, `attempt-${String(n).padStart(3, '0')}.json`), JSON.stringify({ n, pass }))
 }
 
+function verdictConsigne (dir, story, verdict, head) {
+  const d = path.join(dir, '.socle/runs', story)
+  fs.mkdirSync(d, { recursive: true })
+  head ??= spawnSync('git', ['rev-parse', 'HEAD'], { cwd: dir, encoding: 'utf8' }).stdout.trim()
+  fs.writeFileSync(path.join(d, 'verdict.json'), JSON.stringify({ head, verdict }))
+}
+
 function hook (nom, dir, entree, env = {}) {
   const r = spawnSync(process.execPath, [path.join(ICI, nom)], {
     input: JSON.stringify({ cwd: dir, ...entree }),
@@ -94,12 +101,46 @@ test('gh pr merge refusé sans essai, ou sur un dernier essai rouge', () => {
   assert.match(r.err, /n° 2/)
 })
 
-test('gh pr merge accepté sur un dernier essai vert, et hors branche de story', () => {
+test('gh pr merge accepté sur un essai vert et un verdict MERGE du HEAD, et hors branche de story', () => {
   const dir = depot('us-101-x')
   essai(dir, 'US-101', 1, false)
   essai(dir, 'US-101', 2, true)
+  verdictConsigne(dir, 'US-101', 'MERGE')
   assert.equal(bash(dir, 'gh pr merge --squash').code, 0)
   assert.equal(bash(depot('docs-x'), 'gh pr merge --squash').code, 0)
+})
+
+test('gh pr merge refusé sur essai vert sans verdict, sur un verdict HUMAIN, ou sur un autre HEAD', () => {
+  const dir = depot('us-101-x')
+  essai(dir, 'US-101', 1, true)
+  let r = bash(dir, 'gh pr merge --squash')
+  assert.equal(r.code, 2)
+  assert.match(r.err, /aucun verdict/)
+  verdictConsigne(dir, 'US-101', 'HUMAIN')
+  r = bash(dir, 'gh pr merge --squash')
+  assert.equal(r.code, 2)
+  assert.match(r.err, /HUMAIN/)
+  verdictConsigne(dir, 'US-101', 'MERGE', 'f'.repeat(40))
+  r = bash(dir, 'gh pr merge --squash')
+  assert.equal(r.code, 2)
+  assert.match(r.err, /Pas relu depuis/)
+})
+
+test('gh pr merge : un commit de clôture qui ne touche que docs/backlog/ garde le verdict, un commit de code le perd', () => {
+  const dir = depot('us-101-x')
+  essai(dir, 'US-101', 1, true)
+  verdictConsigne(dir, 'US-101', 'MERGE')
+  const commiter = (f) => {
+    fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true })
+    fs.writeFileSync(path.join(dir, f), 'x\n')
+    for (const argv of [['add', f], ['-c', 'user.email=t@t.invalid', '-c', 'user.name=T', 'commit', '-qm', f]]) spawnSync('git', argv, { cwd: dir })
+  }
+  commiter('docs/backlog/JOURNAL.md')
+  assert.equal(bash(dir, 'gh pr merge --squash').code, 0)
+  commiter('src/code.js')
+  const r = bash(dir, 'gh pr merge --squash')
+  assert.equal(r.code, 2)
+  assert.match(r.err, /src\/code\.js/)
 })
 
 test('heredoc : un message qui cite une commande refusée ne déclenche rien', () => {
