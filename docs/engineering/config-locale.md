@@ -85,6 +85,49 @@ ou un `gh pr merge <n>` lancé depuis une autre branche passent. Il rattrape
 l'agent qui **oublie** une règle au 40e tour — le cas courant — pas celui qui la
 contourne. La protection de branche GitHub reste la seule barrière.
 
+## Un compte GitHub pour l'agent
+
+Celui qui écrit le code ne doit pas agir avec le compte de celui qui valide.
+L'agent pousse avec un **compte séparé**, dont le jeton n'a pas la portée
+`workflow` : GitHub refuse alors tout push qui modifie `.github/workflows/`. La
+garde des tests (`integrite.yml`) et l'alarme de merge ne changent donc qu'avec
+le propriétaire. C'est le seul verrou que l'agent ne peut pas lever depuis sa
+session (`docs/engineering/fiabilite-des-agents.md`).
+
+1. **Crée un compte GitHub pour l'agent**, et invite-le en écriture sur le
+   dépôt (Settings → Collaborators).
+2. **Connecte-le dans un dossier à part**, depuis ton terminal. Ne colle jamais un
+   jeton dans la conversation avec Claude :
+
+   ```bash
+   GH_CONFIG_DIR=~/.config/gh-<projet>-agent gh auth login
+   ```
+
+   Choisis HTTPS. Réponds **NON** à « Authenticate Git with your GitHub
+   credentials? » : ça écrirait l'identifiant de l'agent dans ta configuration
+   git globale, et ton propre terminal pousserait sous son nom.
+   **N'accorde pas la portée `workflow`.** Sans elle, le jeton ne peut pas
+   modifier les règles de la CI.
+3. **Copie `.claude/settings.local.json.example` en `.claude/settings.local.json`**
+   (déjà dans le `.gitignore`), et remplis-le. Le chemin de `GH_CONFIG_DIR` est
+   absolu : `~` n'y est pas développé. Les deux lignes `GIT_CONFIG_*` vident
+   d'abord la liste des helpers d'identifiants pour `github.com` (le trousseau du
+   poste, par exemple), puis délèguent à `gh`, qui lit le dossier de l'agent.
+4. **Relance Claude Code.** Les variables de `env` ne s'appliquent qu'au
+   démarrage.
+
+Pour vérifier :
+
+| Où | Commande | Réponse attendue |
+|---|---|---|
+| Une session Claude Code | `gh api user --jq .login` | le compte agent |
+| Une session Claude Code | `printf 'protocol=https\nhost=github.com\n\n' \| git credential fill` | `username=` le compte agent |
+| Ton terminal | les deux mêmes | ton compte |
+
+Toute modification de `.github/workflows/` se pousse **depuis ton terminal**,
+avec ton compte. Quand une story en a besoin, l'agent écrit le fichier, puis te
+donne la commande exacte à lancer. Il ne la contourne pas.
+
 ## Sur un projet qui adopte la méthode
 
 `scripts/adopt.sh` **ne touche jamais** `.claude/settings.json` : une liste de

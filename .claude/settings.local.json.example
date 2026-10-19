@@ -1,0 +1,14 @@
+{
+  "env": {
+    "GH_CONFIG_DIR": "/Users/<toi>/.config/gh-<projet>-agent",
+    "GIT_CONFIG_COUNT": "2",
+    "GIT_CONFIG_KEY_0": "credential.https://github.com.helper",
+    "GIT_CONFIG_VALUE_0": "",
+    "GIT_CONFIG_KEY_1": "credential.https://github.com.helper",
+    "GIT_CONFIG_VALUE_1": "!gh auth git-credential",
+    "GIT_AUTHOR_NAME": "<compte-agent>",
+    "GIT_AUTHOR_EMAIL": "<id>+<compte-agent>@users.noreply.github.com",
+    "GIT_COMMITTER_NAME": "<compte-agent>",
+    "GIT_COMMITTER_EMAIL": "<id>+<compte-agent>@users.noreply.github.com"
+  }
+}
