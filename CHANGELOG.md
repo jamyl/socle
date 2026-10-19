@@ -9,6 +9,13 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Alarme de merge** (`.github/workflows/alarme-merge.yml`) : à chaque arrivée
+  sur `main`, elle relit les contrôles de la PR mergée. Elle ouvre une issue
+  assignée au propriétaire si l'un d'eux n'était pas vert, ou si le commit n'a
+  pas de PR. Sans GitHub Pro, rien n'empêche un merge sur du rouge : ce
+  workflow le rend visible. La version d'origine ne détectait jamais un push
+  direct, parce que `.[0]` sur un tableau vide rend `null null`, une chaîne non
+  vide. Le test porte maintenant sur la longueur du tableau.
 - **Garde des tests** (`.github/workflows/integrite.yml`), un job sans IA. Sans
   humain, une PR ne peut ni supprimer un test, ni ajouter un `skip`/`only`,
   ni retirer une assertion existante, ni faire baisser le nombre de tests, ni
