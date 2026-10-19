@@ -158,3 +158,109 @@ jobs:
       - name: Audit des dépendances
         if: steps.backend.outputs.present == 'true'
         run: composer audit
+
+  # N6 — mutation sur les classes MODIFIÉES des dossiers sensibles. Un test vert
+  # ne prouve pas qu'il échouerait si le code était faux : la mutation, si. Les
+  # dossiers et le seuil se lisent sur la BASE de la PR, dans
+  # `.github/integrite.d/stack-laravel.conf` (MUTATION_DOSSIERS, MUTATION_SEUIL) :
+  # une PR ne peut pas baisser le seuil qu'elle subit. Le seuil part de la mesure
+  # du jour et ne se baisse jamais (docs/engineering/testing-strategy.md, N6).
+  mutation:
+    name: Mutation (chemins sensibles modifiés)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: {{SLUG_SQL}}_test
+          POSTGRES_USER: {{SLUG_SQL}}
+          POSTGRES_PASSWORD: {{SLUG_SQL}}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U {{SLUG_SQL}} -d {{SLUG_SQL}}_test"
+          --health-interval=5s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: {{SLUG_SQL}}_test
+      DB_USERNAME: {{SLUG_SQL}}
+      DB_PASSWORD: {{SLUG_SQL}}
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Les messages d'exception sont exclus : muter leur texte ne dit rien de la
+      # protection. Chaque nom est validé par une regex stricte avant de devenir
+      # un argument : un nom de fichier vient de la PR.
+      - name: Classes sensibles modifiées
+        id: cibles
+        working-directory: .
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -uo pipefail
+          set -f
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          conf=$(git show "$BASE:.github/integrite.d/stack-laravel.conf" 2>/dev/null || true)
+          valeur() { echo "$conf" | grep -E "^$1=" | head -1 | cut -d= -f2-; }
+          dossiers=$(valeur MUTATION_DOSSIERS); seuil=$(valeur MUTATION_SEUIL)
+          if [ -z "$dossiers" ] || ! git cat-file -e "$BASE:backend/composer.json" 2>/dev/null; then
+            echo "::notice::Aucun dossier sensible déclaré (MUTATION_DOSSIERS) ou backend absent de la base : rien à muter."
+            echo "classes=" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          motifs=""; for d in $dossiers; do motifs="$motifs $d/*.php"; done
+          classes=$(git diff --diff-filter=AM --name-only "$BASE" "$HEAD_SHA" -- $motifs \
+            | grep -E '^backend/app/[A-Za-z0-9/]+\.php$' \
+            | grep -v '/Exceptions/' \
+            | sed -E 's#^backend/app/#App/#; s#\.php$##; s#/#\\#g' | paste -sd, - || true)
+          [[ "$seuil" =~ ^[0-9]{1,3}$ ]] || seuil=""
+          echo "classes=$classes" >> "$GITHUB_OUTPUT"
+          echo "seuil=$seuil" >> "$GITHUB_OUTPUT"
+          echo "Classes mutées : ${classes:-aucune}"
+          [ -n "$classes" ] && [ -z "$seuil" ] && echo "::notice::MUTATION_SEUIL vide : le score s'affiche sans seuil. Reporte-le dans stack-laravel.conf, il ne se baisse plus ensuite."
+          exit 0
+
+      - name: Installer PHP 8.4 (avec pcov)
+        if: steps.cibles.outputs.classes != ''
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pgsql, intl, bcmath, zip, redis, pcntl, posix
+          coverage: pcov
+
+      - name: Cache Composer
+        if: steps.cibles.outputs.classes != ''
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Préparer
+        if: steps.cibles.outputs.classes != ''
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+
+      # ⚠️ Piège Pest : plusieurs classes passent séparées par des virgules dans
+      # UN SEUL `--class`. Répéter l'option ne garde que la dernière.
+      - name: Score de mutation
+        if: steps.cibles.outputs.classes != ''
+        env:
+          CLASSES: ${{ steps.cibles.outputs.classes }}
+          SEUIL: ${{ steps.cibles.outputs.seuil }}
+        run: ./vendor/bin/pest --mutate --class="$CLASSES" ${SEUIL:+--min="$SEUIL"}

@@ -289,6 +289,10 @@ Dans cet ordre, parce que chaque fichier s'appuie sur le précédent :
    autant d'éléments dans `regles` que de règles dans `CLAUDE.md`.
 5. **`.claude/agents/domain-expert.md`** — spécialise le squelette : le domaine,
    son vocabulaire, ses invariants, ses pièges de conformité.
+   **Module `stack-laravel` :** dans `.github/integrite.d/stack-laravel.conf`,
+   `MUTATION_DOSSIERS` reçoit les dossiers du code qui porte ces invariants
+   (`backend/app/Domain/<Contexte>`). `MUTATION_SEUIL` reste vide jusqu'à la
+   première mesure.
 
 5bis. **Les agents de stack**, seulement si aucun module de stack n'est activé.
    Le script a déplacé les gabarits de `.claude/templates/agent-stack-*.md` vers
