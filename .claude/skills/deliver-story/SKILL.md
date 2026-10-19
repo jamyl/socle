@@ -206,6 +206,17 @@ finding se corrige, puis on relit le correctif.
 3. **La PR s'ouvre** sur un tour qui rend `approuve: true` — **zéro `high`** et
    **aucun nœud muet**, calculé en code par le workflow.
    Les `low` restants vont dans le corps de la PR, en suivi.
+   **Consigne le verdict de ce dernier tour** sur le commit qu'il a relu :
+
+   ```bash
+   ${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs verdict US-XXX --verdict <MERGE|HUMAIN>
+   ```
+
+   Le workflow rend `verdict` et `grille` : une case par invariant du domaine,
+   plus `tests` et `secrets`. Il ne rend MERGE que si toutes les cases sont OK.
+   **Une seule revue par commit** : le script refuse un second verdict sur le
+   même HEAD, et relancer pour obtenir l'autre réponse est le contournement
+   qu'il bloque.
 4. **Encore un `high` après le tour 2 : arrêt.** Rapport à l'humain, pas de
    troisième tour. Un défaut qui survit à deux corrections est un problème de
    conception, pas de correctif — même logique que les deux strikes.
@@ -301,8 +312,21 @@ Puis, dans cet ordre :
 git push -u origin us-XXX-<slug>
 gh pr create --title "US-XXX — <titre>" --body "<corps, voir ci-dessous>"
 gh pr checks --watch --fail-fast    # la CI tourne AVANT que main soit touché
-gh pr merge --squash --delete-branch
+gh pr comment --body "<VERDICT et grille, collés tels quels>"
+gh pr merge --squash --delete-branch    # seulement si le tableau ci-dessous le permet
 ```
+
+**Qui merge.** Les machines décident, la revue conseille
+(`docs/engineering/fiabilite-des-agents.md`) :
+
+| CI (Intégrité comprise) | Verdict consigné | Ce que tu fais |
+|---|---|---|
+| verte | `MERGE` sur ce HEAD | tu merges |
+| verte | `HUMAIN` | tu t'arrêtes ; la PR attend le propriétaire, avec la grille en commentaire |
+| rouge | n'importe lequel | tu t'arrêtes. Une garde « Humain requis » n'est pas un rouge à corriger : c'est une décision du propriétaire |
+
+`guard-bash.mjs` refuse `gh pr merge` sans verdict `MERGE`, ou quand un commit
+arrivé après la revue touche autre chose que `docs/backlog/`.
 
 Le corps de la PR **porte ses preuves**, collées et jamais résumées. Shopify
 Helix livre chaque checkpoint avec ses preuves : tests verts, verdicts des

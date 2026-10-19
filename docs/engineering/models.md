@@ -8,7 +8,7 @@ personne ne s'en aperçoit avant la facture.
 
 | Où | Modèle | Pourquoi |
 |---|---|---|
-| Les trois agents de la revue (`reviewer`, `security-scanner`, `domain-expert`) | `sonnet` | Ils vérifient une **liste de règles explicites** sur un diff borné. La tâche est du contrôle, pas de la conception |
+| Les trois agents de la revue (`reviewer`, `security-scanner`, `domain-expert`), et `ui-reviewer` | `claude-sonnet-5-5`, **l'ID complet** | Ils vérifient une **liste de règles explicites** sur un diff borné. La tâche est du contrôle, pas de la conception. L'ID complet, pas l'alias : celui qui relit ne doit pas tourner sur le modèle de celui qui écrit, et une surcharge `ANTHROPIC_DEFAULT_SONNET_MODEL` changerait l'alias sans prévenir. À mettre à jour quand une nouvelle version de Sonnet sort |
 | Les agents de stack (`developer`, `dba`, ceux d'un module) | `sonnet` | Ils travaillent sous les règles de `stack.md` et le cycle TDD de `/deliver-story`, qui rattrapent ce qu'ils laissent passer |
 | Lectures isolées de `/dejavu` | `haiku` | 12 à 20 appels par run, chacun extrait quatre champs d'un seul résumé. C'est le plus gros poste d'un run et la tâche la plus simple |
 | `/security-review` | le modèle de la session | Le seul endroit où le jugement lourd est justifié. C'est aussi le seul gate que `deliver-story` impose sur le domaine critique |
@@ -88,7 +88,8 @@ Ce qu'il faut savoir avant de compter dessus :
   la dépense d'une revue avec `/usage`.
 - ⚠️ **Une surcharge d'alias change tout le tableau ci-dessus.** Avec
   `ANTHROPIC_DEFAULT_SONNET_MODEL=claude-opus-5-5`, chaque `model: sonnet` du
-  socle tourne sur Opus, et un conseiller Opus n'apporte plus rien. Vérifie le
+  socle (les agents de stack) tourne sur Opus, et un conseiller Opus n'apporte
+  plus rien. Les relecteurs y échappent : ils déclarent l'ID complet. Vérifie le
   bloc `env` de tes réglages avant de lire une facture.
 
 **Pourquoi les relecteurs ne passent pas en `haiku`.** Ils tiennent un gate : un

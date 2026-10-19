@@ -386,7 +386,8 @@ coût avant de démarrer une boucle.
 | Noter un essai, relire le cache, faire la rétrospective | Rien. C'est un script Node — il lance tes commandes de test, il n'en juge rien |
 | `/loop` | Tourne sans surveillance jusqu'à épuisement du backlog. Elle expire après sept jours |
 
-Chaque sous-agent déclare `model: sonnet` ; les lectures isolées d'antériorité
+Chaque sous-agent déclare Sonnet. Les relecteurs le déclarent par son ID complet, pour qu'une
+surcharge de l'alias ne les fasse pas tourner sur le modèle de l'auteur. Les lectures isolées d'antériorité
 tournent en Haiku. Le modèle lourd est réservé à `/security-review`, le seul gate
 que le cycle de livraison impose sur le domaine critique. La politique complète,
 et comment monter un agent d'un cran quand ton domaine le justifie, sont dans
@@ -895,7 +896,8 @@ you start a loop.
 | Scoring an attempt, re-reading the cache, running the retrospective | Nothing. It's a Node script — it runs your test commands, it judges nothing |
 | `/loop` | Runs unattended until the backlog is exhausted. It expires after seven days |
 
-Every subagent declares `model: sonnet`; the isolated prior-art reads run on
+Every subagent declares Sonnet. The reviewers use its full ID, so that an alias
+override can't run them on the author's model. The isolated prior-art reads run on
 Haiku. The heavy model is reserved for `/security-review`, the one gate the
 delivery cycle imposes on the critical domain. The full policy, and how to move
 one agent up when your domain warrants it, is in

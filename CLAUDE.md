@@ -51,7 +51,7 @@
 | `/design-taste-frontend`, `/redesign-existing-projects` | skills vendorisés — module `frontend-web`, **manuels** | Direction affirmée, ou refonte d'un écran existant. **Conseil** ; ~22 000 tokens pour le premier |
 | gates UI (`e2e/`) | scripts — fournis par le module `frontend-web`, absents sans lui | `cd e2e && npm run gates` : tokens, styles, accessibilité, captures. `npm run perf` : Lighthouse. Voir `docs/engineering/frontend.md` |
 | `domain-expert` | agent projet | Toute question métier avant de modéliser un flux critique |
-| `.claude/agents/*` | sous-agents, tous en `model: sonnet`. Les **trois du socle** sont en lecture seule ; les agents de stack — d'un module ou générés à l'amorçage — **écrivent**. Vérifier leur `tools:` | Ils **ne connaissent pas** le backlog, le journal, ni les règles ci-dessus : leur travail passe par les mêmes tests et la même revue que le tien |
+| `.claude/agents/*` | sous-agents : les relecteurs en `model: claude-sonnet-5-5` (ID complet), les agents de stack en `model: sonnet`. Les **trois du socle** sont en lecture seule ; les agents de stack — d'un module ou générés à l'amorçage — **écrivent**. Vérifier leur `tools:` | Ils **ne connaissent pas** le backlog, le journal, ni les règles ci-dessus : leur travail passe par les mêmes tests et la même revue que le tien |
 
 > À AJUSTER au bootstrap : retire de ce tableau tout ce que le projet n'a pas
 > réellement installé, ajoute ce qu'il a en plus.
@@ -68,7 +68,8 @@ La chaîne : `/cadrer-story` écrit la story · `/deliver-story` la livre ·
 
 Une story = un cycle : branche → plan → TDD → tests verts → **revue en fan-out**
 (workflow `review-story`) → `/security-review` si le domaine critique est touché
-→ commit `US-XXX: sujet` → **PR, CI verte, merge squash**. Jamais de push direct
+→ commit `US-XXX: sujet` → **PR, CI verte, verdict `MERGE`, merge squash**. Sinon la
+PR attend le propriétaire : les machines décident, la revue conseille. Jamais de push direct
 sur `main`. `/deliver-story` livre la prochaine story actionnable et tient le
 journal. Les questions métier passent par l'agent `domain-expert`.
 

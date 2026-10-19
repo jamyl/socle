@@ -9,6 +9,17 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Verdict de merge** : `review-story` rend `MERGE` ou `HUMAIN`, calculé en
+  code sur une grille (une case par invariant du domaine, plus `tests` et
+  `secrets`). `eval-run.mjs verdict` attache ce verdict au commit relu, et
+  refuse un second verdict sur le même commit. `guard-bash.mjs` refuse
+  `gh pr merge` sans `MERGE`, ou quand un commit arrivé après la revue touche
+  autre chose que `docs/backlog/`. Les relecteurs déclarent l'ID complet
+  `claude-sonnet-5-5`. Avec l'alias, une surcharge
+  `ANTHROPIC_DEFAULT_SONNET_MODEL` les faisait tourner sur le modèle de
+  l'auteur, et c'était le cas sur le poste qui a conçu le dispositif. On n'a
+  pas ajouté de cinquième agent : `spec` et `domain-expert` tenaient déjà le
+  rôle du contrôleur.
 - **Alarme de merge** (`.github/workflows/alarme-merge.yml`) : à chaque arrivée
   sur `main`, elle relit les contrôles de la PR mergée. Elle ouvre une issue
   assignée au propriétaire si l'un d'eux n'était pas vert, ou si le commit n'a

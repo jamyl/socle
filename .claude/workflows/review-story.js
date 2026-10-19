@@ -35,7 +35,7 @@ const story = args?.story
 const epic = args?.epic
 if (!story || !epic) throw new Error('args.story et args.epic sont requis — l\'identifiant US-XXX et le fichier d\'epic qui porte ses critères')
 
-const contrat = `Lis UNIQUEMENT le fichier de diff ${diffPath} (branche ${branch}). N'ouvre aucun autre fichier du repo sauf pour lever une ambiguïté sur une ligne du diff. Ne modifie rien. Rapporte seulement ce que le diff démontre : pas d'hypothèse sur du code non montré. Si le diff ne viole rien de ta liste, renvoie une liste vide — un rapport vide est une réponse valide.`
+const contrat = `Lis UNIQUEMENT le fichier de diff ${diffPath} (branche ${branch}). N'ouvre aucun autre fichier du repo sauf pour lever une ambiguïté sur une ligne du diff. Ne modifie rien. Rapporte seulement ce que le diff démontre : pas d'hypothèse sur du code non montré. Dans le champ invariant, recopie la règle de ta liste mot pour mot. Si le diff ne viole rien de ta liste, renvoie une liste vide — un rapport vide est une réponse valide.`
 
 const NOEUDS = [
   {
@@ -141,4 +141,26 @@ log(`${findings.length} finding(s) après dédup — ${rapports.filter(Boolean).
 const approuve = muets.length === 0 && !findings.some((f) => f.severity === 'high')
 log(approuve ? '✅ tour approuvé' : '⛔ tour refusé : corrige, puis relance la revue sur le nouveau diff')
 
-return { branch, diffPath, approuve, noeudsMuets: muets, findings }
+// Le verdict de merge, calculé en code lui aussi : une case par invariant du
+// domaine, plus `tests` (nœud spec) et `secrets` (security-scanner). Un `high`
+// donne REFUS, un `medium` DOUTE. MERGE seulement si le tour est approuvé et
+// que toutes les cases sont OK : dans le doute, HUMAIN. Le verdict conseille,
+// la CI décide (docs/engineering/fiabilite-des-agents.md).
+const statut = (fs) => (fs.some((f) => f.severity === 'high') ? 'REFUS' : fs.some((f) => f.severity === 'medium') ? 'DOUTE' : 'OK')
+const invariants = NOEUDS.find((n) => n.label === 'domain-expert').regles
+const duDomaine = findings.filter((f) => f.noeud === 'domain-expert')
+const cases = [
+  ...invariants.map((r) => ({ nom: r, noeud: 'domain-expert', fs: duDomaine.filter((f) => f.invariant === r) })),
+  // Un finding métier qui ne cite pas une règle mot pour mot ne se perd pas.
+  { nom: 'invariants hors grille', noeud: 'domain-expert', fs: duDomaine.filter((f) => !invariants.includes(f.invariant)) },
+  { nom: 'tests', noeud: 'spec', fs: findings.filter((f) => f.noeud === 'spec') },
+  { nom: 'secrets', noeud: 'security-scanner', fs: findings.filter((f) => f.noeud === 'security-scanner') },
+].filter((c) => c.nom !== 'invariants hors grille' || c.fs.length)
+  // Un nœud muet n'a rien dit : sa case n'est pas OK, elle est inconnue.
+  .map((c) => ({ ...c, statut: muets.includes(c.noeud) ? 'DOUTE' : statut(c.fs) }))
+const grille = cases.map((c) => `${c.nom}: ${c.statut} — ${muets.includes(c.noeud) ? `nœud ${c.noeud} muet` : c.fs[0] ? `${c.fs[0].file}:${c.fs[0].line} ${c.fs[0].detail}` : 'rien à signaler'}`)
+const verdict = approuve && cases.every((c) => c.statut === 'OK') ? 'MERGE' : 'HUMAIN'
+log(`VERDICT: ${verdict}`)
+for (const l of grille) log(l)
+
+return { branch, diffPath, approuve, verdict, grille, noeudsMuets: muets, findings }

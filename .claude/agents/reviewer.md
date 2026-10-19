@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: "Revue de code en lecture seule — conventions, correction, architecture. Premier nœud de la revue en fan-out de review-story. N'écrit pas de code, ne corrige rien, ne commente pas de PR.\n\nTrigger — EN: review, code review, audit, find bugs, code quality, conventions.\nTrigger — FR: revue, revue de code, audit, qualité du code, conventions.\n\n<example>\nuser: 'Revois le diff de la story avant la PR'\nassistant: 'Using reviewer: conventions, correction et architecture sur le diff, en lecture seule.'\n</example>"
-model: sonnet
+model: claude-sonnet-5-5
 color: magenta
 tools:
   - Read
