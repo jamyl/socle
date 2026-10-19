@@ -1,0 +1,56 @@
+name: Alarme de merge
+
+# Sans GitHub Pro, rien n'empêche techniquement un merge sur une CI rouge : les
+# rulesets d'un dépôt privé gratuit répondent 403. Ce workflow ne bloque pas, il
+# SIGNALE. À chaque arrivée sur `main`, il relit les contrôles du dernier commit
+# de la PR mergée. Si l'un d'eux n'était pas vert, ou si le commit n'a pas de
+# PR, il ouvre une issue assignée au propriétaire du dépôt.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  issues: write
+
+jobs:
+  alarme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Les contrôles de la PR mergée étaient-ils verts ?
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          PROPRIETAIRE: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          alerter() {   # titre, corps — assigné au propriétaire si GitHub l'accepte
+            gh issue create -R "$REPO" -a "$PROPRIETAIRE" -t "$1" -b "$2" \
+              || gh issue create -R "$REPO" -t "$1" -b "$2"
+          }
+
+          # `.[0]` sur un tableau vide donne `null`, et l'interpolation en fait
+          # la chaîne « null null » : non vide, donc jamais vue comme « sans PR ».
+          # On teste la longueur avant de lire.
+          pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null)] | if length == 0 then "" else (.[0] | "\(.number) \(.head.sha)") end')
+          if [ -z "$pr" ]; then
+            echo "::warning::Commit $SHA sans PR mergée : push direct sur main ?"
+            alerter "Alarme : push direct sur main ($SHA)" "Aucune PR mergée n'est associée au commit $SHA."
+            exit 0
+          fi
+          read -r numero tete <<< "$pr"
+          auteur=$(gh api "repos/$REPO/pulls/$numero" --jq '.merged_by.login // "?"')
+
+          rouges=$(gh api "repos/$REPO/commits/$tete/check-runs" --paginate \
+            --jq '.check_runs[] | select(.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral") | "\(.name) : \(.conclusion // .status)"')
+          if [ -n "$rouges" ]; then
+            alerter "Alarme : PR #$numero mergée par $auteur malgré une CI non verte" \
+              "$(printf 'Contrôles non verts sur %s :\n\n%s\n' "$tete" "$rouges")"
+            echo "::warning::PR #$numero mergée malgré : $rouges"
+          else
+            echo "PR #$numero : tous les contrôles étaient verts (mergée par $auteur)."
+          fi

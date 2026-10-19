@@ -154,6 +154,7 @@ jobs:
                    .claude/hooks/guard-bash.mjs \
                    .claude/hooks/stop-gate.mjs \
                    .github/workflows/integrite.yml \
+                   .github/workflows/alarme-merge.yml \
                    .github/integrite.d/coeur.conf; do
             [ -e "$p" ] || { echo "::error::$p manque au projet amorcé"; exit 1; }
           done
@@ -163,6 +164,7 @@ jobs:
             || { echo '::error::eval-run.mjs perd son bit d exécution à l amorçage'; exit 1; }
           ./.github/scan-secrets.sh
           python3 -c "import yaml; yaml.safe_load(open('.github/workflows/integrite.yml')); print('integrite.yml: yaml ok')"
+          python3 -c "import yaml; yaml.safe_load(open('.github/workflows/alarme-merge.yml')); print('alarme-merge.yml: yaml ok')"
 
       - name: Seuls les placeholders de rédaction survivent
         run: |
