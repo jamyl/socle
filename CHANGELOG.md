@@ -32,7 +32,10 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   pas de PR. Sans GitHub Pro, rien n'empêche un merge sur du rouge : ce
   workflow le rend visible. La version d'origine ne détectait jamais un push
   direct, parce que `.[0]` sur un tableau vide rend `null null`, une chaîne non
-  vide. Le test porte maintenant sur la longueur du tableau.
+  vide. Le test porte maintenant sur la longueur du tableau. Elle réessaie
+  aussi pendant une minute avant de parler de push direct : lancée 3 s après
+  un merge, elle a ouvert une fausse alarme, parce que GitHub n'avait pas
+  encore rattaché le commit à sa PR.
 - **Garde des tests** (`.github/workflows/integrite.yml`), un job sans IA. Sans
   humain, une PR ne peut ni supprimer un test, ni ajouter un `skip`/`only`,
   ni retirer une assertion existante, ni faire baisser le nombre de tests, ni

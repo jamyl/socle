@@ -35,8 +35,16 @@ jobs:
           # `.[0]` sur un tableau vide donne `null`, et l'interpolation en fait
           # la chaîne « null null » : non vide, donc jamais vue comme « sans PR ».
           # On teste la longueur avant de lire.
-          pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
-            --jq '[.[] | select(.merged_at != null)] | if length == 0 then "" else (.[0] | "\(.number) \(.head.sha)") end')
+          # GitHub met quelques secondes à rattacher le commit de merge à sa PR :
+          # lancée 3 s après un merge, l'API répondait « aucune PR » et l'alarme
+          # criait au push direct (constaté sur ce dépôt). On réessaie avant de
+          # conclure.
+          for essai in 1 2 3 4 5 6; do
+            pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
+              --jq '[.[] | select(.merged_at != null)] | if length == 0 then "" else (.[0] | "\(.number) \(.head.sha)") end')
+            [ -n "$pr" ] && break
+            sleep 10
+          done
           if [ -z "$pr" ]; then
             echo "::warning::Commit $SHA sans PR mergée : push direct sur main ?"
             alerter "Alarme : push direct sur main ($SHA)" "Aucune PR mergée n'est associée au commit $SHA."
