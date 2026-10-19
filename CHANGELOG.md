@@ -9,6 +9,15 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Garde des tests** (`.github/workflows/integrite.yml`), un job sans IA. Sans
+  humain, une PR ne peut ni supprimer un test, ni ajouter un `skip`/`only`,
+  ni retirer une assertion existante, ni faire baisser le nombre de tests, ni
+  toucher un fichier qui fixe les règles. La logique est écrite dans le YAML. Les
+  motifs de chaque stack (`.github/integrite.d/*.conf`) sont lus sur la base de
+  la PR, si bien qu'une PR ne peut pas assouplir la règle qu'elle subit. Rejouée
+  sur les 8 dernières PR d'un projet réel : les 8 passent. Une copie piégée fait
+  ressortir les 5 motifs. Sur le dépôt gabarit lui-même, la garde ne s'applique
+  pas.
 - **Le conseiller (advisor) documenté** (`docs/engineering/models.md`) : Sonnet en
   session, Opus en conseiller, et dans `/deliver-story` trois moments où le
   consulter (plan figé, deuxième strike, avant la PR). Le texte dit aussi ses

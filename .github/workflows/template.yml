@@ -152,7 +152,9 @@ jobs:
                    .claude/skills/deliver-story/scripts/eval-run.mjs \
                    .claude/rules/exploration-policy.md \
                    .claude/hooks/guard-bash.mjs \
-                   .claude/hooks/stop-gate.mjs; do
+                   .claude/hooks/stop-gate.mjs \
+                   .github/workflows/integrite.yml \
+                   .github/integrite.d/coeur.conf; do
             [ -e "$p" ] || { echo "::error::$p manque au projet amorcé"; exit 1; }
           done
           [ -x .github/scan-secrets.sh ] \
@@ -160,6 +162,7 @@ jobs:
           [ -x .claude/skills/deliver-story/scripts/eval-run.mjs ] \
             || { echo '::error::eval-run.mjs perd son bit d exécution à l amorçage'; exit 1; }
           ./.github/scan-secrets.sh
+          python3 -c "import yaml; yaml.safe_load(open('.github/workflows/integrite.yml')); print('integrite.yml: yaml ok')"
 
       - name: Seuls les placeholders de rédaction survivent
         run: |
@@ -182,6 +185,8 @@ jobs:
                 || { echo '::error::SLUG_SQL non substitué dans backend.yml'; exit 1; }
               grep -q 'Laravel' .claude/agents/developer.md \
                 || { echo '::error::developer.md ne vient pas du module stack-laravel'; exit 1; }
+              test -f .github/integrite.d/stack-laravel.conf \
+                || { echo '::error::motifs de garde Pest absents'; exit 1; }
               ;;
             *)
               test -f .claude/agents/developer.md \
@@ -196,7 +201,7 @@ jobs:
                        e2e/package-lock.json docs/engineering/frontend.md .github/workflows/frontend.yml \
                        .claude/agents/ui-reviewer.md .claude/rules/web-interface-guidelines.md \
                        .claude/skills/frontend-design/LICENSE.txt .claude/skills/design-taste-frontend/LICENSE \
-                       .claude/skills/redesign-existing-projects/LICENSE; do
+                       .claude/skills/redesign-existing-projects/LICENSE .github/integrite.d/frontend-web.conf; do
                 [ -e "$f" ] || { echo "::error::$f manque avec frontend-web"; exit 1; }
               done
               node design/build-tokens.mjs --check
