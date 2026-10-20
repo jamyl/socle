@@ -44,6 +44,11 @@ Alarme de merge          issue si un contrôle n'était pas vert                
   de tests modifiée) et sort en code 1.
 - **Mutation** : sur le même projet, elle a trouvé un trou que les
   contre-épreuves faites à la main avaient raté.
+- **Robot de fusion** : éprouvé sur le même projet, monté en organisation. Le
+  merge est refusé au compte agent, une PR verte de sa copie est mergée par
+  `github-actions`, une PR rouge reste ouverte, un push de workflow par l'agent
+  est refusé, et la CI des PR de fork tourne sans clic. Dans socle, sa logique
+  est rejouée sur 13 scénarios contre un faux `gh` (PR #21).
 - **Alarme** : sur ce dépôt, elle a d'abord crié au push direct pour un merge
   normal. GitHub met quelques secondes à rattacher un commit à sa PR. Elle
   réessaie maintenant avant de conclure.

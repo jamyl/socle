@@ -16,7 +16,8 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   `.github/`, que tous les contrôles sont verts, que les indispensables sont
   présents, et que l'agent a commenté `VERDICT: MERGE <sha>` pour ce commit.
   Il merge avec `--match-head-commit`. Il reste inactif sans la variable
-  `AGENT_LOGIN`. `/deliver-story` décrit les deux modes, avec le piège du
+  `AGENT_LOGIN`. Éprouvé sur un projet réel, avec les cinq essais du montage.
+  `/deliver-story` décrit les deux modes, avec le piège du
   rebase sur un commit de workflow. La garde protège aussi le prompt des
   relecteurs, `.claude/agents/*`.
 - **`docs/engineering/fiabilite-des-agents.md`** : le schéma auteur → CI →
