@@ -19,7 +19,7 @@ CI GitHub, sans IA       tests, analyse statique, garde des tests, mutation   �
    ↓
 review-story             relecteurs à l'aveugle, grille, verdict MERGE|HUMAIN  → CONSEILLE
    ↓
-CI verte + MERGE         l'agent merge ; sinon le propriétaire
+CI verte + MERGE         le robot Fusion merge (l'agent n'a que la lecture) ; sinon le propriétaire
    ↓
 Alarme de merge          issue si un contrôle n'était pas vert                 → SIGNALE
 ```
@@ -33,6 +33,7 @@ Alarme de merge          issue si un contrôle n'était pas vert                
 | Mutation | job `mutation` de `backend.yml` (module `stack-laravel`) | Classes modifiées des dossiers sensibles ; seuil lu sur la base, qui ne se baisse jamais |
 | Verdict de revue | `.claude/workflows/review-story.js`, `eval-run.mjs verdict` | Relecteurs en lecture seule, qui ne voient ni la PR, ni les commits, ni l'avis de l'auteur ; grille et verdict **calculés en code** ; un seul verdict par commit. **C'est un conseil, pas un verrou** : l'agent lance la revue lui-même |
 | Garde du merge | `.claude/hooks/guard-bash.mjs` | Refuse `gh pr merge` sans verdict `MERGE` pour le commit relu. Rattrape l'oubli, pas la triche : un hook lit la commande telle qu'elle est écrite |
+| Robot de fusion (mode organisation) | `.github/workflows/fusion.yml` | Le compte agent n'a que la lecture et ne peut pas merger. Le robot exécute la version de `main`, ne lit jamais le code de la PR, refuse une PR qui touche `.github/`, exige tous les contrôles verts, les indispensables présents, et `VERDICT: MERGE <sha>` du compte agent pour ce commit. Il merge avec `--match-head-commit` |
 | Alarme de merge | `.github/workflows/alarme-merge.yml` | Sans GitHub Pro, rien n'empêche un merge sur du rouge : l'alarme le rend visible, par une issue au propriétaire |
 
 ## Ce que chaque pièce a montré
@@ -49,8 +50,11 @@ Alarme de merge          issue si un contrôle n'était pas vert                
 
 ## Limites assumées
 
-- **Sans GitHub Pro, la règle de merge est une méthode surveillée, pas un
-  verrou.** L'alarme signale, elle n'empêche pas.
+- **Sur un dépôt personnel, sans GitHub Pro, la règle de merge est une méthode
+  surveillée, pas un verrou.** L'alarme signale, elle n'empêche pas. **En mode
+  organisation, c'est un verrou** : le compte agent n'a pas le droit de merger.
+  Le verdict, lui, reste un conseil, puisque c'est l'agent qui le pose. Ce qui
+  décide, ce sont les contrôles de la CI qu'il ne peut pas modifier.
 - **Même famille de modèles.** Sonnet relit ce qu'Opus écrit. L'aveugle, la
   grille et un verdict calculé en code **atténuent** le biais « je préfère ce qui
   me ressemble », sans le supprimer. Les relecteurs déclarent l'ID complet

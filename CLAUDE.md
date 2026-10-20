@@ -69,8 +69,10 @@ La chaîne : `/cadrer-story` écrit la story · `/deliver-story` la livre ·
 
 Une story = un cycle : branche → plan → TDD → tests verts → **revue en fan-out**
 (workflow `review-story`) → `/security-review` si le domaine critique est touché
-→ commit `US-XXX: sujet` → **PR, CI verte, verdict `MERGE`, merge squash**. Sinon la
-PR attend le propriétaire : les machines décident, la revue conseille. Jamais de push direct
+→ commit `US-XXX: sujet` → **PR, CI verte, verdict `MERGE`, merge squash**. En mode
+organisation, l'agent ne merge pas : il commente `VERDICT: MERGE <sha>` et le robot
+`fusion.yml` merge. Sinon la PR attend le propriétaire : les machines décident, la
+revue conseille. Jamais de push direct
 sur `main`. `/deliver-story` livre la prochaine story actionnable et tient le
 journal. Les questions métier passent par l'agent `domain-expert`.
 

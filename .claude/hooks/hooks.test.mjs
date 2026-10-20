@@ -143,6 +143,17 @@ test('gh pr merge : un commit de clôture qui ne touche que docs/backlog/ garde 
   assert.match(r.err, /src\/code\.js/)
 })
 
+test('gh pr comment « VERDICT: MERGE » refusé sans verdict MERGE consigné pour HEAD, accepté avec', () => {
+  const dir = depot('us-101-x')
+  const cmd = 'gh pr comment -R org/p --body "VERDICT: MERGE abc"'
+  assert.equal(bash(dir, cmd).code, 2)
+  verdictConsigne(dir, 'US-101', 'HUMAIN')
+  assert.equal(bash(dir, cmd).code, 2)
+  verdictConsigne(dir, 'US-101', 'MERGE')
+  assert.equal(bash(dir, cmd).code, 0)
+  assert.equal(bash(dir, 'gh pr comment --body "rapport de revue"').code, 0)
+})
+
 test('heredoc : un message qui cite une commande refusée ne déclenche rien', () => {
   const dir = depot('us-101-x')
   const msg = "git commit -F - <<'EOF'\nUS-101: x\n\nOn ne fait jamais git push origin main ni gh pr merge ici.\nEOF"

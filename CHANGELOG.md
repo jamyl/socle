@@ -9,6 +9,16 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Robot de fusion, le verrou de merge gratuit** (`.github/workflows/fusion.yml`,
+  `config-locale.md`). Dans une organisation GitHub gratuite, le compte agent
+  n'a que la lecture : il propose depuis sa copie, et le robot merge. Il
+  vérifie que la PR vient de la copie de l'agent, qu'elle ne touche pas
+  `.github/`, que tous les contrôles sont verts, que les indispensables sont
+  présents, et que l'agent a commenté `VERDICT: MERGE <sha>` pour ce commit.
+  Il merge avec `--match-head-commit`. Il reste inactif sans la variable
+  `AGENT_LOGIN`. `/deliver-story` décrit les deux modes, avec le piège du
+  rebase sur un commit de workflow. La garde protège aussi le prompt des
+  relecteurs, `.claude/agents/*`.
 - **`docs/engineering/fiabilite-des-agents.md`** : le schéma auteur → CI →
   revue → merge → alarme, une ligne par pièce avec ce qui empêche l'agent de la
   contourner, et les limites assumées. Module `stack-laravel` :
