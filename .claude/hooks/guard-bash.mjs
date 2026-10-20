@@ -9,6 +9,8 @@
 //   3. aucun `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai
 //      consigné par `eval-run.mjs` n'est pas `pass`, ou dont le verdict de
 //      revue (`eval-run.mjs verdict`) n'est pas MERGE pour le HEAD courant ;
+//   3 bis. aucun commentaire `VERDICT: MERGE` (celui qui déclenche le robot
+//      `fusion.yml` en mode organisation) sans ce même verdict consigné ;
 //   4. aucun `gh pr create` sur une telle branche sans ses preuves dans le
 //      corps : la rétrospective de `eval-run.mjs` et le verdict `approuve` de
 //      la revue (`.claude/skills/deliver-story/SKILL.md` §5).
@@ -91,6 +93,14 @@ for (const mots of segments) {
     if (manque.length) {
       refuser(`⛔ PR refusée : le corps ne porte pas ${manque.join(' ni ')}.\n` +
         '   Gabarit : .claude/skills/deliver-story/SKILL.md §5. La preuve vit dans la PR, pas dans .socle/.')
+    }
+  }
+  if (g >= 0 && mots[g + 1] === 'pr' && mots[g + 2] === 'comment' && brut.includes('VERDICT: MERGE') && storyDeBranche(branche)) {
+    const story = storyDeBranche(branche)
+    const v = lireVerdict(racine, story)
+    if (v?.verdict !== 'MERGE' || v.head !== git(racine, ['rev-parse', 'HEAD'])) {
+      refuser(`⛔ commentaire refusé : « VERDICT: MERGE » déclenche le robot de fusion, et ${story} n'a pas de verdict MERGE consigné pour le HEAD courant.\n` +
+        `   .claude/skills/deliver-story/scripts/eval-run.mjs verdict ${story} --verdict <MERGE|HUMAIN>`)
     }
   }
   if (g >= 0 && mots[g + 1] === 'pr' && mots[g + 2] === 'merge') {

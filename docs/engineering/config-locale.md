@@ -128,6 +128,41 @@ Toute modification de `.github/workflows/` se pousse **depuis ton terminal**,
 avec ton compte. Quand une story en a besoin, l'agent écrit le fichier, puis te
 donne la commande exacte à lancer. Il ne la contourne pas.
 
+### Le verrou de merge gratuit : une organisation
+
+Sur un dépôt **personnel**, un collaborateur a forcément le droit d'écriture,
+donc celui de merger : le compte agent pourrait merger sur du rouge. Une
+**organisation GitHub gratuite** permet de lui donner la seule lecture. Il
+propose alors ses changements depuis sa copie (fork), et c'est le robot
+`fusion.yml`, avec le jeton du dépôt, qui merge quand tout est vert.
+
+1. Crée une organisation gratuite, et **transfère-lui le dépôt** (Settings →
+   Danger Zone → Transfer).
+2. Invite le compte agent comme **collaborateur du dépôt, en rôle Read**, pas comme
+   membre de l'organisation.
+3. Dans l'organisation (Settings → Member privileges), autorise les **forks de
+   dépôts privés**.
+4. Coche **« Run workflows from fork pull requests »** dans l'organisation
+   (Settings → Actions), **puis** dans le dépôt : la case du dépôt reste grisée
+   tant que celle de l'organisation ne l'est pas. Décoche l'approbation des
+   workflows de forks. N'envoie aux forks **ni jeton d'écriture, ni secrets**.
+5. Connecté avec le compte agent, crée sa copie du dépôt (`gh repo fork`), et
+   ajoute-la comme remote `agent` dans le clone de travail.
+6. Dans le dépôt (Settings → Secrets and variables → Actions → Variables) :
+   `AGENT_LOGIN` = le compte agent. En option, `CHECKS_REQUIS` liste les
+   contrôles indispensables, **séparés par des `;`**. Par défaut, le robot exige
+   au moins la garde des tests.
+
+À vérifier sur un **dépôt jetable** avant le vrai :
+
+| Essai | Attendu |
+|---|---|
+| Le compte agent lance `gh pr merge` | refusé par GitHub |
+| PR verte, avec `VERDICT: MERGE <sha>` du compte agent | mergée par `github-actions` |
+| PR rouge, ou sans verdict | laissée ouverte |
+| Le compte agent pousse un fichier de `.github/workflows/` | refusé (pas de portée `workflow`) |
+| La CI d'une PR de fork | tourne sans clic |
+
 ## Sur un projet qui adopte la méthode
 
 `scripts/adopt.sh` **ne touche jamais** `.claude/settings.json` : une liste de

@@ -19,6 +19,8 @@ gh pr merge --squash --delete-branch      # CI verte ET verdict MERGE, sinon le 
 L'agent merge seulement si toute la CI est verte, garde d'intégrité comprise, et
 si le verdict consigné de la revue vaut `MERGE` pour le commit relu
 (`.claude/skills/deliver-story/SKILL.md` §5). Sinon la PR attend le propriétaire.
+En mode organisation, l'agent n'a que la lecture : il pousse dans sa copie (remote
+`agent`), et c'est le robot `.github/workflows/fusion.yml` qui merge.
 
 `gh run watch` **ne convient pas ici** : il exige un `<run-id>` en argument et le
 demande de façon interactive quand il manque — donc il bloque dans une boucle

@@ -306,22 +306,39 @@ rien.
   de `/security-review` sont des commits séparés sur la même branche — le fil de
   la revue doit rester lisible dans la PR.
 
-Puis, dans cet ordre :
+Puis, dans cet ordre. **Mode organisation** (le compte agent n'a que la lecture,
+`docs/engineering/config-locale.md`) : tu ne merges pas, le robot `fusion.yml` le
+fait.
 
 ```bash
-git push -u origin us-XXX-<slug>
-gh pr create --title "US-XXX — <titre>" --body "<corps, voir ci-dessous>"
-gh pr checks --watch --fail-fast    # la CI tourne AVANT que main soit touché
-gh pr comment --body "<VERDICT et grille, collés tels quels>"
-gh pr merge --squash --delete-branch    # seulement si le tableau ci-dessous le permet
+git push -u agent us-XXX-<slug>                       # ta copie, pas le dépôt
+gh pr create -R <org>/<dépôt> --head <compte-agent>:us-XXX-<slug> \
+  --title "US-XXX — <titre>" --body "<corps, voir ci-dessous>"
+gh pr checks --watch --fail-fast -R <org>/<dépôt>     # la CI tourne AVANT que main soit touché
+gh pr comment -R <org>/<dépôt> --body "<VERDICT et grille, collés tels quels>"
+gh pr comment -R <org>/<dépôt> --body "VERDICT: MERGE $(git rev-parse HEAD)"   # seulement sur MERGE
 ```
+
+Le second commentaire tient en **une seule ligne**, avec le sha complet du
+dernier commit. Le robot ne merge que sur cette ligne exacte : un commit poussé
+après elle l'annule.
+
+⚠️ **Ne rebase pas la branche de ta copie** sur un `main` qui contient un nouveau
+commit de workflow : le push vers ta copie serait refusé, puisque ton jeton n'a
+pas la portée `workflow`. Ça ne sert à rien de toute façon : le robot qui tourne
+est celui de `main`.
+
+**Mode dépôt personnel** (le compte agent a l'écriture) : `git push -u origin`,
+`gh pr create`, `gh pr checks --watch --fail-fast`, `gh pr comment` avec le
+verdict et la grille, puis `gh pr merge --squash --delete-branch`, seulement si
+le tableau ci-dessous le permet.
 
 **Qui merge.** Les machines décident, la revue conseille
 (`docs/engineering/fiabilite-des-agents.md`) :
 
 | CI (Intégrité comprise) | Verdict consigné | Ce que tu fais |
 |---|---|---|
-| verte | `MERGE` sur ce HEAD | tu merges |
+| verte | `MERGE` sur ce HEAD | mode organisation : la ligne `VERDICT: MERGE <sha>`, et le robot merge · mode personnel : tu merges |
 | verte | `HUMAIN` | tu t'arrêtes ; la PR attend le propriétaire, avec la grille en commentaire |
 | rouge | n'importe lequel | tu t'arrêtes. Une garde « Humain requis » n'est pas un rouge à corriger : c'est une décision du propriétaire |
 

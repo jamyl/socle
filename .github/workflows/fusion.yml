@@ -1,0 +1,107 @@
+name: Fusion
+
+# Le robot de merge du mode « organisation » (docs/engineering/config-locale.md).
+# Le compte agent n'a que la LECTURE sur le dépôt : il ne peut pas merger. Il
+# ouvre une PR depuis sa copie (fork), et c'est ce workflow, avec le jeton du
+# dépôt, qui merge, à quatre conditions :
+#   1. la PR vient de la copie du compte agent, et ne touche pas `.github/` ;
+#   2. tous les contrôles du dernier commit sont terminés et verts, et les
+#      indispensables sont présents ;
+#   3. le compte agent a commenté exactement `VERDICT: MERGE <sha>` pour ce
+#      commit : un commit poussé après le verdict l'annule ;
+#   4. le merge vise ce commit précis (`--match-head-commit`).
+# Sinon la PR attend le propriétaire.
+#
+# Sécurité : `workflow_run` et `issue_comment` exécutent TOUJOURS la version de
+# ce fichier qui est sur `main`, jamais celle de la PR, et le job ne récupère
+# pas le code de la PR : il ne lit que l'API. Aucune valeur venue de la PR
+# n'est interpolée avec ${{ }} dans un script.
+#
+# Inactif tant que la variable de dépôt AGENT_LOGIN n'est pas définie
+# (Settings → Secrets and variables → Actions → Variables).
+on:
+  workflow_run:
+    workflows: [Intégrité, Backend, Frontend]
+    types: [completed]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  fusion:
+    runs-on: ubuntu-latest
+    # Un commentaire ne déclenche le robot que s'il vient du compte agent, sur
+    # une PR, et commence par le verdict. Le reste n'allume même pas de runner.
+    if: >-
+      vars.AGENT_LOGIN != '' && (
+        github.event_name == 'workflow_run' ||
+        (github.event.issue.pull_request && github.event.comment.user.login == vars.AGENT_LOGIN &&
+         startsWith(github.event.comment.body, 'VERDICT: MERGE '))
+      )
+    concurrency:
+      group: fusion-${{ github.event.workflow_run.head_sha || github.event.issue.number }}
+    steps:
+      - name: Merger si tout est vert et le verdict est MERGE
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          AGENT: ${{ vars.AGENT_LOGIN }}
+          REQUIS: ${{ vars.CHECKS_REQUIS }}
+          EVENEMENT: ${{ github.event_name }}
+          SHA_RUN: ${{ github.event.workflow_run.head_sha }}
+          NUMERO_COMMENTAIRE: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          attendre() { echo "::notice::$1 — la PR reste ouverte."; exit 0; }
+
+          # 1. La PR. Une PR de fork n'apparaît pas dans
+          #    workflow_run.pull_requests : on la retrouve par son head_sha.
+          if [ "$EVENEMENT" = workflow_run ]; then
+            numero=$(gh api "repos/$REPO/pulls?state=open&per_page=100" --paginate \
+              | jq -r --arg sha "$SHA_RUN" '.[] | select(.head.sha == $sha) | .number' | head -1)
+            [ -n "$numero" ] || attendre "Aucune PR ouverte pour $SHA_RUN"
+          else
+            numero="$NUMERO_COMMENTAIRE"
+          fi
+          pr=$(gh api "repos/$REPO/pulls/$numero")
+          etat=$(jq -r .state <<< "$pr"); sha=$(jq -r .head.sha <<< "$pr")
+          copie=$(jq -r '.head.repo.owner.login // ""' <<< "$pr"); auteur=$(jq -r .user.login <<< "$pr")
+          base=$(jq -r .base.ref <<< "$pr"); principale=$(jq -r .base.repo.default_branch <<< "$pr")
+          [ "$etat" = open ] || attendre "PR #$numero fermée"
+          [ "$copie" = "$AGENT" ] && [ "$auteur" = "$AGENT" ] || attendre "PR #$numero : ni ouverte par $AGENT, ni depuis sa copie"
+          [ "$base" = "$principale" ] || attendre "PR #$numero ne vise pas $principale"
+
+          # 2. Les règles de la CI ne se mergent pas par un robot.
+          if gh api "repos/$REPO/pulls/$numero/files" --paginate --jq '.[].filename' | grep -q '^\.github/'; then
+            attendre "PR #$numero touche .github/ : le propriétaire merge"
+          fi
+
+          # 3. Tous les contrôles du dernier commit, terminés et verts.
+          controles=$(gh api "repos/$REPO/commits/$sha/check-runs" --paginate --jq '.check_runs[] | [.name, .status, (.conclusion // "")] | @tsv')
+          [ -n "$controles" ] || attendre "Aucun contrôle sur $sha"
+          if awk -F'\t' '$2 != "completed" {f=1} END {exit !f}' <<< "$controles"; then attendre "Contrôles encore en cours sur $sha"; fi
+          rouges=$(awk -F'\t' '$3 != "success" && $3 != "skipped" && $3 != "neutral" {print $1" : "$3}' <<< "$controles")
+          [ -z "$rouges" ] || attendre "Contrôles non verts sur $sha : $(echo $rouges)"
+          # Les indispensables : CHECKS_REQUIS (noms séparés par des `;` — pas
+          # des virgules, que le nom de la garde contient), sinon au moins la
+          # garde des tests. Un contrôle absent n'est pas vert.
+          IFS=';' read -ra requis <<< "${REQUIS:-Garde des tests (rien de supprimé, sauté ni affaibli)}"
+          for r in "${requis[@]}"; do
+            r=$(echo "$r" | sed 's/^ *//; s/ *$//')
+            awk -F'\t' -v n="$r" '$1 == n && $3 == "success" {f=1} END {exit !f}' <<< "$controles" \
+              || attendre "Contrôle indispensable absent ou non vert : $r"
+          done
+
+          # 4. Le verdict du compte agent, pour CE commit.
+          gh api "repos/$REPO/issues/$numero/comments" --paginate \
+            | jq -e --arg a "$AGENT" --arg v "VERDICT: MERGE $sha" \
+                'map(select(.user.login == $a and (.body | gsub("^\\s+|\\s+$"; "")) == $v)) | length > 0' >/dev/null \
+            || attendre "Pas de « VERDICT: MERGE $sha » de $AGENT"
+
+          # Sans --delete-branch : le jeton du dépôt n'écrit pas dans la copie.
+          gh pr merge "$numero" -R "$REPO" --squash --match-head-commit "$sha"
+          echo "PR #$numero mergée sur $sha."
