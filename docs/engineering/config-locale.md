@@ -153,7 +153,11 @@ propose alors ses changements depuis sa copie (fork), et c'est le robot
    contrôles indispensables, **séparés par des `;`**. Par défaut, le robot exige
    au moins la garde des tests.
 
-À vérifier sur un **dépôt jetable** avant le vrai :
+Ce montage a été **éprouvé sur un projet réel** avant d'entrer dans socle : les
+cinq essais ci-dessous y ont passé. Sur ce projet, une PR de la copie du compte
+agent a été mergée par `github-actions`, et non par une personne. Rejoue-les
+quand même sur un **dépôt jetable** de ton organisation avant d'y brancher le
+vrai dépôt : les réglages d'organisation ne se copient pas avec le gabarit.
 
 | Essai | Attendu |
 |---|---|
