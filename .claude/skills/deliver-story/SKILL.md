@@ -393,6 +393,10 @@ ne t'en empêche techniquement**. C'est une règle de méthode, pas une barrièr
 elle ne tient que si tu la tiens.
 
 - **Tag** à la clôture d'un epic, pas à chaque story : `git tag -a e0X-complete`.
+  Avant le tag, relis `LEARNINGS.md` : raye chaque leçon dont l'objet n'existe
+  plus (format dans le fichier). Liste aussi, dans le rapport, les décisions de
+  `DECISIONS.md` dont la colonne `Validée` est vide : c'est ce qui attend le
+  propriétaire.
 - Aucune branche ne survit à sa PR (`--delete-branch`). Si une branche traîne,
   c'est qu'une story n'a pas été clôturée : signale-le.
 

@@ -24,6 +24,11 @@ Une décision sans coût de revirement chiffré n'est pas relisible : « faible 
 écran à rouvrir » et « élevé — migration sur des données réelles » ne se relisent
 pas avec la même urgence.
 
+La dernière colonne, **Validée**, est la tienne. L'agent la laisse vide. Toi, tu
+y écris la date quand tu as relu la décision et que tu la gardes. Une ligne vide
+reste à relire. Une décision que tu renverses ne s'efface pas : elle reçoit une
+nouvelle ligne `D<n>` qui la cite.
+
 Ce fichier ne porte que des **décisions** : des questions tranchées. Les
 **hypothèses produit** — ce qu'on suppose du marché ou des usages et qu'une
 expérience validera — vivent dans `docs/product/vision.md` §8, numérotées `H<n>`.
@@ -36,7 +41,7 @@ demande une migration de correction, pas un changement de code.
 
 ## Journal
 
-| # | Date | Story | La décision | Ce qui a été retenu | Alternative écartée | Coût du revirement |
-|---|---|---|---|---|---|---|
+| # | Date | Story | La décision | Ce qui a été retenu | Alternative écartée | Coût du revirement | Validée |
+|---|---|---|---|---|---|---|---|
 
 *Aucune décision pour l'instant.*

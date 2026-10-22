@@ -277,6 +277,7 @@ test('la rétro donne le ratio, la leçon écrite, et les lignes à coller', () 
   assert.match(out, /H1 supposait un cache/)
   assert.match(out, /essais : 4, ratio : 4\.0/)      // la ligne de JOURNAL.md
   assert.match(out, /DECISIONS\.md/)                  // une impasse a été rencontrée
+  assert.match(out, /\| <À COMPLÉTER> \|  \|\n/)       // « Validée » vide : au propriétaire
   assert.match(out, /H2/)                             // ce qui a marché
   assert.match(out, /LEARNINGS\.md/)                  // la leçon, pour les stories suivantes
   assert.match(out, /piste morte : H1 — H1 supposait un cache.* — source : retro US-107/)

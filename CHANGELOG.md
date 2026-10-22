@@ -9,6 +9,12 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **La validation humaine dans la mémoire du projet.** `DECISIONS.md` gagne une
+  colonne `Validée` : l'agent la laisse vide, le propriétaire y écrit sa date.
+  `eval-run.mjs retro` et `/cadrer-story` la laissent vide. `LEARNINGS.md` :
+  une leçon dont l'objet a disparu se raye, avec la date et la raison, au lieu
+  de s'effacer. À la clôture d'un epic, `/deliver-story` fait cette relecture et
+  liste les décisions encore à valider.
 - **La machine à états du backlog, vérifiée en CI**
   (`.claude/skills/deliver-story/scripts/backlog.mjs`, job « Backlog
   (transitions de statut) » d'`integrite.yml`). Seule la PR d'une story la
