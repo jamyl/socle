@@ -4,7 +4,8 @@ name: Fusion
 # Le compte agent n'a que la LECTURE sur le dépôt : il ne peut pas merger. Il
 # ouvre une PR depuis sa copie (fork), et c'est ce workflow, avec le jeton du
 # dépôt, qui merge, à quatre conditions :
-#   1. la PR vient de la copie du compte agent, et ne touche pas `.github/` ;
+#   1. la PR vient de la copie du compte agent, ne touche pas `.github/`, et
+#      ne ferme aucune issue (`Fixes #12` dans le titre, le corps ou un commit) ;
 #   2. tous les contrôles du dernier commit sont terminés et verts, et les
 #      indispensables sont présents ;
 #   3. le compte agent a commenté exactement `VERDICT: MERGE <sha>` pour ce
@@ -78,6 +79,13 @@ jobs:
           # 2. Les règles de la CI ne se mergent pas par un robot.
           if gh api "repos/$REPO/pulls/$numero/files" --paginate --jq '.[].filename' | grep -q '^\.github/'; then
             attendre "PR #$numero touche .github/ : le propriétaire merge"
+          fi
+          # Un mot-clé de fermeture fermerait une issue au merge, l'alarme de
+          # merge comprise : c'est au propriétaire d'en décider.
+          fermeture='\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+([[:alnum:]_.-]+/[[:alnum:]_.-]+#|https?://[^[:space:]]+/issues/|#)[0-9]+'
+          messages=$(gh api "repos/$REPO/pulls/$numero/commits" --paginate --jq '.[].commit.message')
+          if printf '%s\n%s\n' "$(jq -r '.title, (.body // "")' <<< "$pr")" "$messages" | grep -iE "$fermeture" >/dev/null; then
+            attendre "PR #$numero ferme une issue (mot-clé de fermeture) : le propriétaire merge"
           fi
 
           # 3. Tous les contrôles du dernier commit, terminés et verts.

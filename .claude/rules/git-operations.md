@@ -38,6 +38,14 @@ non-zéro dès qu'un check échoue.
   sur `main`.
 - **Aucune branche ne survit à sa PR** (`--delete-branch`). Une branche qui
   traîne signale une story non clôturée : le dire.
+- **Aucun mot-clé de fermeture** (`Fixes #12`, `Closes #12`, `Resolves #12`)
+  dans un commit ou une PR : au merge, GitHub fermerait l'issue, et l'alarme de
+  merge en est une. Écrire `réf. #12`. Le hook le refuse ; en mode organisation,
+  le robot de fusion laisse la PR au propriétaire.
+- **Ni `rm` ni `mv` sur l'état local** que git ne suit pas (`.socle/`, `.git`,
+  `.env`, `.claude/settings.local.json`), **ni `git clean -x`** : rien ne les
+  rend. `.socle/` tient les strikes et le verdict de revue ; l'effacer rouvrirait
+  ce que le scorer ferme.
 - Les MCP d'écriture GitHub (`push_files`, `create_pull_request`) ne sont pas
   utilisés ici : ils permettraient de pousser sans passer par la suite de tests
   locale, ce que la PR est précisément censée empêcher. Le CLI `gh`, après les
