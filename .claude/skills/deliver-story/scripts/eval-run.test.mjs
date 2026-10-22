@@ -137,6 +137,19 @@ test('arbre de travail inchangé entre deux essais : identiqueA pointe le premie
   assert.match(out, /IDENTIQUE à l'essai 1/)
 })
 
+test('un fichier nouveau, non suivi, qui change entre deux essais : pas IDENTIQUE', () => {
+  const dir = depot()
+  fs.writeFileSync(path.join(dir, 'nouveau.js'), 'export const total = () => 0\n')
+  lancer(dir, ['attempt', 'US-102', '--hypothesis', 'H1'])
+  fs.writeFileSync(path.join(dir, 'nouveau.js'), 'export const total = () => 120\n')
+  const { out } = lancer(dir, ['attempt', 'US-102', '--hypothesis', 'H1'])
+  assert.equal(essai(dir, 'US-102', 2).identiqueA, null)
+  assert.doesNotMatch(out, /IDENTIQUE/)
+  const r = lancer(dir, ['attempt', 'US-102', '--hypothesis', 'H1'])
+  assert.equal(essai(dir, 'US-102', 3).identiqueA, 2)          // relancé sans rien changer : signalé
+  assert.match(r.out, /IDENTIQUE à l'essai 2/)
+})
+
 test('même erreur deux fois : la signature est stable et le strike monte', () => {
   const dir = depot()
   const rouge = 'echo "Error: undefined method at line 42"; exit 1'

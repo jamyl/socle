@@ -248,7 +248,13 @@ function empreinteDiff (racine) {
   // .gitignore du template, mais l'empreinte ne doit pas en dépendre : un projet
   // qui adopte la méthode peut avoir oublié la ligne.
   const nouveaux = spawnSync('git', ['ls-files', '--others', '--exclude-standard', '-x', '.socle/'], { cwd: racine, encoding: 'utf8' })
-  return createHash('sha256').update(`${diff.stdout ?? ''}\n${nouveaux.stdout ?? ''}`).digest('hex').slice(0, 16)
+  // Le contenu des fichiers non suivis, pas seulement leur nom : `git diff HEAD`
+  // ne les voit pas, et en TDD presque tout est d'abord un fichier nouveau.
+  // Sans lui, modifier un fichier nouveau passait pour « rien n'a changé ».
+  const contenus = nouveaux.stdout?.trim()
+    ? spawnSync('git', ['hash-object', '--stdin-paths'], { cwd: racine, encoding: 'utf8', input: nouveaux.stdout }).stdout
+    : ''
+  return createHash('sha256').update(`${diff.stdout ?? ''}\n${nouveaux.stdout ?? ''}\n${contenus ?? ''}`).digest('hex').slice(0, 16)
 }
 
 function head (racine) {
