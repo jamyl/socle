@@ -78,7 +78,18 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
   travail directement sur `main`.
 - Plan bref (3-5 lignes) en début d'itération : **l'approche retenue et
   l'alternative la plus proche**, en une ligne chacune. Puis TDD : pour chaque
-  critère d'acceptation, test qui échoue → code → vert.
+  critère d'acceptation, test qui échoue → code → vert. Le test écrit, et
+  avant le code :
+
+  ```bash
+  ${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs rouge US-XXX
+  ```
+
+  Il lance la suite, refuse si elle est verte, et fige les fichiers de test
+  modifiés depuis `main`. Ajouter un cas reste permis. Une ligne figée qui
+  change ou disparaît est signalée par `attempt`, et par `retro`, donc dans le
+  corps de la PR. La garde de la CI ne voit que les tests déjà sur `main` :
+  celui-ci, écrit dans la story, n'a que ce filet.
 - **Conseiller configuré** (`/advisor`, voir `docs/engineering/models.md`) :
   consulte-le à trois moments, pas plus. D'abord quand le plan est figé, ensuite au
   deuxième strike d'une hypothèse, enfin avant d'ouvrir la PR. Sans conseiller,

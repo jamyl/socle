@@ -75,7 +75,9 @@ Un test ne se contourne pas. Interdits, sans exception :
   posé sur le test qui gêne.
 - **Modifier un test existant pour le faire passer**, sauf si la story demande
   explicitement ce changement de comportement — et alors c'est un critère
-  d'acceptation, pas un ajustement au passage.
+  d'acceptation, pas un ajustement au passage. Un test écrit dans la story
+  compte aussi : `eval-run.mjs rouge` le fige au moment où il échoue, et la
+  rétrospective montre toute ligne figée qui a changé depuis.
 - **Supprimer un test.** Un test devenu faux se journalise et fait l'objet d'une
   décision dans `docs/backlog/DECISIONS.md` ; il ne disparaît pas d'un commit.
 - **Asserter sur une valeur mockée** produite par le code sous test, ou comparer
