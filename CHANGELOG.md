@@ -9,6 +9,13 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Une classe pour chaque pièce** de `fiabilite-des-agents.md` : **refuse**,
+  **refuse la forme écrite**, **détecte** ou **conseille**, avec le vocabulaire
+  de CYPRESS. Une pièce qui tient différemment en mode organisation et en mode
+  personnel porte les deux classes, et se juge à la plus faible. La colonne
+  « pourquoi l'agent ne peut pas la contourner » devient « ce qui la tient, et
+  ce qui lui échappe » : elle promettait un verrou là où il n'y a qu'un
+  conseil.
 - **`eval-run.mjs rouge` : le test vu échouer, figé jusqu'au merge.** Idée
   empruntée à CYPRESS. La garde de la CI protège les tests déjà sur `main`,
   mais un test écrit dans la PR puis affaibli pour passer au vert lui
