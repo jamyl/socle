@@ -15,7 +15,8 @@ D'où la règle de ce dépôt : **les machines décident, l'IA conseille.**
 ```
 L'agent écrit            compte agent séparé, sans droit sur .github/workflows
    ↓
-CI GitHub, sans IA       tests, analyse statique, garde des tests, mutation   → DÉCIDE
+CI GitHub, sans IA       tests, analyse statique, garde des tests, mutation,  → DÉCIDE
+                         transitions du backlog
    ↓
 review-story             relecteurs à l'aveugle, grille, verdict MERGE|HUMAIN  → CONSEILLE
    ↓
@@ -30,6 +31,7 @@ Alarme de merge          issue si un contrôle n'était pas vert                
 |---|---|---|
 | Compte agent séparé | `.claude/settings.local.json` (non commité), voir `config-locale.md` | Son jeton n'a pas la portée `workflow` : GitHub refuse tout push qui touche `.github/workflows/` |
 | Garde des tests | `.github/workflows/integrite.yml` | Logique écrite dans le workflow ; motifs par stack lus sur la **base** de la PR (`.github/integrite.d/`). Rouge si : test supprimé, contournement ajouté, assertion existante modifiée ou retirée, nombre de tests en baisse, fichier de règles modifié |
+| Transitions du backlog | job `backlog` de `.github/workflows/integrite.yml`, script `backlog.mjs` | Script lu sur la **base**, dans un dossier que `coeur.conf` protège. Rouge si une PR passe à `fait` une autre story que la sienne, rouvre ou supprime un `fait`, ou laisse une story touchée incohérente (statut inconnu, `bloqué` sans motif, dépendance absente, critère ouvert sur un `fait`) |
 | Mutation | job `mutation` de `backend.yml` (module `stack-laravel`) | Classes modifiées des dossiers sensibles ; seuil lu sur la base, qui ne se baisse jamais |
 | Verdict de revue | `.claude/workflows/review-story.js`, `eval-run.mjs verdict` | Relecteurs en lecture seule, qui ne voient ni la PR, ni les commits, ni l'avis de l'auteur ; grille et verdict **calculés en code** ; un seul verdict par commit. **C'est un conseil, pas un verrou** : l'agent lance la revue lui-même |
 | Garde du merge | `.claude/hooks/guard-bash.mjs` | Refuse `gh pr merge` sans verdict `MERGE` pour le commit relu, un mot-clé de fermeture dans un commit ou une PR, et l'effacement de `.socle/`, qui tient les strikes et le verdict. Rattrape l'oubli, pas la triche : un hook lit la commande telle qu'elle est écrite |

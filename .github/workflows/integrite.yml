@@ -13,6 +13,10 @@ name: Intégrité
 # qu'elle subit. Modifier ces fichiers est lui-même une raison de demander un
 # humain (règle 5, via `coeur.conf`).
 #
+# Le job `backlog` applique la même méthode aux statuts : seule la PR d'une
+# story la passe à `fait`, et un `fait` ne revient pas en arrière
+# (`.claude/skills/deliver-story/scripts/backlog.mjs`, lu sur la base).
+#
 # Une garde rouge n'est pas une accusation. Modifier une assertion est parfois
 # légitime, quand la story change le comportement attendu : c'est alors le
 # propriétaire qui merge.
@@ -113,3 +117,42 @@ jobs:
             exit 1
           fi
           echo "Garde des tests : rien de supprimé, sauté ni affaibli."
+
+  backlog:
+    name: Backlog (transitions de statut)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Le script vient de la BASE, comme les règles de la garde : une PR ne
+      # change pas la règle qu'elle subit (il vit dans un dossier que
+      # `coeur.conf` protège). Le backlog de la base et celui de la tête sont
+      # extraits côte à côte, et le script compare les deux.
+      - name: Comparer les statuts à la base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BRANCHE: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          if git cat-file -e "$BASE:.github/workflows/template.yml" 2>/dev/null; then
+            echo "::notice::Dépôt gabarit : le contrôle du backlog s'applique aux projets engendrés, pas ici."
+            exit 0
+          fi
+          script=.claude/skills/deliver-story/scripts/backlog.mjs
+          if ! git cat-file -e "$BASE:$script" 2>/dev/null; then
+            echo "::notice::$script absent de la base : rien à contrôler."
+            exit 0
+          fi
+          extraire() {
+            mkdir -p "$2/docs/backlog"
+            if git cat-file -e "$1:docs/backlog" 2>/dev/null; then git archive "$1" docs/backlog | tar -x -C "$2"; fi
+          }
+          extraire "$BASE" "$RUNNER_TEMP/avant"
+          extraire "$HEAD_SHA" "$RUNNER_TEMP/apres"
+          git show "$BASE:$script" > "$RUNNER_TEMP/backlog.mjs"
+          node "$RUNNER_TEMP/backlog.mjs" check --dossier "$RUNNER_TEMP/apres/docs/backlog" \
+            --avant "$RUNNER_TEMP/avant/docs/backlog" --branche "$BRANCHE"

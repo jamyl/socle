@@ -17,7 +17,13 @@ Cadrage : [../product/vision.md](../product/vision.md).
 
 **Statuts** : `à faire` → `en cours` → `fait`, ou `bloqué (motif précis)` quand
 une action externe est attendue. Mise à jour directement dans les fichiers
-d'epic. Le fil des livraisons est tenu dans [JOURNAL.md](JOURNAL.md) — une ligne
+d'epic. Un dernier état ne s'écrit pas, il se lit : une story dont une PR est
+ouverte est **en revue**, et `/deliver-story` la saute.
+
+Deux règles sur `fait`, vérifiées par la CI (job « Backlog (transitions de
+statut) », script `.claude/skills/deliver-story/scripts/backlog.mjs`) : seule
+la PR de la story la passe à `fait`, et un `fait` est définitif. Un
+comportement à changer s'écrit dans une nouvelle story. Le fil des livraisons est tenu dans [JOURNAL.md](JOURNAL.md) — une ligne
 par story, écrite par `/deliver-story`. Les choix tranchés sans arbitrage humain
 sont dans [DECISIONS.md](DECISIONS.md), à relire en fin de cycle.
 

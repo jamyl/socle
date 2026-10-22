@@ -62,6 +62,9 @@ jobs:
       - name: Banc de tests des hooks
         run: node --test .claude/hooks/hooks.test.mjs
 
+      - name: Banc de tests de la machine à états du backlog
+        run: node --test .claude/skills/deliver-story/scripts/backlog.test.mjs
+
       - name: Générateur de tokens du module frontend-web
         run: |
           node --test modules/frontend-web/design/build-tokens.test.mjs
@@ -150,6 +153,7 @@ jobs:
           cd "$RUNNER_TEMP/p"
           for p in .github/scan-secrets.sh \
                    .claude/skills/deliver-story/scripts/eval-run.mjs \
+                   .claude/skills/deliver-story/scripts/backlog.mjs \
                    .claude/rules/exploration-policy.md \
                    .claude/hooks/guard-bash.mjs \
                    .claude/hooks/stop-gate.mjs \
@@ -163,6 +167,8 @@ jobs:
             || { echo '::error::scan-secrets.sh perd son bit d exécution à l amorçage'; exit 1; }
           [ -x .claude/skills/deliver-story/scripts/eval-run.mjs ] \
             || { echo '::error::eval-run.mjs perd son bit d exécution à l amorçage'; exit 1; }
+          [ -x .claude/skills/deliver-story/scripts/backlog.mjs ] \
+            || { echo '::error::backlog.mjs perd son bit d exécution à l amorçage'; exit 1; }
           ./.github/scan-secrets.sh
           python3 -c "import yaml; yaml.safe_load(open('.github/workflows/integrite.yml')); print('integrite.yml: yaml ok')"
           python3 -c "import yaml; yaml.safe_load(open('.github/workflows/alarme-merge.yml')); print('alarme-merge.yml: yaml ok')"

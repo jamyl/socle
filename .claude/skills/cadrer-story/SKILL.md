@@ -169,13 +169,15 @@ La checklist d'entrée au backlog vit dans `docs/backlog/README.md`, section
 « Checklist d'entrée au backlog ». Passe-la sur chaque story. **Une story qui
 échoue à un item ne s'écrit pas** : corrige-la d'abord.
 
-Trois contrôles se font en commande, pas à l'œil :
+Deux contrôles se font en commande, pas à l'œil :
 
 ```bash
-grep -n "Dépend de" docs/backlog/E0X-*.md     # les cibles existent-elles ?
-grep -n "Statut" docs/backlog/E0X-*.md         # une dépendance déjà `fait` ?
-grep -c "Quand " docs/backlog/E0X-*.md         # autant que de critères créés
+.claude/skills/deliver-story/scripts/backlog.mjs check   # statuts valides, dépendances qui existent
+grep -c "Quand " docs/backlog/E0X-*.md                   # autant que de critères créés
 ```
+
+Le premier sort en code 1 sur la moindre incohérence, et la CI le rejoue sur la
+PR.
 
 ## 5. Priorité et ordre
 
