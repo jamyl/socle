@@ -69,7 +69,8 @@ question ouverte comme les autres.
 une décision `D<n>` — le numéro suivant du journal — appliquée, et **une ligne
 dans `docs/backlog/DECISIONS.md`** au format du fichier : numéro, date, story,
 question, ce qui est retenu en gras, l'alternative écartée, le coût du
-revirement. Marque `🔴` toute décision qui touche le domaine critique déclaré
+revirement, et la colonne `Validée` laissée vide : seul le propriétaire la
+remplit. Marque `🔴` toute décision qui touche le domaine critique déclaré
 dans `CLAUDE.md` — celui qui porte les règles les plus chères à violer.
 
 C'est ce qui permet au cadrage de tourner sans t'arrêter, y compris sous `/loop` :

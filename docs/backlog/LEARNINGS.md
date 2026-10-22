@@ -24,5 +24,16 @@ Une ligne par leçon, la plus récente en bas. La leçon est **à l'impératif**
 
 `- [YYYY-MM-DD] <leçon> — source : <retro US-XXX | recette | revue PR #n>`
 
+## Péremption
+
+Une leçon vieillit quand son objet disparaît : la commande, le module ou
+l'écran dont elle parle n'existe plus. Elle ne s'efface pas, elle se raye, avec
+la date et la raison :
+
+`- ~~[2026-03-02] ne pas X~~ — périmée le 2026-06-10 : le module Y est retiré`
+
+L'historique reste lisible, et la leçon rayée ne se lit plus comme une règle.
+La relecture se fait à la clôture de chaque epic (`/deliver-story` §5).
+
 ## Leçons
 
