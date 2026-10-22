@@ -9,6 +9,15 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **La machine à états du backlog, vérifiée en CI**
+  (`.claude/skills/deliver-story/scripts/backlog.mjs`, job « Backlog
+  (transitions de statut) » d'`integrite.yml`). Seule la PR d'une story la
+  passe à `fait`, et un `fait` ne revient pas en arrière. Une story touchée doit
+  avoir un statut connu, un motif si elle est `bloqué`, des dépendances qui
+  existent, et aucun critère ouvert si elle est `fait`. Le script est lu sur la
+  base. `/cadrer-story` l'utilise à la place de deux `grep`. `/deliver-story`
+  saute une story **en revue** : une PR ouverte porte sa branche. Avant, la
+  boucle reprenait une story dont la PR attendait le propriétaire.
 - **Deux refus de plus dans `guard-bash.mjs`.** Un mot-clé de fermeture
   (`Fixes #12`) dans un commit ou une PR : au merge, GitHub fermerait l'issue,
   et l'alarme de merge en est une. Le robot `fusion.yml` laisse aussi une telle

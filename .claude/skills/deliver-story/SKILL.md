@@ -1,7 +1,7 @@
 ---
 name: deliver-story
 description: Livre la prochaine user story actionnable du backlog (docs/backlog/) en TDD, met à jour son statut et le journal de bord. Une story par exécution — conçu pour tourner en boucle via /loop.
-allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs *)
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/eval-run.mjs *), Bash(${CLAUDE_SKILL_DIR}/scripts/backlog.mjs *)
 ---
 
 # Livrer la prochaine story du backlog
@@ -21,7 +21,17 @@ suppose aucun contexte d'une itération précédente hors de ces fichiers.
 2. La **source unique d'ordonnancement est le graphe des dépendances** (« Dépend
    de » de chaque story), pas une liste figée. Balaie **tous** les epics dans
    l'ordre indicatif de la roadmap `docs/backlog/README.md` et prends la
-   **première story `à faire` dont toutes les dépendances sont `fait`**. La roadmap
+   **première story `à faire` dont toutes les dépendances sont `fait`**, et qui
+   n'est pas **en revue**. Une story est en revue quand une PR ouverte porte sa
+   branche (`us-xxx-*`) : elle attend la CI ou le propriétaire, et la reprendre
+   referait le travail. Ce statut ne s'écrit pas, il se lit :
+
+   ```bash
+   gh pr list --state open --json headRefName --jq '.[].headRefName'   # -R <org>/<dépôt> en mode organisation
+   ```
+
+   Si `gh` ne répond pas, dis-le et ne livre rien : sans cette liste, tu ne
+   sais pas ce qui est déjà livré. La roadmap
    n'est qu'un ordre de préférence : une story dont une dépendance vit dans un epic
    plus loin est simplement sautée puis redevient candidate quand sa dépendance est
    livrée — aucune exception codée en dur n'est nécessaire.
@@ -278,7 +288,10 @@ rien.
 ## 5. Clôture — par pull request
 
 - Statut de la story → `fait` dans le fichier d'epic ; tout écart entre le livré
-  et le prévu est noté sous la story.
+  et le prévu est noté sous la story. Puis
+  `${CLAUDE_SKILL_DIR}/scripts/backlog.mjs check` : aucun critère ouvert, aucune
+  dépendance qui ne soit pas `fait`. La CI rejoue ce contrôle sur la PR, et
+  vérifie en plus que seule ta story passe à `fait`.
 - **Rétrospective**, avant d'écrire la ligne de journal :
 
   ```bash
@@ -416,5 +429,6 @@ Termine donc par une courte section, en langage simple et sans jargon :
 ## 7. Condition d'arrêt de la boucle
 
 S'il ne reste **aucune** story actionnable **dans le périmètre demandé** (tout est
-`fait` ou `bloqué`), n'implémente rien et termine par exactement cette ligne :
-`BACKLOG ÉPUISÉ — ARRÊTER LA BOUCLE` suivie de la liste des blocages en attente.
+`fait`, `bloqué` ou en revue), n'implémente rien et termine par exactement cette
+ligne : `BACKLOG ÉPUISÉ — ARRÊTER LA BOUCLE` suivie de la liste des blocages en
+attente, et des PR qui attendent le propriétaire.
