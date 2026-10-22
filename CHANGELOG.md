@@ -246,6 +246,12 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   scorer d'essais en a besoin sur chaque story.
 
 ### Corrigé
+- **`eval-run.mjs` : « arbre de travail IDENTIQUE » à tort.** L'empreinte ne
+  prenait que le nom des fichiers non suivis, pas leur contenu. En TDD,
+  presque tout est d'abord un fichier nouveau : le modifier entre deux essais
+  faisait dire au script que rien n'avait changé. Le contenu est maintenant
+  haché, en un appel `git hash-object --stdin-paths`. Trouvé par un test de
+  `rouge`.
 - Un projet engendré s'ouvrait sur le README de socle, avec un lien vers une
   vidéo que l'amorçage venait de supprimer. `bootstrap.sh` écrit désormais un
   README minimal à deux trous, `{{PROJET}}` et `{{BUT}}`, et la CI le vérifie.
