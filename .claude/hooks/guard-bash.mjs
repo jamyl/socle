@@ -19,7 +19,11 @@
 //   6. aucun `rm` ni `mv` sur l'état local que git ne suit pas (`.socle/`,
 //      `.git`, `.env`, `.claude/settings.local.json`), aucun `git clean -x`.
 //      `.socle/` tient les strikes et le verdict : l'effacer remettrait les
-//      deux strikes à zéro et rouvrirait une seconde revue sur le même commit.
+//      deux strikes à zéro et rouvrirait une seconde revue sur le même commit ;
+//   7. aucun nom de `.socle/interdits.txt` dans un commit (message et diff
+//      ajouté) ni dans une PR : une liste locale, que git ignore ;
+//   8. aucune commande qui ne rend jamais la main (`gh run watch` sans run,
+//      `docker compose up` sans `-d`, `logs -f`, `tail -f`), sauf bornée.
 //
 // Code 2 = refus : Claude Code annule la commande et montre stderr à l'agent.
 //
@@ -57,6 +61,58 @@ function texte () {
   const fichier = /(?:--body-file|--file|-F)[= ]+['"]?([^\s'"]+)/.exec(brut)?.[1]
   const chemin = fichier && path.resolve(cwd, fichier)
   return brut + (chemin && fs.existsSync(chemin) ? fs.readFileSync(chemin, 'utf8') : '')
+}
+
+// Les noms qui ne doivent jamais être publiés : un projet source, un client.
+// La liste est locale (`.socle/` est ignoré par git) : commitée, elle
+// publierait elle-même ce qu'elle protège. Un terme par ligne, `#` commente.
+function nomInterdit (textes) {
+  const f = path.join(racine, '.socle/interdits.txt')
+  if (!fs.existsSync(f)) return null
+  const termes = fs.readFileSync(f, 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
+  for (const t of termes) {
+    const re = new RegExp(`(?<![\\p{L}\\p{N}])${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'iu')
+    for (const [ou, contenu] of textes) {
+      const ligne = contenu.split('\n').find((l) => re.test(l))
+      if (ligne !== undefined) return { t, ou, ligne: ligne.trim().slice(0, 120) }
+    }
+  }
+  return null
+}
+
+// Les lignes ajoutées d'un diff, fichier par fichier.
+function ajouts (args) {
+  const parFichier = new Map()
+  let f = null
+  for (const l of (git(racine, ['diff', ...args, '-U0', '--no-color']) ?? '').split('\n')) {
+    if (l.startsWith('+++ ')) f = l.slice(4).replace(/^b\//, '')
+    else if (l.startsWith('+') && f) parFichier.set(f, (parFichier.get(f) ?? '') + l.slice(1) + '\n')
+  }
+  return [...parFichier]
+}
+
+// Une commande qui ne rend jamais la main coûte, dans une boucle sans
+// surveillance, le délai d'expiration de l'outil, puis revient au tour
+// suivant. Bornée par `timeout`, un `&` final ou `run_in_background`, elle passe.
+function sansFin (mots) {
+  if (mots[0] === 'timeout' || mots.includes('&')) return null
+  const apres = (mot) => mots.slice(mots.indexOf(mot) + 1)
+  const g = mots.indexOf('gh')
+  if (g >= 0 && mots[g + 1] === 'run' && mots[g + 2] === 'watch' && !mots.slice(g + 3).some((a) => /^\d+$/.test(a))) {
+    return '`gh run watch` sans numéro de run demande lequel, et attend une réponse. Utilise `gh pr checks --watch --fail-fast`.'
+  }
+  if (mots.includes('docker') || mots.includes('docker-compose')) {
+    if (mots.includes('up') && !apres('up').some((a) => a === '--detach' || a === '--wait' || /^-[a-zA-Z]*d/.test(a))) {
+      return '`docker compose up` sans `-d` garde le terminal tant que les conteneurs tournent. Utilise `docker compose up -d`, puis `logs --tail 50`.'
+    }
+    if (mots.includes('logs') && apres('logs').some((a) => a.startsWith('--follow') || /^-[a-zA-Z]*f/.test(a))) {
+      return '`logs -f` suit le journal sans fin. Utilise `--tail 50`.'
+    }
+  }
+  if (mots.includes('tail') && apres('tail').some((a) => a.startsWith('--follow') || /^-[a-zA-Z]*[fF]/.test(a))) {
+    return '`tail -f` suit le fichier sans fin. Utilise `tail -n 50`.'
+  }
+  return null
 }
 
 function cibleProtegee (mots) {
@@ -98,6 +154,9 @@ function verifierPush (args) {
 }
 
 for (const mots of segments) {
+  const fin = entree.tool_input?.run_in_background ? null : sansFin(mots)
+  if (fin) refuser(`⛔ commande sans fin : ${fin}\n   Ou borne-la (\`timeout 60 …\`), ou lance-la en arrière-plan.`)
+
   const push = sousCommande(mots, 'push')
   if (push) verifierPush(push)
 
@@ -118,7 +177,20 @@ for (const mots of segments) {
   }
 
   const g = mots.indexOf('gh')
-  if (sousCommande(mots, 'commit') || (g >= 0 && mots[g + 1] === 'pr' && ['create', 'edit'].includes(mots[g + 2]))) {
+  const commit = sousCommande(mots, 'commit')
+  if (commit || (g >= 0 && mots[g + 1] === 'pr' && ['create', 'edit', 'comment'].includes(mots[g + 2]))) {
+    const textes = [['le message', texte()]]
+    if (commit) {
+      textes.push(...ajouts(['--cached']))
+      if (commit.some((a) => a === '--all' || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(a))) textes.push(...ajouts([]))
+    }
+    const n = nomInterdit(textes)
+    if (n) {
+      refuser(`⛔ nom interdit « ${n.t} » dans ${n.ou} : ${n.ligne}\n` +
+        '   Liste locale : .socle/interdits.txt. Reformule de façon générique (« un projet réel », « la source »).')
+    }
+  }
+  if (commit || (g >= 0 && mots[g + 1] === 'pr' && ['create', 'edit'].includes(mots[g + 2]))) {
     const m = FERMETURE.exec(texte())
     if (m) {
       refuser(`⛔ mot-clé de fermeture refusé (« ${m[0]} ») : au merge, GitHub fermerait l'issue, et l'alarme de merge en est une.\n` +

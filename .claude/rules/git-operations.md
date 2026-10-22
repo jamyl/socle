@@ -25,7 +25,8 @@ En mode organisation, l'agent n'a que la lecture : il pousse dans sa copie (remo
 `gh run watch` **ne convient pas ici** : il exige un `<run-id>` en argument et le
 demande de façon interactive quand il manque — donc il bloque dans une boucle
 `/loop`. `gh pr checks` résout le run depuis la branche courante et sort en
-non-zéro dès qu'un check échoue.
+non-zéro dès qu'un check échoue. `guard-bash.mjs` refuse `gh run watch` sans
+numéro, comme `docker compose up` sans `-d`, `logs -f` et `tail -f`.
 
 ## Interdits
 

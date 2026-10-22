@@ -222,6 +222,68 @@ test('rm et git clean ailleurs passent', () => {
   }
 })
 
+// --- guard-bash : noms interdits
+
+function listeInterdits (dir) {
+  fs.mkdirSync(path.join(dir, '.socle'), { recursive: true })
+  fs.writeFileSync(path.join(dir, '.socle/interdits.txt'), '# un terme par ligne\nAcmeCorp\nprojet-x\n')
+}
+
+function indexer (dir, f, contenu) {
+  fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true })
+  fs.writeFileSync(path.join(dir, f), contenu)
+  spawnSync('git', ['add', f], { cwd: dir })
+}
+
+test('nom interdit refusé dans le message, le diff indexé, le diff de -a, et une PR', () => {
+  const dir = depot('docs-x')
+  listeInterdits(dir)
+  let r = bash(dir, 'git commit -m "port depuis acmecorp"')
+  assert.equal(r.code, 2)
+  assert.match(r.err, /nom interdit « AcmeCorp » dans le message/)
+  assert.equal(bash(dir, 'gh pr create --title t --body "comme dans projet-x"').code, 2)
+  assert.equal(bash(dir, 'gh pr comment --body "vu sur AcmeCorp"').code, 2)
+  indexer(dir, 'docs/a.md', 'titre\nvoir AcmeCorp\n')
+  r = bash(dir, 'git commit -m "docs: a"')
+  assert.equal(r.code, 2)
+  assert.match(r.err, /dans docs\/a\.md : voir AcmeCorp/)
+})
+
+test('nom interdit : seul ce qui part dans le commit compte, mot entier, et rien sans liste', () => {
+  const dir = depot('docs-x')
+  listeInterdits(dir)
+  indexer(dir, 'suivi.md', 'propre\n')
+  spawnSync('git', ['-c', 'user.email=t@t.invalid', '-c', 'user.name=T', 'commit', '-qm', 'suivi'], { cwd: dir })
+  fs.writeFileSync(path.join(dir, 'suivi.md'), 'propre\nAcmeCorp\n')       // modifié, pas indexé
+  assert.equal(bash(dir, 'git commit -m "docs: autre"').code, 0)
+  assert.equal(bash(dir, 'git commit -am "docs: tout"').code, 2)
+  assert.equal(bash(dir, 'git commit -m "AcmeCorporation est un autre nom"').code, 0)
+  assert.equal(bash(depot('docs-y'), 'git commit -m "port depuis AcmeCorp"').code, 0)
+})
+
+// --- guard-bash : commandes sans fin
+
+test('commande sans fin refusée', () => {
+  const dir = depot('us-101-x')
+  for (const c of ['gh run watch', 'gh run watch --exit-status', 'docker compose up', 'docker compose -f x.yml up',
+    'docker-compose up api', 'docker compose logs -f api', 'docker logs --follow c', 'tail -f storage/logs/laravel.log',
+    'tail -F x', 'ls && tail -f x', 'docker compose logs -f | grep erreur']) {
+    const r = bash(dir, c)
+    assert.equal(r.code, 2, c)
+    assert.match(r.err, /commande sans fin/, c)
+  }
+})
+
+test('commande bornée, détachée ou en arrière-plan acceptée', () => {
+  const dir = depot('us-101-x')
+  for (const c of ['gh run watch 123', 'gh pr checks --watch --fail-fast', 'docker compose up -d', 'docker compose up --wait',
+    'docker compose -f x.yml logs --tail 50', 'tail -n 50 x', 'timeout 60 tail -f x', 'docker compose up &',
+    'docker compose -f x.yml ps', 'git commit -m "tail -f et docker compose up"']) {
+    assert.equal(bash(dir, c).code, 0, c)
+  }
+  assert.equal(hook('guard-bash.mjs', dir, { tool_input: { command: 'docker compose up', run_in_background: true } }).code, 0)
+})
+
 // --- stop-gate
 
 const stop = (dir, entree = {}, env = { SOCLE_STOP_GATE: '1' }) => hook('stop-gate.mjs', dir, entree, env)

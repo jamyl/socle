@@ -24,6 +24,7 @@ Ces entrées sont déjà dans le `.gitignore` du template :
 | `.claude/settings.local.json` | Tes surcharges personnelles de permissions | Tu peux vouloir autoriser chez toi ce que le projet laisse en confirmation. Ça ne regarde que ta machine |
 | `.claude/scheduled_tasks.json` et `.lock` | L'état des boucles `/loop` en cours | Une boucle appartient à la session qui l'a lancée. Commiter son état ferait croire à un autre poste qu'une boucle tourne |
 | `.socle/runs/` | Le cache d'essais de `/deliver-story` : un fichier par tentative | C'est le **chemin** d'une story, pas son résultat. Le résultat vit dans la PR et dans `JOURNAL.md`. Le cache porte des sorties de commandes brutes, donc des chemins de ta machine et des extraits de journaux |
+| `.socle/interdits.txt` | Les noms qui ne doivent jamais être publiés : un projet source, un client, une personne. Un terme par ligne, `#` commente. `guard-bash.mjs` refuse un commit, une PR ou un commentaire de PR qui en contient un, en mot entier et sans tenir compte de la casse | Commitée, la liste publierait elle-même ce qu'elle protège. Sans elle, le contrôle ne fait rien |
 | `__pycache__/`, `*.pyc` | Bytecode Python | Propre à la version de l'interpréteur ; périmé pour quiconque clone |
 | `*.bak` | Sauvegardes d'un amorçage interrompu | Elles contiennent la version **avant** substitution, donc les placeholders |
 
@@ -73,7 +74,7 @@ pas pré-approuver `git push` en bloc.
 
 | Hook | Quand | Ce qu'il refuse |
 |---|---|---|
-| `guard-bash.mjs` | avant chaque commande `Bash` | un push vers `main` (toutes les formes que la liste `deny` rate : `HEAD:main`, `-u origin main`, `git push` seul depuis `main`), un push forcé, `--no-verify`, et `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai de `eval-run.mjs` n'est pas vert, et `gh pr create` sur une story dont le corps ne porte pas la rétrospective ni le verdict de revue. Partout : un mot-clé de fermeture (`Fixes #12`) dans un commit ou une PR, un `rm` ou un `mv` sur `.socle/`, `.git`, `.env` ou `.claude/settings.local.json`, et `git clean -x` |
+| `guard-bash.mjs` | avant chaque commande `Bash` | un push vers `main` (toutes les formes que la liste `deny` rate : `HEAD:main`, `-u origin main`, `git push` seul depuis `main`), un push forcé, `--no-verify`, et `gh pr merge` sur une branche `us-XXX-*` dont le dernier essai de `eval-run.mjs` n'est pas vert, et `gh pr create` sur une story dont le corps ne porte pas la rétrospective ni le verdict de revue. Partout : un mot-clé de fermeture (`Fixes #12`) dans un commit ou une PR, un `rm` ou un `mv` sur `.socle/`, `.git`, `.env` ou `.claude/settings.local.json`, et `git clean -x`. Un nom de `.socle/interdits.txt` dans un commit (message, lignes ajoutées) ou une PR. Une commande qui ne rend jamais la main (`gh run watch` sans numéro, `docker compose up` sans `-d`, `logs -f`, `tail -f`), sauf bornée par `timeout`, un `&` ou un lancement en arrière-plan |
 | `stop-gate.mjs` | quand l'agent veut s'arrêter — **seulement si `SOCLE_STOP_GATE=1`** | l'arrêt sur une branche de story avec un dernier essai rouge ou un diff non commité. Une relance par arrêt, pas plus |
 
 Un refus sort en code 2 : Claude Code annule la commande et montre la raison à

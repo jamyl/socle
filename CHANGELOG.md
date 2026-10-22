@@ -9,6 +9,15 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Deux refus de plus dans `guard-bash.mjs`, empruntés à CYPRESS.**
+  - **Une liste locale de noms interdits**, `.socle/interdits.txt`, que git
+    ignore. Un commit (message et lignes ajoutées, celles de `-a` comprises),
+    une PR ou un commentaire de PR qui en contient un est refusé, en mot entier
+    et sans tenir compte de la casse. Sans la liste, le contrôle ne fait rien.
+  - **Les commandes qui ne rendent jamais la main** : `gh run watch` sans
+    numéro, `docker compose up` sans `-d`, `logs -f`, `tail -f`. Elles passent
+    avec `timeout`, un `&` final ou un lancement en arrière-plan. Le piège de
+    `gh run watch` était documenté, il est maintenant tenu.
 - **La validation humaine dans la mémoire du projet.** `DECISIONS.md` gagne une
   colonne `Validée` : l'agent la laisse vide, le propriétaire y écrit sa date.
   `eval-run.mjs retro` et `/cadrer-story` la laissent vide. `LEARNINGS.md` :
