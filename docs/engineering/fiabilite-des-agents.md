@@ -25,19 +25,32 @@ CI verte + MERGE         le robot Fusion merge (l'agent n'a que la lecture) ; si
 Alarme de merge          issue si un contrôle n'était pas vert                 → SIGNALE
 ```
 
-## Les pièces, et pourquoi l'agent ne peut pas les contourner
+## Les pièces, et ce que chacune garantit
 
-| Pièce | Fichier | Pourquoi l'agent ne peut pas la contourner |
-|---|---|---|
-| Compte agent séparé | `.claude/settings.local.json` (non commité), voir `config-locale.md` | Son jeton n'a pas la portée `workflow` : GitHub refuse tout push qui touche `.github/workflows/` |
-| Garde des tests | `.github/workflows/integrite.yml` | Logique écrite dans le workflow ; motifs par stack lus sur la **base** de la PR (`.github/integrite.d/`). Rouge si : test supprimé, contournement ajouté, assertion existante modifiée ou retirée, nombre de tests en baisse, fichier de règles modifié |
-| Transitions du backlog | job `backlog` de `.github/workflows/integrite.yml`, script `backlog.mjs` | Script lu sur la **base**, dans un dossier que `coeur.conf` protège. Rouge si une PR passe à `fait` une autre story que la sienne, rouvre ou supprime un `fait`, ou laisse une story touchée incohérente (statut inconnu, `bloqué` sans motif, dépendance absente, critère ouvert sur un `fait`) |
-| Mutation | job `mutation` de `backend.yml` (module `stack-laravel`) | Classes modifiées des dossiers sensibles ; seuil lu sur la base, qui ne se baisse jamais |
-| Tests figés au rouge | `eval-run.mjs rouge`, `attempt`, `retro` | Le script lance la suite et refuse de figer sur du vert. Une ligne figée qui change est imprimée dans la rétrospective, que le corps de PR porte. **Signale, ne bloque pas** : c'est l'agent qui lance `rouge`, et modifier un test est parfois légitime |
-| Verdict de revue | `.claude/workflows/review-story.js`, `eval-run.mjs verdict` | Relecteurs en lecture seule, qui ne voient ni la PR, ni les commits, ni l'avis de l'auteur ; grille et verdict **calculés en code** ; un seul verdict par commit. **C'est un conseil, pas un verrou** : l'agent lance la revue lui-même |
-| Garde du merge | `.claude/hooks/guard-bash.mjs` | Refuse `gh pr merge` sans verdict `MERGE` pour le commit relu, un mot-clé de fermeture dans un commit ou une PR, l'effacement de `.socle/`, qui tient les strikes et le verdict, un nom de la liste locale `.socle/interdits.txt`, et une commande qui ne rend jamais la main. Rattrape l'oubli, pas la triche : un hook lit la commande telle qu'elle est écrite |
-| Robot de fusion (mode organisation) | `.github/workflows/fusion.yml` | Le compte agent n'a que la lecture et ne peut pas merger. Le robot exécute la version de `main`, ne lit jamais le code de la PR, refuse une PR qui touche `.github/` ou qui ferme une issue (`Fixes #12`), exige tous les contrôles verts, les indispensables présents, et `VERDICT: MERGE <sha>` du compte agent pour ce commit. Il merge avec `--match-head-commit` |
-| Alarme de merge | `.github/workflows/alarme-merge.yml` | Sans GitHub Pro, rien n'empêche un merge sur du rouge : l'alarme le rend visible, par une issue au propriétaire |
+Chaque pièce porte une classe. Le vocabulaire est emprunté à CYPRESS, qui
+classe ainsi chacun de ses contrôles, pour qu'on ne croie pas verrouillé ce qui
+ne fait que conseiller :
+
+- **refuse** : une machine bloque, et l'agent ne passe pas sans un humain ;
+- **refuse la forme écrite** : un hook bloque la commande telle qu'elle est
+  écrite ; une forme détournée (script, indirection) passe ;
+- **détecte** : le problème se voit, mais après coup ;
+- **conseille** : quelqu'un juge, aucune machine ne bloque.
+
+Une pièce qui tient différemment selon le mode porte les deux classes. Elle se
+juge à la plus faible.
+
+| Pièce | Fichier | Classe | Ce qui la tient, et ce qui lui échappe |
+|---|---|---|---|
+| Compte agent séparé | `.claude/settings.local.json` (non commité), voir `config-locale.md` | **refuse** | Son jeton n'a pas la portée `workflow` : GitHub refuse tout push qui touche `.github/workflows/` |
+| Garde des tests | `.github/workflows/integrite.yml` | **refuse** en mode organisation · **détecte** en mode personnel, par l'alarme | Logique écrite dans le workflow ; motifs par stack lus sur la **base** de la PR (`.github/integrite.d/`). Rouge si : test supprimé, contournement ajouté, assertion existante modifiée ou retirée, nombre de tests en baisse, fichier de règles modifié |
+| Transitions du backlog | job `backlog` de `.github/workflows/integrite.yml`, script `backlog.mjs` | **refuse** en mode organisation · **détecte** en mode personnel, par l'alarme | Script lu sur la **base**, dans un dossier que `coeur.conf` protège. Rouge si une PR passe à `fait` une autre story que la sienne, rouvre ou supprime un `fait`, ou laisse une story touchée incohérente (statut inconnu, `bloqué` sans motif, dépendance absente, critère ouvert sur un `fait`) |
+| Mutation | job `mutation` de `backend.yml` (module `stack-laravel`) | **refuse** en mode organisation · **détecte** en mode personnel, par l'alarme | Classes modifiées des dossiers sensibles ; seuil lu sur la base, qui ne se baisse jamais |
+| Tests figés au rouge | `eval-run.mjs rouge`, `attempt`, `retro` | **détecte**, si l'agent a lancé `rouge` | Le script lance la suite et refuse de figer sur du vert. Une ligne figée qui change est imprimée dans la rétrospective, que le corps de PR porte. **Signale, ne bloque pas** : c'est l'agent qui lance `rouge`, et modifier un test est parfois légitime |
+| Verdict de revue | `.claude/workflows/review-story.js`, `eval-run.mjs verdict` | **conseille** | Relecteurs en lecture seule, qui ne voient ni la PR, ni les commits, ni l'avis de l'auteur ; grille et verdict **calculés en code** ; un seul verdict par commit. **C'est un conseil, pas un verrou** : l'agent lance la revue lui-même |
+| Garde du merge | `.claude/hooks/guard-bash.mjs` | **refuse la forme écrite** | Refuse `gh pr merge` sans verdict `MERGE` pour le commit relu, un mot-clé de fermeture dans un commit ou une PR, l'effacement de `.socle/`, qui tient les strikes et le verdict, un nom de la liste locale `.socle/interdits.txt`, et une commande qui ne rend jamais la main. Rattrape l'oubli, pas la triche : un hook lit la commande telle qu'elle est écrite |
+| Robot de fusion (mode organisation) | `.github/workflows/fusion.yml` | **refuse** | Le compte agent n'a que la lecture et ne peut pas merger. Le robot exécute la version de `main`, ne lit jamais le code de la PR, refuse une PR qui touche `.github/` ou qui ferme une issue (`Fixes #12`), exige tous les contrôles verts, les indispensables présents, et `VERDICT: MERGE <sha>` du compte agent pour ce commit. Il merge avec `--match-head-commit` |
+| Alarme de merge | `.github/workflows/alarme-merge.yml` | **détecte** | Sans GitHub Pro, rien n'empêche un merge sur du rouge : l'alarme le rend visible, par une issue au propriétaire |
 
 ## Ce que chaque pièce a montré
 
