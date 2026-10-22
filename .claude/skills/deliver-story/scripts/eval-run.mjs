@@ -16,6 +16,7 @@
 //   eval-run.mjs preflight <US-XXX>
 //   eval-run.mjs retro     <US-XXX>
 //   eval-run.mjs verdict   <US-XXX> --verdict MERGE|HUMAIN
+//   eval-run.mjs rouge     <US-XXX>
 //
 // Codes de sortie de `attempt` : 0 = tout vert · 1 = au moins une dimension
 // rouge · 2 = usage · 3 = REFUSÉ, l'hypothèse a déjà deux strikes.
@@ -30,6 +31,7 @@ const USAGE = `Usage :
   eval-run.mjs preflight <US-XXX>
   eval-run.mjs retro     <US-XXX>
   eval-run.mjs verdict   <US-XXX> --verdict MERGE|HUMAIN
+  eval-run.mjs rouge     <US-XXX>   fige les tests vus rouges
 
 Surcharges de commande (les tests du script, et un projet sans stack.md rempli) :
   --test-cmd <c>  --lint-cmd <c>  --secrets-cmd <c>
@@ -343,6 +345,7 @@ function attempt (racine, story, opts) {
     signature: sig,
     strikes,
     identiqueA: identique ? identique.n : null,
+    rougeModifie: reculs(racine, story).map((r) => r.fichier),
   }
 
   const dir = dossierStory(racine, story)
@@ -369,6 +372,7 @@ function attempt (racine, story, opts) {
     `${pass ? ' — tout vert' : ''}\n` +
     (sig ? `  signature : ${sig.hash} · strikes : ${strikes}\n    ${sig.extrait}\n` : '') +
     (identique ? `  ⚠️ arbre de travail IDENTIQUE à l'essai ${identique.n} : rien n'a changé entre les deux.\n` : '') +
+    (enregistrement.rougeModifie.length ? texteReculs(reculs(racine, story)) : '') +
     `  → DÉCISION : ${decision}\n` +
     (decision === 'pivoter'
       ? `     git restore . puis --abandon "…" et une hypothèse différente (exploration-policy.md §1)\n`
@@ -466,6 +470,12 @@ function retro (racine, story) {
     `  hypothèses abandonnées : ${abandons.length}\n` +
     `  impasses récurrentes   : ${impasses.length}\n`)
 
+  const figes = lireRouge(racine, story)
+  const recul = reculs(racine, story)
+  process.stdout.write(
+    `  tests vus rouges, figés : ${figes ? Object.keys(figes.fichiers).length : 'aucun (eval-run.mjs rouge non lancé)'}\n` +
+    `  tests figés modifiés depuis : ${recul.length}\n` + (recul.length ? texteReculs(recul) : ''))
+
   if (abandons.length) {
     process.stdout.write('\nCe qui a été appris (tel que tu l\'as écrit) :\n')
     for (const e of abandons) process.stdout.write(`  · essai ${e.n} — ${e.abandon}\n`)
@@ -523,6 +533,70 @@ function verdict (racine, story, opts) {
   process.stdout.write(`VERDICT: ${v} — ${story} @ ${tete.slice(0, 7)}\n`)
 }
 
+// --- rouge : le test vu échouer, figé jusqu'au merge.
+// --- La garde de la CI protège les tests qui existent sur la base ; un test
+// --- écrit dans la PR, puis affaibli pour passer au vert, lui échappe. `rouge`
+// --- lance la suite, refuse si elle est verte, et garde le contenu des fichiers
+// --- de test modifiés depuis main. Ajouter un cas reste permis ; une ligne figée
+// --- qui change ou disparaît est signalée par `attempt` et par `retro` — donc
+// --- dans le corps de la PR. Signalée, pas bloquée : modifier un test peut être
+// --- légitime, et c'est au relecteur d'en juger.
+
+const MOTIF_TEST = /(^|\/)(tests?|spec|__tests__|e2e)\/|[._-](test|spec)\.[^/]+$/i
+
+function fichiersDeTest (racine) {
+  const base = ['main', 'origin/main']
+    .map((b) => spawnSync('git', ['merge-base', 'HEAD', b], { cwd: racine, encoding: 'utf8' }))
+    .find((r) => r.status === 0)?.stdout.trim() ?? 'HEAD'
+  const suivis = spawnSync('git', ['diff', '--name-only', base], { cwd: racine, encoding: 'utf8' }).stdout ?? ''
+  const nouveaux = spawnSync('git', ['ls-files', '--others', '--exclude-standard', '-x', '.socle/'], { cwd: racine, encoding: 'utf8' }).stdout ?? ''
+  return [...new Set(`${suivis}\n${nouveaux}`.split('\n'))]
+    .filter((f) => f && MOTIF_TEST.test(f) && fs.existsSync(path.join(racine, f)))
+}
+
+function lireRouge (racine, story) {
+  const f = path.join(dossierStory(racine, story), 'rouge.json')
+  return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null
+}
+
+// Les lignes figées qui ont disparu, fichier par fichier.
+function reculs (racine, story) {
+  const figes = lireRouge(racine, story)
+  if (!figes) return []
+  return Object.entries(figes.fichiers).flatMap(([f, { contenu }]) => {
+    const chemin = path.join(racine, f)
+    if (!fs.existsSync(chemin)) return [{ fichier: f, ligne: '(fichier supprimé)' }]
+    const actuelles = new Set(fs.readFileSync(chemin, 'utf8').split('\n').map((l) => l.trim()))
+    const parties = contenu.split('\n').map((l) => l.trim()).filter((l) => l && !actuelles.has(l))
+    return parties.length ? [{ fichier: f, ligne: parties[0], n: parties.length }] : []
+  })
+}
+
+function texteReculs (liste) {
+  return liste.map((r) => `  ⚠️ test figé au rouge, modifié depuis : ${r.fichier}` +
+    (r.n ? ` — ${r.n} ligne(s) changée(s) ou retirée(s), dont « ${r.ligne.slice(0, 80)} »` : ` ${r.ligne}`)).join('\n') + '\n'
+}
+
+function rouge (racine, story, opts) {
+  const tests = executer(racine, resoudreCommandes(racine, opts).tests)
+  if (tests.statut === 'skipped') sortir(2, `✗ suite de tests non mesurée (${tests.motif}) : impossible de constater un rouge.`)
+  if (tests.statut === 'vert') sortir(1, `✗ la suite est verte : rien n'échoue, rien à figer. Un test se fige quand on l'a vu échouer.`)
+  const fichiers = fichiersDeTest(racine)
+  if (!fichiers.length) sortir(1, '✗ la suite est rouge, mais aucun fichier de test n\'a changé depuis main : ce rouge n\'est pas le tien.')
+  const figes = lireRouge(racine, story) ?? { fichiers: {} }
+  const nouveaux = fichiers.filter((f) => !figes.fichiers[f])
+  for (const f of nouveaux) {
+    figes.fichiers[f] = { contenu: fs.readFileSync(path.join(racine, f), 'utf8'), date: new Date().toISOString(), head: head(racine) }
+  }
+  fs.mkdirSync(dossierStory(racine, story), { recursive: true })
+  fs.writeFileSync(path.join(dossierStory(racine, story), 'rouge.json'), JSON.stringify(figes, null, 2) + '\n')
+  process.stdout.write(`Rouge constaté (code ${tests.code}) — ${story}\n` +
+    `  figés : ${nouveaux.length ? nouveaux.join(', ') : 'aucun nouveau fichier'}\n` +
+    `  déjà figés, inchangés : ${fichiers.length - nouveaux.length}\n` +
+    (reculs(racine, story).length ? texteReculs(reculs(racine, story)) : '') +
+    '  Ajouter un cas reste permis. Une ligne figée qui change sera signalée jusqu\'au merge.\n')
+}
+
 // --- Point d'entrée
 
 const { opts, positionnels } = lireArgs(process.argv.slice(2))
@@ -534,5 +608,6 @@ switch (sousCommande) {
   case 'preflight': preflight(racine, valider(storyArg)); break
   case 'retro': retro(racine, valider(storyArg)); break
   case 'verdict': verdict(racine, valider(storyArg), opts); break
+  case 'rouge': rouge(racine, valider(storyArg), opts); break
   default: sortir(2, sousCommande ? `✗ sous-commande inconnue : « ${sousCommande} »\n\n${USAGE}` : USAGE)
 }

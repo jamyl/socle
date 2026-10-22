@@ -9,6 +9,13 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **`eval-run.mjs rouge` : le test vu échouer, figé jusqu'au merge.** Idée
+  empruntée à CYPRESS. La garde de la CI protège les tests déjà sur `main`,
+  mais un test écrit dans la PR puis affaibli pour passer au vert lui
+  échappait. `rouge` lance la suite, refuse si elle est verte, et garde le
+  contenu des fichiers de test modifiés. Ajouter un cas reste permis. Une
+  ligne figée qui change ou disparaît est signalée par `attempt` et par
+  `retro`, donc dans le corps de la PR. Elle est signalée, pas bloquée.
 - **Deux refus de plus dans `guard-bash.mjs`, empruntés à CYPRESS.**
   - **Une liste locale de noms interdits**, `.socle/interdits.txt`, que git
     ignore. Un commit (message et lignes ajoutées, celles de `-a` comprises),

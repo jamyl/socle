@@ -385,3 +385,66 @@ test('verdict : refusé sur un arbre modifié, et sur une valeur inconnue', () =
   assert.equal(r.code, 2)
   assert.match(r.out, /commite/)
 })
+
+// --- rouge : le test vu échouer, figé jusqu'au merge.
+
+const ROUGE = ['--test-cmd', 'echo "1 failed"; exit 1']
+
+function ecrire (dir, f, contenu) {
+  fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true })
+  fs.writeFileSync(path.join(dir, f), contenu)
+}
+
+test('rouge refuse une suite verte, une suite non mesurée, et un rouge sans test modifié', () => {
+  const dir = depot()
+  let r = lancer(dir, ['rouge', 'US-201'])
+  assert.equal(r.code, 1)
+  assert.match(r.out, /la suite est verte/)
+  r = lancer(dir, ['rouge', 'US-201', ...ROUGE])
+  assert.equal(r.code, 1)
+  assert.match(r.out, /aucun fichier de test n'a changé/)
+  r = lancer(depot({ testCmd: '' }), ['rouge', 'US-201'])
+  assert.equal(r.code, 2)
+  assert.match(r.out, /non mesurée/)
+  assert.equal(fs.existsSync(path.join(dir, '.socle/runs/US-201/rouge.json')), false)
+})
+
+test('rouge fige le test ; un cas ajouté passe, une assertion affaiblie est signalée par attempt et retro', () => {
+  const dir = depot()
+  ecrire(dir, 'tests/total.test.js', "test('total', () => {\n  expect(total()).toBe(120)\n})\n")
+  let r = lancer(dir, ['rouge', 'US-202', ...ROUGE])
+  assert.equal(r.code, 0, r.out)
+  assert.match(r.out, /figés : tests\/total\.test\.js/)
+  fs.appendFileSync(path.join(dir, 'tests/total.test.js'), "test('remise', () => {\n  expect(remise()).toBe(10)\n})\n")
+  r = lancer(dir, ['attempt', 'US-202', '--hypothesis', 'H1'])
+  assert.doesNotMatch(r.out, /test figé/)
+  assert.deepEqual(essai(dir, 'US-202', 1).rougeModifie, [])
+  ecrire(dir, 'tests/total.test.js', "test('total', () => {\n  expect(total()).toBeDefined()\n})\n")
+  r = lancer(dir, ['attempt', 'US-202', '--hypothesis', 'H1'])
+  assert.match(r.out, /test figé au rouge, modifié depuis : tests\/total\.test\.js — 1 ligne\(s\) changée\(s\) ou retirée\(s\), dont « expect\(total\(\)\)\.toBe\(120\) »/)
+  assert.deepEqual(essai(dir, 'US-202', 2).rougeModifie, ['tests/total.test.js'])
+  r = lancer(dir, ['retro', 'US-202'])
+  assert.match(r.out, /tests vus rouges, figés : 1/)
+  assert.match(r.out, /tests figés modifiés depuis : 1/)
+})
+
+test('un second rouge ne refige pas un test déjà figé, et un fichier supprimé est signalé', () => {
+  const dir = depot()
+  ecrire(dir, 'src/prix.spec.ts', "expect(prix(2)).toBe(40)\n")
+  lancer(dir, ['rouge', 'US-203', ...ROUGE])
+  ecrire(dir, 'src/prix.spec.ts', "expect(prix(2)).toBeTruthy()\n")
+  ecrire(dir, 'tests/autre_test.dart', "expect(autre(), 3);\n")
+  const r = lancer(dir, ['rouge', 'US-203', ...ROUGE])
+  assert.match(r.out, /figés : tests\/autre_test\.dart/)
+  assert.match(r.out, /modifié depuis : src\/prix\.spec\.ts/)
+  fs.rmSync(path.join(dir, 'tests/autre_test.dart'))
+  assert.match(lancer(dir, ['retro', 'US-203']).out, /aucun essai consigné/)
+  lancer(dir, ['attempt', 'US-203', '--hypothesis', 'H1'])
+  assert.match(lancer(dir, ['retro', 'US-203']).out, /tests\/autre_test\.dart \(fichier supprimé\)/)
+})
+
+test('retro dit quand aucun rouge n\'a été figé', () => {
+  const dir = depot()
+  lancer(dir, ['attempt', 'US-204', '--hypothesis', 'H1'])
+  assert.match(lancer(dir, ['retro', 'US-204']).out, /figés : aucun \(eval-run\.mjs rouge non lancé\)/)
+})

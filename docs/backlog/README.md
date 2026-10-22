@@ -108,6 +108,7 @@ règle est citée entre parenthèses.
 2. La commande de test est **passée** et sa sortie réelle rapportée — jamais
    « ça devrait passer ».
 3. Le test a été vu **échouer** : garde retiré, rouge constaté, garde restauré.
+   `eval-run.mjs rouge` en garde la trace, et la rétrospective l'imprime.
 4. Aucune règle de `CLAUDE.md` § « règles qui coûtent le plus cher à violer »
    contournée ; aucune donnée sensible en clair dans les logs.
 5. La spec de l'epic mise à jour si le comportement livré diffère du prévu.
