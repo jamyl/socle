@@ -9,6 +9,13 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
 ## [Non publié]
 
 ### Ajouté
+- **Deux refus de plus dans `guard-bash.mjs`.** Un mot-clé de fermeture
+  (`Fixes #12`) dans un commit ou une PR : au merge, GitHub fermerait l'issue,
+  et l'alarme de merge en est une. Le robot `fusion.yml` laisse aussi une telle
+  PR au propriétaire. Et un `rm`, un `mv` ou un `git clean -x` sur l'état local
+  que git ne suit pas (`.socle/`, `.git`, `.env`,
+  `.claude/settings.local.json`) : effacer `verdict.json` permettait une
+  seconde revue sur le même commit, vérifié avant le correctif.
 - **Robot de fusion, le verrou de merge gratuit** (`.github/workflows/fusion.yml`,
   `config-locale.md`). Dans une organisation GitHub gratuite, le compte agent
   n'a que la lecture : il propose depuis sa copie, et le robot merge. Il

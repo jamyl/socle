@@ -181,6 +181,47 @@ test('gh pr create --body-file : le fichier est lu', () => {
   assert.equal(bash(dir, 'gh pr create --title t --body-file vide.md').code, 2)
 })
 
+// --- guard-bash : mots-clés de fermeture
+
+test('mot-clé de fermeture refusé dans un commit ou une PR, sous toutes ses formes', () => {
+  const dir = depot('docs-x')
+  fs.writeFileSync(path.join(dir, 'msg.txt'), 'docs: x\n\nResolves: #7\n')
+  for (const c of ['git commit -m "Fixes #12"', 'git commit -m "docs: x" -m "closes o/r#3"',
+    'git commit -F msg.txt', "git commit -F - <<'EOF'\ndocs: x\n\nfixed #4\nEOF",
+    'gh pr create --title t --body "Closes https://github.com/o/r/issues/9"', 'gh pr edit 3 --body "resolve #2"']) {
+    const r = bash(dir, c)
+    assert.equal(r.code, 2, c)
+    assert.match(r.err, /réf\. #\d+/, c)
+  }
+})
+
+test('une référence sans mot-clé de fermeture passe', () => {
+  const dir = depot('docs-x')
+  for (const c of ['git commit -m "docs: réf. #12"', 'git commit -m "fix: l\'alarme (#18)"',
+    'git commit -m "prefix #3 du suffixe"', 'gh pr comment --body "Fixes #12 a été écrit à la main"']) {
+    assert.equal(bash(dir, c).code, 0, c)
+  }
+})
+
+// --- guard-bash : état local
+
+test('rm, mv et git clean -x refusés sur l\'état local que git ne suit pas', () => {
+  const dir = depot('us-101-x')
+  for (const c of ['rm -rf .socle', 'rm .socle/runs/US-101/verdict.json', 'rm -rf ./.socle/', 'mv .socle /tmp/x',
+    'sudo rm -rf .git', 'rm .env', 'rm backend/.env.local', 'rm .claude/settings.local.json',
+    'ls && /bin/rm -r .socle/runs', 'git clean -fdx', 'git clean -f -X']) {
+    assert.equal(bash(dir, c).code, 2, c)
+  }
+})
+
+test('rm et git clean ailleurs passent', () => {
+  const dir = depot('us-101-x')
+  for (const c of ['rm -rf build', 'rm .gitignore', 'rm -r .github/old', 'rm .env.example', 'rm .envrc',
+    'git clean -fd', 'git clean -ndx', 'grep -rn rm .socle']) {
+    assert.equal(bash(dir, c).code, 0, c)
+  }
+})
+
 // --- stop-gate
 
 const stop = (dir, entree = {}, env = { SOCLE_STOP_GATE: '1' }) => hook('stop-gate.mjs', dir, entree, env)

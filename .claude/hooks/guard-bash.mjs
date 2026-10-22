@@ -13,7 +13,13 @@
 //      `fusion.yml` en mode organisation) sans ce même verdict consigné ;
 //   4. aucun `gh pr create` sur une telle branche sans ses preuves dans le
 //      corps : la rétrospective de `eval-run.mjs` et le verdict `approuve` de
-//      la revue (`.claude/skills/deliver-story/SKILL.md` §5).
+//      la revue (`.claude/skills/deliver-story/SKILL.md` §5) ;
+//   5. aucun mot-clé de fermeture (`Fixes #12`) dans un commit ou une PR : au
+//      merge, GitHub fermerait l'issue, et l'alarme de merge en est une ;
+//   6. aucun `rm` ni `mv` sur l'état local que git ne suit pas (`.socle/`,
+//      `.git`, `.env`, `.claude/settings.local.json`), aucun `git clean -x`.
+//      `.socle/` tient les strikes et le verdict : l'effacer remettrait les
+//      deux strikes à zéro et rouvrirait une seconde revue sur le même commit.
 //
 // Code 2 = refus : Claude Code annule la commande et montre stderr à l'agent.
 //
@@ -41,6 +47,23 @@ const segments = brut
   .map((s) => s.trim().split(/\s+/).filter(Boolean))
 
 const AVEC_VALEUR = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec'])
+const FERMETURE = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+(?:[\w.-]+\/[\w.-]+#|https?:\/\/\S+\/issues\/|#)\d+/i
+const PROTEGE = /(^|\/)(\.socle|\.git)(\/|$)|(^|\/)\.env(\.(?!example$)[^/]+)?$|(^|\/)\.claude\/settings\.local\.json$/
+const LANCEURS = new Set(['sudo', 'xargs', 'command', 'exec', 'nohup', 'git'])
+
+// Le texte d'un message : la commande (guillemets, heredoc) et le fichier
+// qu'elle désigne (`--body-file`, `-F`, `--file`).
+function texte () {
+  const fichier = /(?:--body-file|--file|-F)[= ]+['"]?([^\s'"]+)/.exec(brut)?.[1]
+  const chemin = fichier && path.resolve(cwd, fichier)
+  return brut + (chemin && fs.existsSync(chemin) ? fs.readFileSync(chemin, 'utf8') : '')
+}
+
+function cibleProtegee (mots) {
+  const i = mots.findIndex((m) => /^(?:\S*\/)?(?:rm|mv|unlink)$/.test(m))
+  if (i < 0 || !mots.slice(0, i).every((m) => LANCEURS.has(m) || m.startsWith('-'))) return null
+  return mots.slice(i + 1).find((a) => PROTEGE.test(a)) ?? null
+}
 
 function sousCommande (mots, nom) {
   const i = mots.indexOf('git')
@@ -83,11 +106,27 @@ for (const mots of segments) {
       '   Règle : .claude/rules/exploration-policy.md §3.')
   }
 
+  const cible = cibleProtegee(mots)
+  if (cible) {
+    refuser(`⛔ ${cible} : état local que git ne suit pas, rien ne le rend. .socle/ tient les essais et le verdict de revue.\n` +
+      '   Règle : .claude/rules/git-operations.md « Interdits ».')
+  }
+  const clean = sousCommande(mots, 'clean')
+  if (clean?.some((a) => /^-[a-zA-Z]*[xX]/.test(a)) && !clean.some((a) => a === '--dry-run' || /^-[a-zA-Z]*n/.test(a))) {
+    refuser('⛔ git clean -x efface aussi les fichiers ignorés : .socle/, .env, .claude/settings.local.json.\n' +
+      '   git clean -fd suffit pour les fichiers non suivis.')
+  }
+
   const g = mots.indexOf('gh')
+  if (sousCommande(mots, 'commit') || (g >= 0 && mots[g + 1] === 'pr' && ['create', 'edit'].includes(mots[g + 2]))) {
+    const m = FERMETURE.exec(texte())
+    if (m) {
+      refuser(`⛔ mot-clé de fermeture refusé (« ${m[0]} ») : au merge, GitHub fermerait l'issue, et l'alarme de merge en est une.\n` +
+        `   Écris « réf. #${/\d+$/.exec(m[0])[0]} ». Règle : .claude/rules/git-operations.md « Interdits ».`)
+    }
+  }
   if (g >= 0 && mots[g + 1] === 'pr' && mots[g + 2] === 'create' && storyDeBranche(branche)) {
-    let corps = brut
-    const fichier = /--body-file[= ]+['"]?([^\s'"]+)/.exec(brut)?.[1]
-    if (fichier && fs.existsSync(path.resolve(cwd, fichier))) corps += fs.readFileSync(path.resolve(cwd, fichier), 'utf8')
+    const corps = texte()
     const manque = [['rétrospective', 'la sortie de eval-run.mjs retro'], ['approuve', 'le verdict approuve de review-story']]
       .filter(([m]) => !corps.includes(m)).map(([, quoi]) => quoi)
     if (manque.length) {
