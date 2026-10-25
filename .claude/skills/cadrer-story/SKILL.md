@@ -2,6 +2,7 @@
 name: cadrer-story
 description: Transforme un requis brut — une phrase, une décision consignée, un finding d'audit, une contrainte reçue d'un tiers — en stories `à faire` prêtes pour /deliver-story : critères en Étant donné/Quand/Alors, décisions consignées, priorité et dépendances posées. Écrit dans un fichier d'epic, ne code jamais.
 argument-hint: "<le requis brut, et l'epic cible si tu le sais>"
+allowed-tools: Bash(.claude/skills/deliver-story/scripts/backlog.mjs *)
 ---
 
 # Cadrer un requis en stories livrables

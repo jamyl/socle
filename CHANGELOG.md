@@ -246,6 +246,8 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   scorer d'essais en a besoin sur chaque story.
 
 ### Corrigé
+- `/cadrer-story` lance `backlog.mjs check` sans demande de permission : la
+  commande est dans ses `allowed-tools`, au chemin que le skill écrit.
 - **Le robot de fusion mergeait une longue PR qui touchait `.github/`.** Le
   test lisait la liste des fichiers par un tube vers `grep -q`, qui s'arrête au
   premier résultat. L'écrivain du tube mourait de SIGPIPE, et sous `pipefail`
