@@ -246,6 +246,12 @@ le supprime, comme `GETTING-STARTED.md` et la CI du template.
   scorer d'essais en a besoin sur chaque story.
 
 ### Corrigé
+- **Le robot de fusion mergeait une longue PR qui touchait `.github/`.** Le
+  test lisait la liste des fichiers par un tube vers `grep -q`, qui s'arrête au
+  premier résultat. L'écrivain du tube mourait de SIGPIPE, et sous `pipefail`
+  le `if` lisait « faux ». Rejoué contre un faux `gh` : avec 3 000 fichiers,
+  la PR était mergée. La liste est lue d'abord, et une API en panne arrête le
+  job au lieu de laisser merger.
 - **`eval-run.mjs` : « arbre de travail IDENTIQUE » à tort.** L'empreinte ne
   prenait que le nom des fichiers non suivis, pas leur contenu. En TDD,
   presque tout est d'abord un fichier nouveau : le modifier entre deux essais

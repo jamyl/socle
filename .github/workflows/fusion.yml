@@ -76,8 +76,12 @@ jobs:
           [ "$copie" = "$AGENT" ] && [ "$auteur" = "$AGENT" ] || attendre "PR #$numero : ni ouverte par $AGENT, ni depuis sa copie"
           [ "$base" = "$principale" ] || attendre "PR #$numero ne vise pas $principale"
 
-          # 2. Les règles de la CI ne se mergent pas par un robot.
-          if gh api "repos/$REPO/pulls/$numero/files" --paginate --jq '.[].filename' | grep -q '^\.github/'; then
+          # 2. Les règles de la CI ne se mergent pas par un robot. La liste est lue
+          #    hors du `if`, puis cherchée sans tube : `grep -q` s'arrête au premier
+          #    résultat, l'écrivain du tube meurt de SIGPIPE, et sous `pipefail` le
+          #    `if` lisait « faux » sur une longue PR qui touchait .github/.
+          fichiers=$(gh api "repos/$REPO/pulls/$numero/files" --paginate --jq '.[].filename')
+          if grep -q '^\.github/' <<< "$fichiers"; then
             attendre "PR #$numero touche .github/ : le propriétaire merge"
           fi
           # Un mot-clé de fermeture fermerait une issue au merge, l'alarme de
